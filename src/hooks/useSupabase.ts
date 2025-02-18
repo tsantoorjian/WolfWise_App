@@ -8,6 +8,14 @@ import {
   LineupWithAdvanced
 } from '../types/database.types';
 
+type LeaderboardResponse = {
+  "Stat Category": string;
+  Player: string;
+  Value: number;
+  Ranking: number;
+  nba_player_stats: { image_url: string | null }[];
+};
+
 export interface RecentStats {
   PTS: number;
   AST: number;
@@ -35,6 +43,7 @@ export function useSupabase() {
   const [last5Stats, setLast5Stats] = useState<Record<string, RecentStats>>({});
   const [last10Stats, setLast10Stats] = useState<Record<string, RecentStats>>({});
   const [recordData, setRecordData] = useState<RecordTrackerSeason[]>([]);
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
 
   const fetchDistributionData = useCallback(async (stat: string) => {
     try {
@@ -107,6 +116,35 @@ export function useSupabase() {
         if (recordTrackerError) throw recordTrackerError;
         setRecordData(recordTrackerData || []);
 
+        // Fetch leaderboard data
+        const { data: leaderboardData, error: leaderboardError } = await supabase
+          .from('players_on_league_leaderboard')
+          .select(`
+            "Stat Category",
+            Player,
+            Value,
+            Ranking
+          `);
+
+        if (leaderboardError) throw leaderboardError;
+
+        // Fetch player images in a separate query
+        const { data: playerImages } = await supabase
+          .from('nba_player_stats')
+          .select('player_name, image_url')
+          .in('player_name', leaderboardData?.map(entry => entry.Player) || []);
+
+        // Process the data to combine leaderboard data with images
+        const processedLeaderboardData = leaderboardData?.map(entry => ({
+          "Stat Category": entry["Stat Category"],
+          Player: entry.Player,
+          Value: entry.Value,
+          Ranking: entry.Ranking,
+          image_url: playerImages?.find(p => p.player_name === entry.Player)?.image_url
+        })) || [];
+
+        setLeaderboardData(processedLeaderboardData);
+
       } catch (error) {
         console.error('Error in fetchData:', error);
       } finally {
@@ -125,6 +163,7 @@ export function useSupabase() {
     last5Stats,
     last10Stats,
     recordData,
+    leaderboardData,
     fetchDistributionData,
   };
 }

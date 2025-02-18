@@ -52,6 +52,30 @@ export type DistributionStats = {
   minutes_played: number;
 }
 
+export type AllPlayer3pt = {
+  id: number;
+  player_id: bigint;
+  player_name: string;
+  team_abbreviation: string;
+  fg3_pct: number;
+  fg3a: number;
+}
+
+export type RecordTrackerSeason = {
+  name: string;
+  GP: number;
+  GAMES_REMAINING: number;
+  stat: string;
+  current: number;
+  per_game: number;
+  projection: number;
+  personal_record: number;
+  franchise_record: number;
+  franchise_player: string;
+  nba_record: number;
+  nba_player: string;
+}
+
 export type ThreePointData = {
   player_name: string;
   value: number;
@@ -89,6 +113,13 @@ export type RecentStats = {
   PLUS_MINUS: number;
 }
 
+export type LeaderboardEntry = {
+  "Stat Category": string;
+  Player: string;
+  Value: number;
+  Ranking: number;
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -102,11 +133,14 @@ export type Database = {
         Insert: Omit<NbaPlayerStats, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Omit<NbaPlayerStats, 'id' | 'created_at' | 'updated_at'>>;
       };
-      distribution_stats: {
-        Row: DistributionStats;
+      all_player_3pt: {
+        Row: AllPlayer3pt;
       };
       record_tracker_season: {
         Row: RecordTrackerSeason;
+      };
+      players_on_league_leaderboard: {
+        Row: LeaderboardEntry;
       };
     };
   };

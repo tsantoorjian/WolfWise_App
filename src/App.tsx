@@ -4,14 +4,15 @@ import { PlayerStats } from './components/PlayerStats';
 import { ThreePointDistribution } from './components/ThreePointDistribution';
 import Lineups from './components/Lineups';
 import { RecordTracker } from './components/RecordTracker';
+import { LeagueLeaders } from './components/LeagueLeaders';
 import './index.css';
 
-type Tab = 'stats' | 'distribution' | 'lineups' | 'records';
+type Tab = 'stats' | 'distribution' | 'lineups' | 'records' | 'leaders';
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('stats');
   const [selectedStat, setSelectedStat] = useState<string>('3pt percentage');
-  const { players, distributionData, last5Stats, last10Stats, recordData, fetchDistributionData } = useSupabase();
+  const { players, distributionData, recordData, leaderboardData, fetchDistributionData } = useSupabase();
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
@@ -62,6 +63,16 @@ function App() {
           >
             Record Tracker
           </button>
+          <button
+            onClick={() => setActiveTab('leaders')}
+            className={`py-4 px-6 text-sm font-medium ${
+              activeTab === 'leaders'
+                ? 'border-b-2 border-[#78BE20] text-[#0C2340]'
+                : 'text-[#9EA2A2] hover:text-[#0C2340]'
+            }`}
+          >
+            League Leaders
+          </button>
         </nav>
 
         {/* Render active page */}
@@ -79,6 +90,7 @@ function App() {
         )}
         {activeTab === 'lineups' && <Lineups />}
         {activeTab === 'records' && <RecordTracker recordData={recordData} />}
+        {activeTab === 'leaders' && <LeagueLeaders leaderboardData={leaderboardData} />}
       </div>
     </div>
   );

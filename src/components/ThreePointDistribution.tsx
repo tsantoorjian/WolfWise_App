@@ -65,6 +65,8 @@ export function ThreePointDistribution({
         density += Math.exp(-0.5 * u * u) / (bandwidth * Math.sqrt(2 * Math.PI));
       }
       density /= values.length;
+      // Scale density to match histogram height
+      density *= data.length * bandwidth * 2;  // Increased scaling factor
       result.push([x, density]);
     }
     return result;
@@ -110,6 +112,34 @@ export function ThreePointDistribution({
     };
   });
 
+  // Calculate histogram data
+  const calculateHistogram = (data: ThreePointData[]) => {
+    const values = data.map(d => d.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min;
+    
+    // Use around 20 buckets
+    const bucketSize = range / 20;
+    const buckets: { [key: number]: number } = {};
+    
+    // Initialize buckets
+    for (let x = min; x <= max; x += bucketSize) {
+      buckets[x] = 0;
+    }
+    
+    // Count values in each bucket
+    values.forEach(value => {
+      const bucketIndex = Math.floor((value - min) / bucketSize) * bucketSize + min;
+      buckets[bucketIndex] = (buckets[bucketIndex] || 0) + 1;
+    });
+    
+    // Convert to array of [x, count] pairs
+    return Object.entries(buckets).map(([x, count]) => [parseFloat(x), count]);
+  };
+
+  const histogramData = calculateHistogram(sortedData);
+
   const option = {
     backgroundColor: '#FFFFFF',
     title: {
@@ -153,9 +183,10 @@ export function ThreePointDistribution({
     },
     yAxis: {
       type: 'value',
-      name: 'Density',
+      name: 'Number of Players',
       nameLocation: 'middle',
-      nameGap: 40
+      nameGap: 40,
+      minInterval: 1  // Ensure whole numbers for player counts
     },
     series: [
       {
@@ -177,6 +208,24 @@ export function ThreePointDistribution({
         z: 1
       },
       {
+        name: 'Player Count',
+        type: 'bar',
+        data: histogramData,
+        barWidth: '90%',
+        itemStyle: {
+          color: '#9EA2A2',
+          opacity: 0.3
+        },
+        tooltip: {
+          formatter: function(params: any) {
+            const value = params.data[0];
+            const count = params.data[1];
+            return `${getStatLabel(value)}: ${count} players`;
+          }
+        },
+        z: 0
+      },
+      {
         name: 'Timberwolves Players',
         type: 'scatter',
         data: twolvesScatter,
@@ -187,7 +236,7 @@ export function ThreePointDistribution({
             borderWidth: 3
           }
         },
-        z: 2 // Ensure player images are on top
+        z: 2
       }
     ]
   };
