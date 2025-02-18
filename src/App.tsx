@@ -31,7 +31,7 @@ function App() {
                 : 'text-[#9EA2A2] hover:text-[#0C2340]'
             }`}
           >
-            Player Stats
+            📊 Player Stats
           </button>
           <button
             onClick={() => setActiveTab('distribution')}
@@ -41,7 +41,7 @@ function App() {
                 : 'text-[#9EA2A2] hover:text-[#0C2340]'
             }`}
           >
-            Distributions
+            📈 Distributions
           </button>
           <button
             onClick={() => setActiveTab('lineups')}
@@ -51,7 +51,7 @@ function App() {
                 : 'text-[#9EA2A2] hover:text-[#0C2340]'
             }`}
           >
-            Lineups
+            👥 Lineups
           </button>
           <button
             onClick={() => setActiveTab('records')}
@@ -61,7 +61,7 @@ function App() {
                 : 'text-[#9EA2A2] hover:text-[#0C2340]'
             }`}
           >
-            Record Tracker
+            🏆 Record Tracker
           </button>
           <button
             onClick={() => setActiveTab('leaders')}
@@ -71,7 +71,7 @@ function App() {
                 : 'text-[#9EA2A2] hover:text-[#0C2340]'
             }`}
           >
-            League Leaders
+            ⭐ League Leaders
           </button>
         </nav>
 

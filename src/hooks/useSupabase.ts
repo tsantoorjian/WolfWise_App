@@ -8,14 +8,6 @@ import {
   LineupWithAdvanced
 } from '../types/database.types';
 
-type LeaderboardResponse = {
-  "Stat Category": string;
-  Player: string;
-  Value: number;
-  Ranking: number;
-  nba_player_stats: { image_url: string | null }[];
-};
-
 export interface RecentStats {
   PTS: number;
   AST: number;
