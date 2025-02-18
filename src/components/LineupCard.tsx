@@ -25,15 +25,15 @@ const LineupCard: React.FC<LineupCardProps> = ({ lineup }) => {
                 <img
                   src={player.image_url}
                   alt={player.name}
-                  className="w-12 h-12 rounded-full border-2 border-white bg-[#0C2340] object-cover"
+                  className="w-12 h-12 rounded-full border-2 border-[#236192] bg-white object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = 'https://via.placeholder.com/48';
                   }}
                 />
               ) : (
-                <div className="w-12 h-12 rounded-full border-2 border-white bg-[#0C2340] flex items-center justify-center">
-                  <UserRound className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 rounded-full border-2 border-[#236192] bg-white flex items-center justify-center">
+                  <UserRound className="w-6 h-6 text-[#236192]" />
                 </div>
               )}
             </div>

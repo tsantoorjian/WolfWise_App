@@ -177,6 +177,7 @@ export function ThreePointDistribution({
       name: getStatName(),
       nameLocation: 'middle',
       nameGap: 30,
+      min: 0,  // Set minimum value to 0
       axisLabel: {
         formatter: (value: number) => getStatLabel(value)
       }
