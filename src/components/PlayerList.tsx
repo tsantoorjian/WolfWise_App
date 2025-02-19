@@ -1,4 +1,3 @@
-// src/components/PlayerList.tsx
 import React from 'react';
 import { NbaPlayerStats } from '../types/database.types';
 
@@ -20,7 +19,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
       <div className="p-4 bg-[#0C2340]">
         <h2 className="text-xl font-semibold text-white">Players</h2>
       </div>
-      <div className="divide-y divide-gray-200 max-h-[calc(100vh-250px)] overflow-y-auto">
+      <div className="divide-y divide-gray-200 max-h-[60vh] md:max-h-[calc(100vh-250px)] overflow-y-auto">
         {loading ? (
           <div className="p-4 text-[#9EA2A2]">Loading players...</div>
         ) : (
@@ -41,7 +40,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
                   target.src = 'https://via.placeholder.com/40';
                 }}
               />
-              <span>{player.player_name}</span>
+              <span className="truncate">{player.player_name}</span>
             </button>
           ))
         )}

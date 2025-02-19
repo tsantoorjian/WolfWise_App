@@ -1,4 +1,3 @@
-// src/components/StatCard.tsx
 import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { RecentStats } from '../types/database.types';
@@ -61,23 +60,23 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <div className={`${bgColor} rounded-lg p-4 relative`}>
-      <p className="text-sm font-medium text-white opacity-90">{label}</p>
+    <div className={`${bgColor} rounded-lg p-2 md:p-4 relative`}>
+      <p className="text-xs md:text-sm font-medium text-white opacity-90">{label}</p>
       <div className="flex justify-between items-end mt-1">
         <div>
-          <p className={`text-2xl font-bold ${textColor}`}>
+          <p className={`text-lg md:text-2xl font-bold ${textColor}`}>
             {value !== null ? value.toFixed(1) : '0.0'}
           </p>
-          <p className="text-[0.65rem] text-white/60 mt-1">Season Average</p>
+          <p className="text-[0.6rem] md:text-[0.65rem] text-white/60 mt-1">Avg</p>
         </div>
         {last5Value !== undefined && last10Value !== undefined && (
-          <div className="text-[0.65rem] text-white/80 text-right">
-            <div className="flex items-center justify-end gap-1 mb-1">
+          <div className="text-[0.55rem] md:text-[0.65rem] text-white/80 text-right">
+            <div className="flex items-center justify-end gap-0.5 md:gap-1 mb-0.5 md:mb-1">
               <span className="opacity-70">L5</span>
               <span className="font-medium">{(last5Value as number).toFixed(1)}</span>
               {value && getPerformanceIndicator(last5Value as number, value)}
             </div>
-            <div className="flex items-center justify-end gap-1">
+            <div className="flex items-center justify-end gap-0.5 md:gap-1">
               <span className="opacity-70">L10</span>
               <span className="font-medium">{(last10Value as number).toFixed(1)}</span>
               {value && getPerformanceIndicator(last10Value as number, value)}
