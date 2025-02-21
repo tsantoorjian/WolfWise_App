@@ -1,4 +1,4 @@
-import { Trophy, Medal, UserRound } from 'lucide-react';
+import { Trophy, Medal, UserRound, TrendingUp, Info, Crown } from 'lucide-react';
 
 type LeaderboardEntry = {
   "Stat Category": string;
@@ -12,7 +12,6 @@ type LeagueLeadersProps = {
   leaderboardData: LeaderboardEntry[];
 };
 
-// Group stats by player
 type PlayerStats = {
   player: string;
   image_url?: string;
@@ -20,13 +19,11 @@ type PlayerStats = {
 };
 
 export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
-  // Helper function to convert ranking text to number
   const getRankingNumber = (rankText: string | number): number => {
     if (typeof rankText === 'number') return rankText;
     return parseInt(rankText.replace(/[^0-9]/g, ''));
   };
 
-  // Group stats by player
   const playerStats = leaderboardData.reduce((acc: { [key: string]: PlayerStats }, entry) => {
     if (!acc[entry.Player]) {
       acc[entry.Player] = {
@@ -36,12 +33,7 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
       };
     }
     acc[entry.Player].stats.push(entry);
-    
-    // Sort stats using the numeric ranking value
-    acc[entry.Player].stats.sort((a, b) => 
-      getRankingNumber(a.Ranking) - getRankingNumber(b.Ranking)
-    );
-    
+    acc[entry.Player].stats.sort((a, b) => getRankingNumber(a.Ranking) - getRankingNumber(b.Ranking));
     return acc;
   }, {});
 
@@ -54,7 +46,12 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
 
   const getRankingBadge = (ranking: number) => {
     if (ranking === 1) {
-      return <Trophy className="w-6 h-6 text-[#FFD700] drop-shadow-lg" />;
+      return (
+        <div className="relative">
+          <Trophy className="w-6 h-6 text-[#FFD700] drop-shadow-lg animate-pulse" />
+          <div className="absolute inset-0 bg-[#FFD700] opacity-20 blur-sm rounded-full animate-ping"></div>
+        </div>
+      );
     }
     if (ranking === 2) {
       return <Medal className="w-6 h-6 text-[#C0C0C0] drop-shadow-lg" />;
@@ -64,13 +61,13 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
     }
     if (ranking <= 10) {
       return (
-        <div className="w-6 h-6 bg-[#236192] text-white rounded-full flex items-center justify-center text-[9px] font-bold">
+        <div className="w-6 h-6 bg-[#236192] text-white rounded-full flex items-center justify-center text-[10px] font-bold">
           {ranking}
         </div>
       );
     }
     return (
-      <div className="w-6 h-6 bg-[#0C2340] text-white rounded-full flex items-center justify-center text-[9px] font-bold">
+      <div className="w-6 h-6 bg-[#0C2340] text-white rounded-full flex items-center justify-center text-[10px] font-bold">
         {ranking}
       </div>
     );
@@ -78,62 +75,104 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
 
   const getRowBackgroundColor = (rankText: string | number) => {
     const ranking = getRankingNumber(rankText);
-    if (ranking === 1) return 'bg-green-200';
-    if (ranking <= 3) return 'bg-green-100';
-    if (ranking <= 5) return 'bg-green-50';
-    if (ranking <= 10) return 'bg-green-50/80';
-    if (ranking <= 15) return 'bg-green-50/60';
-    if (ranking <= 20) return 'bg-green-50/40';
-    return 'bg-gray-50'; // default background for ranks > 20
+    if (ranking === 1) return 'bg-gradient-to-r from-[#FFD700]/20 to-transparent';
+    if (ranking <= 3) return 'bg-gradient-to-r from-[#78BE20]/20 to-transparent';
+    if (ranking <= 5) return 'bg-gradient-to-r from-[#78BE20]/10 to-transparent';
+    if (ranking <= 10) return 'bg-gradient-to-r from-[#78BE20]/5 to-transparent';
+    return 'hover:bg-gray-50';
   };
 
   return (
     <div className="space-y-8">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-[#0C2340]">Timberwolves League Leaders</h2>
-        <p className="text-[#9EA2A2]">Highlighting Timberwolves players ranked in the top 20 league wide in key stats</p>
-      </div>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <Crown className="w-6 h-6 text-[#78BE20]" />
+            <h2 className="text-2xl font-bold text-[#0C2340]">League Leaders</h2>
+          </div>
+          <p className="text-[#9EA2A2]">Timberwolves players ranked in the top 20 league-wide</p>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Object.values(playerStats).map((playerStat) => (
-          <div key={playerStat.player} className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center gap-4 mb-4">
-              {playerStat.image_url ? (
-                <img
-                  src={playerStat.image_url}
-                  alt={playerStat.player}
-                  className="w-16 h-16 rounded-full object-cover border-2 border-[#236192] bg-white"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = 'https://via.placeholder.com/64';
-                  }}
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-full border-2 border-[#236192] bg-white flex items-center justify-center">
-                  <UserRound className="w-8 h-8 text-[#236192]" />
-                </div>
-              )}
-              <h3 className="text-xl font-bold text-[#0C2340]">{playerStat.player}</h3>
-            </div>
-
-            <div className="space-y-2">
-              {playerStat.stats.map((stat, index) => (
-                <div 
-                  key={`${stat["Stat Category"]}-${index}`}
-                  className={`flex items-center justify-between p-2 rounded transition-colors ${getRowBackgroundColor(stat.Ranking)}`}
-                >
-                  <div className="flex items-center gap-2">
-                    {getRankingBadge(stat.Ranking)}
-                    <span className="text-[#0C2340]">{stat["Stat Category"]}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Object.values(playerStats).map((playerStat) => (
+            <div 
+              key={playerStat.player}
+              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+            >
+              <div className="p-6 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative group">
+                    {playerStat.image_url ? (
+                      <img
+                        src={playerStat.image_url}
+                        alt={playerStat.player}
+                        className="w-16 h-16 rounded-full object-cover border-2 border-[#236192] bg-white group-hover:border-[#78BE20] transition-colors duration-300"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://via.placeholder.com/64';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full border-2 border-[#236192] bg-white flex items-center justify-center group-hover:border-[#78BE20] transition-colors duration-300">
+                        <UserRound className="w-8 h-8 text-[#236192]" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#78BE20]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
-                  <span className="font-bold text-[#0C2340]">
-                    {formatValue(stat["Stat Category"], stat.Value)}
+                  <div>
+                    <h3 className="text-xl font-bold text-[#0C2340] group-hover:text-[#78BE20] transition-colors duration-300">
+                      {playerStat.player}
+                    </h3>
+                    <p className="text-sm text-[#9EA2A2]">
+                      {playerStat.stats.length} League Rankings
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {playerStat.stats.map((stat, index) => (
+                    <div 
+                      key={`${stat["Stat Category"]}-${index}`}
+                      className={`flex items-center justify-between p-2 rounded transition-all duration-300 ${getRowBackgroundColor(stat.Ranking)}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {getRankingBadge(stat.Ranking)}
+                        <div>
+                          <span className="text-[#0C2340] font-medium">{stat["Stat Category"]}</span>
+                          <div className="text-xs text-[#9EA2A2]">
+                            League Rank: #{stat.Ranking}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-bold text-[#0C2340]">
+                          {formatValue(stat["Stat Category"], stat.Value)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 rounded-b-lg">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-1 text-[#9EA2A2]">
+                    <TrendingUp className="w-4 h-4" />
+                    <span>Best Rank:</span>
+                  </div>
+                  <span className="font-medium text-[#0C2340]">
+                    #{Math.min(...playerStat.stats.map(s => getRankingNumber(s.Ranking)))}
                   </span>
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        <div className="mt-6 flex items-center gap-2 text-sm text-[#9EA2A2] bg-gray-50 rounded-lg p-3">
+          <Info className="w-4 h-4 flex-shrink-0" />
+          <span>Rankings are based on players with minimum qualifying minutes</span>
+        </div>
       </div>
     </div>
   );

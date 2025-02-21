@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { NbaPlayerStats, ThreePointData } from '../types/database.types';
 import ReactECharts from 'echarts-for-react';
+import { ChevronDown, Info } from 'lucide-react';
+import * as echarts from 'echarts/core';
 
 type DistributionProps = {
   distributionData: ThreePointData[];
@@ -27,6 +29,7 @@ export function ThreePointDistribution({
   selectedStat 
 }: DistributionProps) {
   const [hoveredPlayer, setHoveredPlayer] = useState<ThreePointData | null>(null);
+  const [showStatSelect, setShowStatSelect] = useState(false);
 
   const isPercentageStat = AVAILABLE_STATS.find(s => s.value === selectedStat)?.isPercentage ?? false;
 
@@ -65,8 +68,7 @@ export function ThreePointDistribution({
         density += Math.exp(-0.5 * u * u) / (bandwidth * Math.sqrt(2 * Math.PI));
       }
       density /= values.length;
-      // Scale density to match histogram height
-      density *= data.length * bandwidth * 2;  // Increased scaling factor
+      density *= data.length * bandwidth * 2;
       result.push([x, density]);
     }
     return result;
@@ -74,7 +76,6 @@ export function ThreePointDistribution({
 
   const allKDE = calculateKDE(sortedData);
 
-  // Find density for a specific value using interpolation
   const findDensity = (value: number) => {
     const points = allKDE.filter(point => Math.abs(point[0] - value) <= 0.5);
     if (points.length === 0) return 0;
@@ -91,7 +92,6 @@ export function ThreePointDistribution({
     return points[0][1];
   };
 
-  // Create scatter data for Timberwolves players with images
   const twolvesScatter = twolvesData.map(player => {
     const value = player.value;
     const density = findDensity(value);
@@ -100,7 +100,7 @@ export function ThreePointDistribution({
     return {
       value: [value, density],
       symbol: `image://${playerData?.image_url || 'https://via.placeholder.com/40'}`,
-      symbolSize: 50, // Increased size
+      symbolSize: 50,
       name: player.player_name,
       itemStyle: {
         borderColor: '#78BE20',
@@ -112,29 +112,23 @@ export function ThreePointDistribution({
     };
   });
 
-  // Calculate histogram data
   const calculateHistogram = (data: ThreePointData[]) => {
     const values = data.map(d => d.value);
     const min = Math.min(...values);
     const max = Math.max(...values);
     const range = max - min;
-    
-    // Use around 20 buckets
     const bucketSize = range / 20;
     const buckets: { [key: number]: number } = {};
     
-    // Initialize buckets
     for (let x = min; x <= max; x += bucketSize) {
       buckets[x] = 0;
     }
     
-    // Count values in each bucket
     values.forEach(value => {
       const bucketIndex = Math.floor((value - min) / bucketSize) * bucketSize + min;
       buckets[bucketIndex] = (buckets[bucketIndex] || 0) + 1;
     });
     
-    // Convert to array of [x, count] pairs
     return Object.entries(buckets).map(([x, count]) => [parseFloat(x), count]);
   };
 
@@ -154,11 +148,11 @@ export function ThreePointDistribution({
     },
     tooltip: {
       trigger: 'item',
-      axisPointer: {
-        type: 'none'
-      },
+      axisPointer: { type: 'none' },
+      backgroundColor: '#0C2340',
+      borderColor: '#0C2340',
+      textStyle: { color: '#FFFFFF' },
       formatter: function(params: any) {
-        // Only show tooltip for player points
         if (params.seriesName === 'Timberwolves Players') {
           return `${params.name}<br/>${getStatName()}: ${getStatLabel(params.value[0])}`;
         }
@@ -177,17 +171,23 @@ export function ThreePointDistribution({
       name: getStatName(),
       nameLocation: 'middle',
       nameGap: 30,
-      min: 0,  // Set minimum value to 0
+      min: 0,
       axisLabel: {
-        formatter: (value: number) => getStatLabel(value)
-      }
+        formatter: (value: number) => getStatLabel(value),
+        color: '#0C2340'
+      },
+      axisLine: { lineStyle: { color: '#0C2340' } },
+      splitLine: { show: false }
     },
     yAxis: {
       type: 'value',
       name: 'Number of Players',
       nameLocation: 'middle',
       nameGap: 40,
-      minInterval: 1  // Ensure whole numbers for player counts
+      minInterval: 1,
+      axisLabel: { color: '#0C2340' },
+      axisLine: { lineStyle: { color: '#0C2340' } },
+      splitLine: { lineStyle: { type: 'dashed', color: '#E5E7EB' } }
     },
     series: [
       {
@@ -200,12 +200,19 @@ export function ThreePointDistribution({
           width: 2
         },
         areaStyle: {
-          color: '#9EA2A2',
-          opacity: 0.1
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(158, 162, 162, 0.3)' },
+              { offset: 1, color: 'rgba(158, 162, 162, 0.05)' }
+            ]
+          }
         },
-        tooltip: {
-          show: false
-        },
+        tooltip: { show: false },
         z: 1
       },
       {
@@ -214,8 +221,17 @@ export function ThreePointDistribution({
         data: histogramData,
         barWidth: '90%',
         itemStyle: {
-          color: '#9EA2A2',
-          opacity: 0.3
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: '#9EA2A2' },
+              { offset: 1, color: 'rgba(158, 162, 162, 0.3)' }
+            ]
+          }
         },
         tooltip: {
           formatter: function(params: any) {
@@ -242,80 +258,112 @@ export function ThreePointDistribution({
     ]
   };
 
-  // Player markers for legend
-  const playerMarkers = twolvesData.map(player => {
-    const playerData = players.find(p => p.player_name === player.player_name);
-    if (!playerData?.image_url) return null;
-
-    return (
-      <div
-        key={player.player_name}
-        className="relative inline-block mx-1"
-      >
-        <img
-          src={playerData.image_url}
-          alt={player.player_name}
-          className="w-8 h-8 rounded-full border-2 border-[#78BE20] bg-white object-cover hover:border-[#236192] transition-colors cursor-pointer"
-          onMouseEnter={() => setHoveredPlayer(player)}
-          onMouseLeave={() => setHoveredPlayer(null)}
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = 'https://via.placeholder.com/32';
-          }}
-        />
-        {hoveredPlayer?.player_name === player.player_name && (
-          <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-[#0C2340] text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
-            <div className="font-semibold">{player.player_name}</div>
-            <div>{getStatName()}: {getStatLabel(player.value)}</div>
-            <div>Minutes: {player.minutes_played.toFixed(0)}</div>
-          </div>
-        )}
-      </div>
-    );
-  });
-
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <select
-            value={selectedStat}
-            onChange={(e) => onStatChange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#78BE20] focus:border-transparent"
-          >
-            {AVAILABLE_STATS.map(stat => (
-              <option key={stat.value} value={stat.value}>
-                {stat.label}
-              </option>
-            ))}
-          </select>
-          <div className="flex items-center gap-4 text-sm">
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+          <div className="relative w-full md:w-auto">
+            <button
+              onClick={() => setShowStatSelect(!showStatSelect)}
+              className="w-full md:w-auto px-4 py-2 bg-[#0C2340] text-white rounded-lg flex items-center justify-between gap-2 hover:bg-[#236192] transition-colors"
+            >
+              <span>{getStatName()}</span>
+              <ChevronDown className={`w-4 h-4 transform transition-transform duration-200 ${showStatSelect ? 'rotate-180' : ''}`} />
+            </button>
+            {showStatSelect && (
+              <div className="absolute z-10 mt-2 w-full md:w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                {AVAILABLE_STATS.map(stat => (
+                  <button
+                    key={stat.value}
+                    onClick={() => {
+                      onStatChange(stat.value);
+                      setShowStatSelect(false);
+                    }}
+                    className={`w-full px-4 py-2 text-left hover:bg-gray-50 ${
+                      selectedStat === stat.value ? 'text-[#78BE20] font-medium' : 'text-[#0C2340]'
+                    }`}
+                  >
+                    {stat.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-[#78BE20] rounded"></div>
+              <div className="w-3 h-3 bg-gradient-to-br from-[#78BE20] to-[#236192] rounded"></div>
               <span className="text-[#0C2340]">Timberwolves Players</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-[#9EA2A2] rounded"></div>
+              <div className="w-3 h-3 bg-gradient-to-br from-[#9EA2A2] to-[#E5E7EB] rounded"></div>
               <span className="text-[#0C2340]">League Distribution</span>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="h-[400px]">
-        <ReactECharts
-          option={option}
-          style={{ height: '100%', width: '100%' }}
-        />
-      </div>
+        <div className="h-[400px]">
+          <ReactECharts
+            option={option}
+            style={{ height: '100%', width: '100%' }}
+            notMerge={true}
+            lazyUpdate={true}
+          />
+        </div>
 
-      <div className="mt-4 flex flex-wrap gap-2 items-center">
-        <span className="text-sm text-[#0C2340] font-medium">Timberwolves Players:</span>
-        {playerMarkers}
-      </div>
-      
-      <div className="mt-2 text-sm text-[#9EA2A2]">
-        * Minimum 600 minutes played required
+        <div className="mt-6 space-y-4">
+          <div className="flex flex-wrap gap-3 items-center">
+            <h3 className="text-sm font-medium text-[#0C2340]">Timberwolves Players:</h3>
+            <div className="flex flex-wrap gap-2">
+              {twolvesData.map(player => {
+                const playerData = players.find(p => p.player_name === player.player_name);
+                if (!playerData?.image_url) return null;
+
+                return (
+                  <div
+                    key={player.player_name}
+                    className="relative group"
+                  >
+                    <div className="relative">
+                      <img
+                        src={playerData.image_url}
+                        alt={player.player_name}
+                        className="w-10 h-10 rounded-full border-2 border-[#78BE20] bg-white object-cover hover:border-[#236192] transition-colors cursor-pointer"
+                        onMouseEnter={() => setHoveredPlayer(player)}
+                        onMouseLeave={() => setHoveredPlayer(null)}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://via.placeholder.com/40';
+                        }}
+                      />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#78BE20]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    {hoveredPlayer?.player_name === player.player_name && (
+                      <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-[#0C2340] text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap z-10 shadow-lg">
+                        <div className="font-semibold mb-1">{player.player_name}</div>
+                        <div className="space-y-0.5">
+                          <div className="flex justify-between gap-4">
+                            <span className="text-white/70">{getStatName()}:</span>
+                            <span className="font-medium">{getStatLabel(player.value)}</span>
+                          </div>
+                          <div className="flex justify-between gap-4">
+                            <span className="text-white/70">Minutes:</span>
+                            <span className="font-medium">{player.minutes_played.toFixed(0)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 text-sm text-[#9EA2A2]">
+            <Info className="w-4 h-4" />
+            <span>Minimum 600 minutes played required for inclusion</span>
+          </div>
+        </div>
       </div>
     </div>
   );

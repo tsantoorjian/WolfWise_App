@@ -5,7 +5,14 @@ import { ThreePointDistribution } from './components/ThreePointDistribution';
 import Lineups from './components/Lineups';
 import { RecordTracker } from './components/RecordTracker';
 import { LeagueLeaders } from './components/LeagueLeaders';
-import { Menu } from 'lucide-react';
+import { 
+  Menu, 
+  LineChart, 
+  Users2, 
+  Trophy, 
+  Crown,
+  BarChart3
+} from 'lucide-react';
 import './index.css';
 
 type Tab = 'stats' | 'distribution' | 'lineups' | 'records' | 'leaders';
@@ -15,6 +22,40 @@ function App() {
   const [selectedStat, setSelectedStat] = useState<string>('3pt percentage');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { players, distributionData, recordData, leaderboardData, fetchDistributionData } = useSupabase();
+
+  const playerImageUrl = players?.find(p => p.player_name === recordData[0]?.name)?.image_url || undefined;
+
+  const getTabIcon = (tab: Tab, isActive: boolean) => {
+    const baseClasses = `w-5 h-5 ${isActive ? 'text-[#78BE20]' : 'text-[#9EA2A2] group-hover:text-[#0C2340]'}`;
+    
+    switch (tab) {
+      case 'stats':
+        return <BarChart3 className={baseClasses} />;
+      case 'distribution':
+        return <LineChart className={baseClasses} />;
+      case 'lineups':
+        return <Users2 className={baseClasses} />;
+      case 'records':
+        return <Trophy className={baseClasses} />;
+      case 'leaders':
+        return <Crown className={baseClasses} />;
+    }
+  };
+
+  const getTabLabel = (tab: Tab) => {
+    switch (tab) {
+      case 'stats':
+        return 'Player Stats';
+      case 'distribution':
+        return 'Distributions';
+      case 'lineups':
+        return 'Lineups';
+      case 'records':
+        return 'Record Tracker';
+      case 'leaders':
+        return 'League Leaders';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
@@ -30,82 +71,34 @@ function App() {
             className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm text-[#0C2340]"
           >
             <Menu className="w-5 h-5" />
-            <span>{activeTab === 'stats' ? 'Player Stats' : 
-                   activeTab === 'distribution' ? 'Distributions' :
-                   activeTab === 'lineups' ? 'Lineups' :
-                   activeTab === 'records' ? 'Record Tracker' : 'League Leaders'}
-            </span>
+            <span>{getTabLabel(activeTab)}</span>
           </button>
         </div>
 
         {/* Navigation */}
         <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block border-b border-gray-200 mb-6`}>
           <div className="flex flex-col md:flex-row md:border-b md:border-gray-200">
-            <button
-              onClick={() => {
-                setActiveTab('stats');
-                setIsMenuOpen(false);
-              }}
-              className={`py-3 md:py-4 px-4 md:px-6 text-sm font-medium ${
-                activeTab === 'stats'
-                  ? 'bg-[#78BE20] md:bg-transparent md:border-b-2 md:border-[#78BE20] text-[#0C2340]'
-                  : 'text-[#9EA2A2] hover:text-[#0C2340]'
-              }`}
-            >
-              📊 Player Stats
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('distribution');
-                setIsMenuOpen(false);
-              }}
-              className={`py-3 md:py-4 px-4 md:px-6 text-sm font-medium ${
-                activeTab === 'distribution'
-                  ? 'bg-[#78BE20] md:bg-transparent md:border-b-2 md:border-[#78BE20] text-[#0C2340]'
-                  : 'text-[#9EA2A2] hover:text-[#0C2340]'
-              }`}
-            >
-              📈 Distributions
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('lineups');
-                setIsMenuOpen(false);
-              }}
-              className={`py-3 md:py-4 px-4 md:px-6 text-sm font-medium ${
-                activeTab === 'lineups'
-                  ? 'bg-[#78BE20] md:bg-transparent md:border-b-2 md:border-[#78BE20] text-[#0C2340]'
-                  : 'text-[#9EA2A2] hover:text-[#0C2340]'
-              }`}
-            >
-              👥 Lineups
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('records');
-                setIsMenuOpen(false);
-              }}
-              className={`py-3 md:py-4 px-4 md:px-6 text-sm font-medium ${
-                activeTab === 'records'
-                  ? 'bg-[#78BE20] md:bg-transparent md:border-b-2 md:border-[#78BE20] text-[#0C2340]'
-                  : 'text-[#9EA2A2] hover:text-[#0C2340]'
-              }`}
-            >
-              🏆 Record Tracker
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('leaders');
-                setIsMenuOpen(false);
-              }}
-              className={`py-3 md:py-4 px-4 md:px-6 text-sm font-medium ${
-                activeTab === 'leaders'
-                  ? 'bg-[#78BE20] md:bg-transparent md:border-b-2 md:border-[#78BE20] text-[#0C2340]'
-                  : 'text-[#9EA2A2] hover:text-[#0C2340]'
-              }`}
-            >
-              ⭐ League Leaders
-            </button>
+            {(['stats', 'distribution', 'lineups', 'records', 'leaders'] as Tab[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setIsMenuOpen(false);
+                }}
+                className={`group py-3 md:py-4 px-4 md:px-6 text-sm font-medium transition-all duration-200 ${
+                  activeTab === tab
+                    ? 'bg-[#78BE20]/10 md:bg-transparent md:border-b-2 md:border-[#78BE20] text-[#0C2340]'
+                    : 'text-[#9EA2A2] hover:text-[#0C2340] hover:bg-gray-50 md:hover:bg-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {getTabIcon(tab, activeTab === tab)}
+                  <span className={activeTab === tab ? 'font-semibold' : ''}>
+                    {getTabLabel(tab)}
+                  </span>
+                </div>
+              </button>
+            ))}
           </div>
         </nav>
 
@@ -124,7 +117,7 @@ function App() {
             />
           )}
           {activeTab === 'lineups' && <Lineups />}
-          {activeTab === 'records' && <RecordTracker recordData={recordData} />}
+          {activeTab === 'records' && <RecordTracker recordData={recordData} playerImageUrl={playerImageUrl} />}
           {activeTab === 'leaders' && <LeagueLeaders leaderboardData={leaderboardData} />}
         </div>
       </div>
