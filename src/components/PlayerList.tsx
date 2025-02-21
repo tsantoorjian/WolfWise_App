@@ -1,25 +1,27 @@
 import React from 'react';
-import { NbaPlayerStats } from '../types/database.types';
+import { PlayerWithStats } from '../hooks/useSupabase';
 import { UserRound, Search } from 'lucide-react';
 
 type PlayerListProps = {
-  players: NbaPlayerStats[];
+  players: PlayerWithStats[];
   loading: boolean;
   selectedPlayerId: number | null;
-  onSelectPlayer: (player: NbaPlayerStats) => void;
+  onSelectPlayer: (player: PlayerWithStats) => void;
 };
 
 const PlayerList: React.FC<PlayerListProps> = ({
-  players,
+  players = [],
   loading,
   selectedPlayerId,
   onSelectPlayer,
 }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   
-  const filteredPlayers = players.filter(player =>
-    player.player_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPlayers = players
+    .filter(Boolean)
+    .filter(player => 
+      player.PLAYER_NAME?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -44,10 +46,10 @@ const PlayerList: React.FC<PlayerListProps> = ({
         ) : (
           filteredPlayers.map((player) => (
             <button
-              key={player.id}
+              key={player.PLAYER_ID}
               onClick={() => onSelectPlayer(player)}
               className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-all flex items-center gap-3 group ${
-                selectedPlayerId === player.id 
+                selectedPlayerId === player.PLAYER_ID 
                   ? 'bg-[#236192] text-white hover:bg-[#236192]' 
                   : ''
               }`}
@@ -56,9 +58,9 @@ const PlayerList: React.FC<PlayerListProps> = ({
                 {player.image_url ? (
                   <img
                     src={player.image_url}
-                    alt={player.player_name}
+                    alt={player.PLAYER_NAME}
                     className={`w-10 h-10 rounded-full object-cover border-2 transition-colors ${
-                      selectedPlayerId === player.id 
+                      selectedPlayerId === player.PLAYER_ID 
                         ? 'border-[#78BE20]' 
                         : 'border-[#236192] group-hover:border-[#78BE20]'
                     }`}
@@ -69,7 +71,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
                   />
                 ) : (
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                    selectedPlayerId === player.id 
+                    selectedPlayerId === player.PLAYER_ID 
                       ? 'bg-[#78BE20]' 
                       : 'bg-[#236192] group-hover:bg-[#78BE20]'
                   }`}>
@@ -79,12 +81,12 @@ const PlayerList: React.FC<PlayerListProps> = ({
               </div>
               <div>
                 <span className={`block truncate font-medium ${
-                  selectedPlayerId === player.id ? 'text-white' : 'text-[#0C2340]'
+                  selectedPlayerId === player.PLAYER_ID ? 'text-white' : 'text-[#0C2340]'
                 }`}>
-                  {player.player_name}
+                  {player.PLAYER_NAME}
                 </span>
                 <span className={`text-xs ${
-                  selectedPlayerId === player.id ? 'text-white/70' : 'text-[#9EA2A2]'
+                  selectedPlayerId === player.PLAYER_ID ? 'text-white/70' : 'text-[#9EA2A2]'
                 }`}>
                   {player.position || 'N/A'} • #{player.jersey_number || '00'}
                 </span>

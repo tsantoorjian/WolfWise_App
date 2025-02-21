@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSupabase } from '../hooks/useSupabase';
 import { useLineups } from '../hooks/useLineups';
 import LineupCard from './LineupCard';
-import { Users2, ChevronDown, Info } from 'lucide-react';
+import { Users2, Info } from 'lucide-react';
 
 const Lineups: React.FC = () => {
   const [showTopLineups, setShowTopLineups] = useState(true);

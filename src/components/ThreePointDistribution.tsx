@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { NbaPlayerStats, ThreePointData } from '../types/database.types';
+import { ThreePointData } from '../types/database.types';
 import ReactECharts from 'echarts-for-react';
 import { ChevronDown, Info } from 'lucide-react';
-import * as echarts from 'echarts/core';
+import { PlayerWithStats } from '../hooks/useSupabase';
 
 type DistributionProps = {
   distributionData: ThreePointData[];
-  players: NbaPlayerStats[];
+  players: PlayerWithStats[];
   onStatChange: (stat: string) => void;
   selectedStat: string;
 };
@@ -31,6 +31,14 @@ export function ThreePointDistribution({
   const [hoveredPlayer, setHoveredPlayer] = useState<ThreePointData | null>(null);
   const [showStatSelect, setShowStatSelect] = useState(false);
 
+  // Sort data for line chart
+  const sortedData = [...distributionData].sort((a, b) => a.value - b.value);
+  const twolvesData = sortedData.filter(p => p.team_abbreviation === 'MIN');
+
+  // Now we can log after twolvesData is defined
+  console.log('Players:', players.map(p => ({name: p.PLAYER_NAME, image: p.image_url})));
+  console.log('Timberwolves Data:', twolvesData);
+
   const isPercentageStat = AVAILABLE_STATS.find(s => s.value === selectedStat)?.isPercentage ?? false;
 
   const getStatLabel = (value: number) => {
@@ -44,10 +52,6 @@ export function ThreePointDistribution({
     const stat = AVAILABLE_STATS.find(s => s.value === selectedStat);
     return stat?.label || selectedStat;
   };
-
-  // Sort data for line chart
-  const sortedData = [...distributionData].sort((a, b) => a.value - b.value);
-  const twolvesData = sortedData.filter(p => p.team_abbreviation === 'MIN');
 
   // Calculate kernel density estimation with dynamic bandwidth
   const calculateKDE = (data: ThreePointData[]) => {
@@ -95,7 +99,7 @@ export function ThreePointDistribution({
   const twolvesScatter = twolvesData.map(player => {
     const value = player.value;
     const density = findDensity(value);
-    const playerData = players.find(p => p.player_name === player.player_name);
+    const playerData = players.find(p => p.PLAYER_NAME === player.player_name);
     
     return {
       value: [value, density],
@@ -316,7 +320,7 @@ export function ThreePointDistribution({
             <h3 className="text-sm font-medium text-[#0C2340]">Timberwolves Players:</h3>
             <div className="flex flex-wrap gap-2">
               {twolvesData.map(player => {
-                const playerData = players.find(p => p.player_name === player.player_name);
+                const playerData = players.find(p => p.PLAYER_NAME === player.player_name);
                 if (!playerData?.image_url) return null;
 
                 return (

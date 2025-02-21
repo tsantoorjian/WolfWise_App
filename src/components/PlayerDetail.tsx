@@ -1,11 +1,10 @@
-// src/components/PlayerDetail.tsx
 import React from 'react';
-import { NbaPlayerStats, RecentStats } from '../types/database.types';
+import { PlayerWithStats, RecentStats } from '../hooks/useSupabase';
 import StatCard from './StatCard';
 import { UserRound } from 'lucide-react';
 
 type PlayerDetailProps = {
-  player: NbaPlayerStats | null;
+  player: PlayerWithStats | null;
   last5Stats: Record<string, RecentStats>;
   last10Stats: Record<string, RecentStats>;
 };
@@ -25,7 +24,7 @@ const PlayerDetail: React.FC<PlayerDetailProps> = ({ player, last5Stats, last10S
         {player.image_url ? (
           <img
             src={player.image_url}
-            alt={player.player_name}
+            alt={player.PLAYER_NAME}
             className="w-24 h-24 rounded-full object-cover border-4 border-[#236192]"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -38,63 +37,63 @@ const PlayerDetail: React.FC<PlayerDetailProps> = ({ player, last5Stats, last10S
           </div>
         )}
         <div>
-          <h2 className="text-2xl font-bold text-[#0C2340]">{player.player_name}</h2>
-          {player.nickname && <p className="text-[#9EA2A2]">"{player.nickname}"</p>}
+          <h2 className="text-2xl font-bold text-[#0C2340]">{player.PLAYER_NAME}</h2>
+          <p className="text-[#9EA2A2]">#{player.jersey_number || '00'} • {player.position || 'N/A'}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <StatCard
           label="Points"
-          value={player.points}
+          value={player.PTS}
           bgColor="bg-[#0C2340]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Rebounds"
-          value={player.total_rebounds}
+          value={player.REB}
           bgColor="bg-[#236192]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Assists"
-          value={player.assists}
+          value={player.AST}
           bgColor="bg-[#78BE20]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Steals"
-          value={player.steals}
+          value={player.STL}
           bgColor="bg-[#0C2340]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Blocks"
-          value={player.blocks}
+          value={player.BLK}
           bgColor="bg-[#236192]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Plus/Minus"
-          value={player.plus_minus}
+          value={player.PLUS_MINUS}
           bgColor="bg-[#78BE20]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
@@ -103,18 +102,18 @@ const PlayerDetail: React.FC<PlayerDetailProps> = ({ player, last5Stats, last10S
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div className="space-y-2">
           <p className="text-[#9EA2A2]">
-            Games Played: <span className="font-semibold text-[#0C2340]">{player.games_played}</span>
+            Games Played: <span className="font-semibold text-[#0C2340]">{player.GP}</span>
           </p>
           <p className="text-[#9EA2A2]">
-            Minutes/Game: <span className="font-semibold text-[#0C2340]">{player.minutes_per_game}</span>
+            Minutes/Game: <span className="font-semibold text-[#0C2340]">{player.MIN}</span>
           </p>
         </div>
         <div className="space-y-2">
           <p className="text-[#9EA2A2]">
-            Win %: <span className="font-semibold text-[#0C2340]">{(player.win_percentage * 100).toFixed(1)}%</span>
+            Win %: <span className="font-semibold text-[#0C2340]">{(player.W_PCT * 100).toFixed(1)}%</span>
           </p>
           <p className="text-[#9EA2A2]">
-            Fantasy Points: <span className="font-semibold text-[#0C2340]">{player.nba_fantasy_pts}</span>
+            Fantasy Points: <span className="font-semibold text-[#0C2340]">{player.NBA_FANTASY_PTS}</span>
           </p>
         </div>
       </div>

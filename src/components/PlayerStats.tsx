@@ -3,9 +3,10 @@ import { useSupabase } from '../hooks/useSupabase';
 import PlayerList from './PlayerList';
 import { UserRound, ChevronDown } from 'lucide-react';
 import StatCard from './StatCard';
+import { PlayerWithStats } from '../hooks/useSupabase';
 
 type PlayerStatsViewProps = {
-  player: NbaPlayerStats | null;
+  player: PlayerWithStats | null;
   last5Stats: Record<string, any>;
   last10Stats: Record<string, any>;
 };
@@ -25,6 +26,20 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
     );
   }
 
+  // Ensure numeric values have defaults to prevent undefined errors
+  const stats = {
+    PTS: player.PTS ?? 0,
+    REB: player.REB ?? 0,
+    AST: player.AST ?? 0,
+    STL: player.STL ?? 0,
+    BLK: player.BLK ?? 0,
+    PLUS_MINUS: player.PLUS_MINUS ?? 0,
+    GP: player.GP ?? 0,
+    MIN: player.MIN ?? 0,
+    W_PCT: player.W_PCT ?? 0,
+    NBA_FANTASY_PTS: player.NBA_FANTASY_PTS ?? 0
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
       <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-6">
@@ -32,7 +47,7 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
           {player.image_url ? (
             <img
               src={player.image_url}
-              alt={player.player_name}
+              alt={player.PLAYER_NAME}
               className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-[#236192] group-hover:border-[#78BE20] transition-colors duration-300"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -49,65 +64,63 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
           </div>
         </div>
         <div className="text-center md:text-left">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#0C2340] mb-1">{player.player_name}</h2>
-          {player.nickname && (
-            <p className="text-[#9EA2A2] text-sm md:text-base italic">"{player.nickname}"</p>
-          )}
+          <h2 className="text-2xl md:text-3xl font-bold text-[#0C2340] mb-1">{player.PLAYER_NAME}</h2>
+          <p className="text-[#9EA2A2] text-sm md:text-base">{player.position || 'N/A'}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6">
         <StatCard
           label="Points"
-          value={player.points}
-          bgColor="bg-gradient-to-br from-[#0C2340] to-[#236192]"
+          value={stats.PTS}
+          bgColor="bg-gradient-to-br from-[#0C2340] to-[#1E3A5F]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Rebounds"
-          value={player.total_rebounds}
-          bgColor="bg-gradient-to-br from-[#236192] to-[#78BE20]"
+          value={stats.REB}
+          bgColor="bg-gradient-to-br from-[#1E3A5F] to-[#2F547E]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Assists"
-          value={player.assists}
-          bgColor="bg-gradient-to-br from-[#78BE20] to-[#9EA2A2]"
+          value={stats.AST}
+          bgColor="bg-gradient-to-br from-[#2F547E] to-[#0C2340]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Steals"
-          value={player.steals}
-          bgColor="bg-gradient-to-br from-[#0C2340] to-[#236192]"
+          value={stats.STL}
+          bgColor="bg-gradient-to-br from-[#0C2340] to-[#1E3A5F]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Blocks"
-          value={player.blocks}
-          bgColor="bg-gradient-to-br from-[#236192] to-[#78BE20]"
+          value={stats.BLK}
+          bgColor="bg-gradient-to-br from-[#1E3A5F] to-[#2F547E]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="+/-"
-          value={player.plus_minus}
-          bgColor="bg-gradient-to-br from-[#78BE20] to-[#9EA2A2]"
+          value={stats.PLUS_MINUS}
+          bgColor="bg-gradient-to-br from-[#2F547E] to-[#0C2340]"
           textColor="text-white"
-          playerName={player.player_name}
+          playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
@@ -119,11 +132,11 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-[#9EA2A2] text-xs uppercase">Games</p>
-              <p className="text-xl font-bold text-[#0C2340]">{player.games_played}</p>
+              <p className="text-xl font-bold text-[#0C2340]">{stats.GP}</p>
             </div>
             <div>
               <p className="text-[#9EA2A2] text-xs uppercase">Minutes</p>
-              <p className="text-xl font-bold text-[#0C2340]">{player.minutes_per_game.toFixed(1)}</p>
+              <p className="text-xl font-bold text-[#0C2340]">{stats.MIN.toFixed(1)}</p>
             </div>
           </div>
         </div>
@@ -132,11 +145,11 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-[#9EA2A2] text-xs uppercase">Win %</p>
-              <p className="text-xl font-bold text-[#0C2340]">{(player.win_percentage * 100).toFixed(1)}%</p>
+              <p className="text-xl font-bold text-[#0C2340]">{(stats.W_PCT * 100).toFixed(1)}%</p>
             </div>
             <div>
               <p className="text-[#9EA2A2] text-xs uppercase">Fantasy</p>
-              <p className="text-xl font-bold text-[#0C2340]">{player.nba_fantasy_pts.toFixed(1)}</p>
+              <p className="text-xl font-bold text-[#0C2340]">{stats.NBA_FANTASY_PTS.toFixed(1)}</p>
             </div>
           </div>
         </div>
@@ -147,7 +160,7 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
 
 export function PlayerStats() {
   const { players, loading, last5Stats, last10Stats } = useSupabase();
-  const [selectedPlayer, setSelectedPlayer] = useState<NbaPlayerStats | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerWithStats | null>(null);
   const [showPlayerList, setShowPlayerList] = useState(false);
 
   return (
@@ -158,7 +171,7 @@ export function PlayerStats() {
           onClick={() => setShowPlayerList(!showPlayerList)}
           className="w-full px-4 py-3 bg-white rounded-lg shadow-md text-[#0C2340] font-medium flex items-center justify-between"
         >
-          <span>{selectedPlayer ? selectedPlayer.player_name : 'Select Player'}</span>
+          <span>{selectedPlayer ? selectedPlayer.PLAYER_NAME : 'Select Player'}</span>
           <ChevronDown className={`w-5 h-5 transform transition-transform duration-200 ${showPlayerList ? 'rotate-180' : ''}`} />
         </button>
       </div>
@@ -169,7 +182,7 @@ export function PlayerStats() {
           <PlayerList
             players={players}
             loading={loading}
-            selectedPlayerId={selectedPlayer?.id || null}
+            selectedPlayerId={selectedPlayer?.PLAYER_ID || null}
             onSelectPlayer={(player) => {
               setSelectedPlayer(player);
               setShowPlayerList(false);

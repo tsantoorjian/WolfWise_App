@@ -1,7 +1,7 @@
-// src/hooks/useLineups.ts
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { LineupWithAdvanced, NbaPlayerStats } from '../types/database.types';
+import { LineupWithAdvanced } from '../types/database.types';
+import { PlayerWithStats } from './useSupabase';
 
 type LineupsData = {
   twoMan: LineupWithAdvanced[];
@@ -9,7 +9,7 @@ type LineupsData = {
   fiveMan: LineupWithAdvanced[];
 };
 
-export function useLineups(showTopLineups: boolean, players: NbaPlayerStats[]): { lineups: LineupsData; loading: boolean; error: any } {
+export function useLineups(showTopLineups: boolean, players: PlayerWithStats[]): { lineups: LineupsData; loading: boolean; error: any } {
   const [lineups, setLineups] = useState<LineupsData>({
     twoMan: [],
     threeMan: [],
@@ -52,9 +52,8 @@ export function useLineups(showTopLineups: boolean, players: NbaPlayerStats[]): 
 
           const processedPlayers = playerNames.map((playerName: string) => {
             if (!playerName) return { name: '', image_url: null };
-            // Use the last name to match; adjust as needed
             const lastName = playerName.split('. ')[1];
-            const matchedPlayer = players.find(p => p.player_name.split(' ').pop() === lastName);
+            const matchedPlayer = players.find(p => p.PLAYER_NAME.split(' ').pop() === lastName);
             return {
               name: playerName,
               image_url: matchedPlayer?.image_url || null,

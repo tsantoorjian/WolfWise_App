@@ -21,9 +21,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<Tab>('stats');
   const [selectedStat, setSelectedStat] = useState<string>('3pt percentage');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { players, distributionData, recordData, leaderboardData, fetchDistributionData } = useSupabase();
-
-  const playerImageUrl = players?.find(p => p.player_name === recordData[0]?.name)?.image_url || undefined;
+  const { players, distributionData, recordData, leaderboardData, playerImageUrl, fetchDistributionData } = useSupabase();
 
   const getTabIcon = (tab: Tab, isActive: boolean) => {
     const baseClasses = `w-5 h-5 ${isActive ? 'text-[#78BE20]' : 'text-[#9EA2A2] group-hover:text-[#0C2340]'}`;
@@ -108,7 +106,7 @@ function App() {
           {activeTab === 'distribution' && (
             <ThreePointDistribution 
               distributionData={distributionData} 
-              players={players} 
+              players={players}
               onStatChange={(stat) => {
                 setSelectedStat(stat);
                 fetchDistributionData(stat);
@@ -117,7 +115,12 @@ function App() {
             />
           )}
           {activeTab === 'lineups' && <Lineups />}
-          {activeTab === 'records' && <RecordTracker recordData={recordData} playerImageUrl={playerImageUrl} />}
+          {activeTab === 'records' && (
+            <RecordTracker 
+              recordData={recordData} 
+              playerImageUrl={playerImageUrl || undefined} 
+            />
+          )}
           {activeTab === 'leaders' && <LeagueLeaders leaderboardData={leaderboardData} />}
         </div>
       </div>

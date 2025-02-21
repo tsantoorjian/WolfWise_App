@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { 
-  NbaPlayerStats, 
+  TimberwolvesPlayerStats,
   DistributionStats,
   RecordTrackerSeason, 
   ThreePointData, 
@@ -17,10 +17,16 @@ export interface RecentStats {
   PLUS_MINUS: number;
 }
 
+export interface PlayerWithStats extends TimberwolvesPlayerStats {
+  position?: string;
+  jersey_number?: string;
+  image_url?: string | null;
+}
+
 const PERCENTAGE_STATS = ['3pt percentage', 'Fg %', 'EFG %'];
 
 export function useSupabase() {
-  const [players, setPlayers] = useState<NbaPlayerStats[]>([]);
+  const [players, setPlayers] = useState<PlayerWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [distributionData, setDistributionData] = useState<ThreePointData[]>([]);
   const [lineups, setLineups] = useState<{
@@ -36,6 +42,7 @@ export function useSupabase() {
   const [last10Stats, setLast10Stats] = useState<Record<string, RecentStats>>({});
   const [recordData, setRecordData] = useState<RecordTrackerSeason[]>([]);
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [playerImageUrl, setPlayerImageUrl] = useState<string | null>(null);
 
   const fetchDistributionData = useCallback(async (stat: string) => {
     try {
@@ -50,7 +57,6 @@ export function useSupabase() {
         throw distributionError;
       }
 
-      // Process distribution data
       const processedData = processDistributionData(distributionData || [], stat);
       setDistributionData(processedData);
     } catch (error) {
@@ -61,13 +67,37 @@ export function useSupabase() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { data: twolvesData, error: twolvesError } = await supabase
+        // Fetch player metadata from nba_player_stats
+        const { data: playerMetadata, error: playerMetadataError } = await supabase
           .from('nba_player_stats')
-          .select('*')
-          .order('minutes_per_game', { ascending: false }); // Sort by minutes per game in descending order
+          .select('player_id, player_name, position, jersey_number, image_url');
         
-        if (twolvesError) throw twolvesError;
-        setPlayers(twolvesData || []);
+        if (playerMetadataError) throw playerMetadataError;
+
+        // Get Anthony Edwards' image URL
+        const antsImageUrl = playerMetadata.find(p => p.player_name === "Anthony Edwards")?.image_url || null;
+        setPlayerImageUrl(antsImageUrl);
+
+        // Fetch main stats from timberwolves_player_stats_season
+        const { data: playerStats, error: playerStatsError } = await supabase
+          .from('timberwolves_player_stats_season')
+          .select('*')
+          .order('MIN', { ascending: false });
+
+        if (playerStatsError) throw playerStatsError;
+
+        // Combine the data
+        const combinedPlayerData = playerStats.map(stats => {
+          const metadata = playerMetadata.find(p => p.player_name === stats.PLAYER_NAME);
+          return {
+            ...stats,
+            position: metadata?.position,
+            jersey_number: metadata?.jersey_number,
+            image_url: metadata?.image_url
+          };
+        });
+
+        setPlayers(combinedPlayerData);
 
         // Initial distribution data fetch
         await fetchDistributionData('3pt percentage');
@@ -97,8 +127,17 @@ export function useSupabase() {
         if (last5Error) throw last5Error;
         if (last10Error) throw last10Error;
 
-        setLast5Stats(processRecentStats(last5Data || []));
-        setLast10Stats(processRecentStats(last10Data || []));
+        console.log('Raw Last 5 Data:', last5Data);
+        console.log('Raw Last 10 Data:', last10Data);
+
+        const processed5 = processRecentStats(last5Data || []);
+        const processed10 = processRecentStats(last10Data || []);
+
+        console.log('Processed Last 5 Stats:', processed5);
+        console.log('Processed Last 10 Stats:', processed10);
+
+        setLast5Stats(processed5);
+        setLast10Stats(processed10);
 
         // Fetch record tracker data
         const { data: recordTrackerData, error: recordTrackerError } = await supabase
@@ -120,19 +159,13 @@ export function useSupabase() {
 
         if (leaderboardError) throw leaderboardError;
 
-        // Fetch player images in a separate query
-        const { data: playerImages } = await supabase
-          .from('nba_player_stats')
-          .select('player_name, image_url')
-          .in('player_name', leaderboardData?.map(entry => entry.Player) || []);
-
         // Process the data to combine leaderboard data with images
         const processedLeaderboardData = leaderboardData?.map(entry => ({
           "Stat Category": entry["Stat Category"],
           Player: entry.Player,
           Value: entry.Value,
           Ranking: entry.Ranking,
-          image_url: playerImages?.find(p => p.player_name === entry.Player)?.image_url
+          image_url: playerMetadata?.find(p => p.player_name === entry.Player)?.image_url
         })) || [];
 
         setLeaderboardData(processedLeaderboardData);
@@ -156,6 +189,7 @@ export function useSupabase() {
     last10Stats,
     recordData,
     leaderboardData,
+    playerImageUrl,
     fetchDistributionData,
   };
 }
@@ -222,7 +256,14 @@ function processLineup(lineup: any): LineupWithAdvanced {
 
 function processRecentStats(data: any[]): Record<string, RecentStats> {
   return data.reduce((acc, curr) => {
-    acc[curr.PLAYER_NAME] = curr;
+    acc[curr.PLAYER_NAME] = {
+      PTS: curr.PTS || 0,
+      AST: curr.AST || 0,
+      REB: curr.REB || 0,
+      STL: curr.STL || 0,
+      BLK: curr.BLK || 0,
+      PLUS_MINUS: curr.PLUS_MINUS || 0
+    };
     return acc;
   }, {} as Record<string, RecentStats>);
 }
