@@ -10,37 +10,43 @@ export type NbaPlayerStats = {
   id: number;
   player_id: number;
   player_name: string;
-  nickname: string | null;
-  games_played: number;
-  wins: number;
-  losses: number;
-  win_percentage: number;
-  minutes_per_game: number;
-  field_goals_made: number;
-  field_goals_attempted: number;
-  field_goal_percentage: number;
-  three_pointers_made: number;
-  three_pointers_attempted: number;
-  three_point_percentage: number;
-  free_throws_made: number;
-  free_throws_attempted: number;
-  free_throw_percentage: number;
-  offensive_rebounds: number;
-  defensive_rebounds: number;
-  total_rebounds: number;
-  assists: number;
-  turnovers: number;
-  steals: number;
-  blocks: number;
-  blocked_attempts: number;
-  personal_fouls: number;
-  personal_fouls_drawn: number;
-  points: number;
-  plus_minus: number;
-  nba_fantasy_pts: number;
-  double_doubles: number;
-  triple_doubles: number;
+  position: string;
+  jersey_number: string;
   image_url: string | null;
+}
+
+export type TimberwolvesPlayerStats = {
+  PLAYER_ID: number;
+  PLAYER_NAME: string;
+  GP: number;
+  W: number;
+  L: number;
+  W_PCT: number;
+  MIN: number;
+  FGM: number;
+  FGA: number;
+  FG_PCT: number;
+  FG3M: number;
+  FG3A: number;
+  FG3_PCT: number;
+  FTM: number;
+  FTA: number;
+  FT_PCT: number;
+  OREB: number;
+  DREB: number;
+  REB: number;
+  AST: number;
+  TOV: number;
+  STL: number;
+  BLK: number;
+  BLKA: number;
+  PF: number;
+  PFD: number;
+  PTS: number;
+  PLUS_MINUS: number;
+  NBA_FANTASY_PTS: number;
+  DD2: number;
+  TD3: number;
 }
 
 export type DistributionStats = {
@@ -132,6 +138,9 @@ export type Database = {
         Row: NbaPlayerStats;
         Insert: Omit<NbaPlayerStats, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Omit<NbaPlayerStats, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      timberwolves_player_stats_season: {
+        Row: TimberwolvesPlayerStats;
       };
       all_player_3pt: {
         Row: AllPlayer3pt;
