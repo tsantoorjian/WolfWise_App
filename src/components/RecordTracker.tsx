@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal } from 'lucide-react';
-import { RecordTrackerSeason } from '../types/database.types';
 import RecordProgressBar from './RecordProgressBar';
+import { useRecordData } from '../hooks/useRecordData';
 
 type RecordTrackerProps = {
-  recordData: RecordTrackerSeason[];
   playerImageUrl?: string;
 };
 
-export function RecordTracker({ recordData, playerImageUrl }: RecordTrackerProps) {
+export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
   const [selectedStat, setSelectedStat] = useState<string>('pts');
   const [showStatSelect, setShowStatSelect] = useState(false);
+  const { recordData, loading, getProgressionData } = useRecordData();
 
   const getStatDisplayName = (stat: string) => {
     const statMap: Record<string, string> = {
@@ -36,6 +36,14 @@ export function RecordTracker({ recordData, playerImageUrl }: RecordTrackerProps
   
   const sortedStats = Array.from(new Set(recordData.map(d => d.stat)))
     .sort((a, b) => statOrder.indexOf(a) - statOrder.indexOf(b));
+
+  if (loading || !recordData.length) {
+    return <div>Loading...</div>;
+  }
+
+  const currentRecord = recordData.find(d => d.stat === selectedStat);
+  const progressionData = getProgressionData(selectedStat);
+  const currentPoint = progressionData[progressionData.length - 1] || [currentRecord?.GP || 0, currentRecord?.current || 0];
 
   return (
     <div className="space-y-6">
@@ -175,8 +183,8 @@ export function RecordTracker({ recordData, playerImageUrl }: RecordTrackerProps
               {
                 name: 'Current Progress',
                 type: 'line',
-                symbolSize: 8,
-                data: [[0, 0], [record.GP, record.current]],
+                symbolSize: 4,
+                data: progressionData,
                 itemStyle: { color: '#78BE20' },
                 lineStyle: { width: 3 }
               },
@@ -184,7 +192,7 @@ export function RecordTracker({ recordData, playerImageUrl }: RecordTrackerProps
                 name: 'Projected',
                 type: 'line',
                 symbolSize: 8,
-                data: [[record.GP, record.current], [totalGames, record.projection]],
+                data: [[currentPoint[0], currentPoint[1]], [totalGames, record.projection]],
                 itemStyle: { color: '#236192' },
                 lineStyle: { width: 3, type: 'dashed' }
               },
@@ -192,7 +200,7 @@ export function RecordTracker({ recordData, playerImageUrl }: RecordTrackerProps
                 name: 'Current Point',
                 type: 'effectScatter',
                 symbolSize: 12,
-                data: [[record.GP, record.current]],
+                data: [currentPoint],
                 itemStyle: { color: '#78BE20' },
                 showEffectOn: 'render',
                 rippleEffect: {
@@ -209,25 +217,43 @@ export function RecordTracker({ recordData, playerImageUrl }: RecordTrackerProps
                 markLine: {
                   silent: true,
                   symbol: 'none',
-                  label: { show: true, position: 'end' },
+                  label: { 
+                    show: true, 
+                    position: 'middle',
+                    distance: [0, -8],
+                    align: 'center',
+                    fontSize: 11,
+                    padding: [4, 8],
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    avoidLabelOverlap: true
+                  },
                   data: [
                     {
                       name: 'Personal Best',
                       yAxis: record.personal_record,
                       lineStyle: { color: '#9EA2A2', type: 'dashed' },
-                      label: { color: '#9EA2A2' }
+                      label: { 
+                        formatter: `Personal Best: ${record.personal_record.toFixed(1)}`,
+                        color: '#9EA2A2' 
+                      }
                     },
                     {
                       name: 'Franchise Record',
                       yAxis: record.franchise_record,
                       lineStyle: { color: '#0C2340', type: 'dashed' },
-                      label: { color: '#0C2340' }
+                      label: { 
+                        formatter: `Franchise Record: ${record.franchise_record.toFixed(1)}`,
+                        color: '#0C2340' 
+                      }
                     },
                     {
                       name: 'NBA Record',
                       yAxis: record.nba_record,
                       lineStyle: { color: '#DC2626', type: 'dashed' },
-                      label: { color: '#DC2626' }
+                      label: { 
+                        formatter: `NBA Record: ${record.nba_record.toFixed(1)}`,
+                        color: '#DC2626' 
+                      }
                     }
                   ]
                 }

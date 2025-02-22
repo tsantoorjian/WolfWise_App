@@ -1,4 +1,5 @@
-import { Trophy, Medal, UserRound, TrendingUp, Info, Crown } from 'lucide-react';
+import { useState } from 'react';
+import { Trophy, Medal, UserRound, TrendingUp, Info, Crown, ChevronDown, ChevronUp } from 'lucide-react';
 
 type LeaderboardEntry = {
   "Stat Category": string;
@@ -19,27 +20,44 @@ type PlayerStats = {
 };
 
 export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
+  const [expandedPlayers, setExpandedPlayers] = useState<{ [key: string]: boolean }>({});
+
+  const togglePlayerStats = (player: string) => {
+    setExpandedPlayers(prev => ({
+      ...prev,
+      [player]: !prev[player]
+    }));
+  };
+
   const getRankingNumber = (rankText: string | number): number => {
     if (typeof rankText === 'number') return rankText;
     return parseInt(rankText.replace(/[^0-9]/g, ''));
   };
 
-  const playerStats = leaderboardData.reduce((acc: { [key: string]: PlayerStats }, entry) => {
-    if (!acc[entry.Player]) {
-      acc[entry.Player] = {
-        player: entry.Player,
-        image_url: entry.image_url,
-        stats: []
-      };
-    }
-    acc[entry.Player].stats.push(entry);
-    acc[entry.Player].stats.sort((a, b) => getRankingNumber(a.Ranking) - getRankingNumber(b.Ranking));
-    return acc;
-  }, {});
+  const playerStats = leaderboardData
+    .filter(entry => !entry["Stat Category"].toLowerCase().includes('games'))
+    .reduce((acc: { [key: string]: PlayerStats }, entry) => {
+      if (!acc[entry.Player]) {
+        acc[entry.Player] = {
+          player: entry.Player,
+          image_url: entry.image_url,
+          stats: []
+        };
+      }
+      acc[entry.Player].stats.push(entry);
+      acc[entry.Player].stats.sort((a, b) => getRankingNumber(a.Ranking) - getRankingNumber(b.Ranking));
+      return acc;
+    }, {});
 
   const formatValue = (category: string, value: number) => {
-    if (category.toLowerCase().includes('percentage') || category.toLowerCase().includes('%')) {
+    const lowerCategory = category.toLowerCase();
+    if (lowerCategory.includes('steal')) {
       return `${value.toFixed(1)}%`;
+    }
+    if (lowerCategory.includes('percentage') || 
+        lowerCategory.includes('%') ||
+        lowerCategory.includes('pct')) {
+      return `${(value * 100).toFixed(1)}%`;
     }
     return value.toFixed(1);
   };
@@ -73,12 +91,39 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
     );
   };
 
-  const getRowBackgroundColor = (rankText: string | number) => {
+  const isNegativeStat = (category: string): boolean => {
+    const lowerCategory = category.toLowerCase();
+    return lowerCategory.includes('turnover') ||
+           lowerCategory.includes('turnovers') ||
+           lowerCategory.includes('foul') ||
+           lowerCategory.includes('violation') ||
+           lowerCategory.includes('technical');
+  };
+
+  const getRowBackgroundColor = (rankText: string | number, category: string) => {
     const ranking = getRankingNumber(rankText);
-    if (ranking === 1) return 'bg-gradient-to-r from-[#FFD700]/20 to-transparent';
-    if (ranking <= 3) return 'bg-gradient-to-r from-[#78BE20]/20 to-transparent';
-    if (ranking <= 5) return 'bg-gradient-to-r from-[#78BE20]/10 to-transparent';
-    if (ranking <= 10) return 'bg-gradient-to-r from-[#78BE20]/5 to-transparent';
+    const isNegative = isNegativeStat(category);
+    
+    if (ranking === 1) {
+      return isNegative 
+        ? 'bg-gradient-to-r from-red-500/20 to-transparent' 
+        : 'bg-gradient-to-r from-[#FFD700]/20 to-transparent';
+    }
+    if (ranking <= 3) {
+      return isNegative 
+        ? 'bg-gradient-to-r from-red-400/20 to-transparent'
+        : 'bg-gradient-to-r from-[#78BE20]/20 to-transparent';
+    }
+    if (ranking <= 5) {
+      return isNegative 
+        ? 'bg-gradient-to-r from-red-300/10 to-transparent'
+        : 'bg-gradient-to-r from-[#78BE20]/10 to-transparent';
+    }
+    if (ranking <= 10) {
+      return isNegative 
+        ? 'bg-gradient-to-r from-red-200/5 to-transparent'
+        : 'bg-gradient-to-r from-[#78BE20]/5 to-transparent';
+    }
     return 'hover:bg-gray-50';
   };
 
@@ -130,27 +175,42 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
                 </div>
 
                 <div className="space-y-3">
-                  {playerStat.stats.map((stat, index) => (
-                    <div 
-                      key={`${stat["Stat Category"]}-${index}`}
-                      className={`flex items-center justify-between p-2 rounded transition-all duration-300 ${getRowBackgroundColor(stat.Ranking)}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {getRankingBadge(stat.Ranking)}
-                        <div>
-                          <span className="text-[#0C2340] font-medium">{stat["Stat Category"]}</span>
-                          <div className="text-xs text-[#9EA2A2]">
-                            League Rank: #{stat.Ranking}
+                  {playerStat.stats
+                    .slice(0, expandedPlayers[playerStat.player] ? undefined : 3)
+                    .map((stat, index) => (
+                      <div 
+                        key={`${stat["Stat Category"]}-${index}`}
+                        className={`flex items-center justify-between p-2 rounded transition-all duration-300 ${getRowBackgroundColor(stat.Ranking, stat["Stat Category"])}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {getRankingBadge(stat.Ranking)}
+                          <div>
+                            <span className="text-[#0C2340] font-medium">{stat["Stat Category"]}</span>
+                            <div className="text-xs text-[#9EA2A2]">
+                              League Rank: #{stat.Ranking}
+                            </div>
                           </div>
                         </div>
+                        <div className="text-right">
+                          <span className="font-bold text-[#0C2340]">
+                            {formatValue(stat["Stat Category"], stat.Value)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className="font-bold text-[#0C2340]">
-                          {formatValue(stat["Stat Category"], stat.Value)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  
+                  {playerStat.stats.length > 3 && (
+                    <button
+                      onClick={() => togglePlayerStats(playerStat.player)}
+                      className="w-full mt-2 py-2 px-4 text-sm font-medium text-[#236192] hover:text-[#78BE20] transition-colors duration-300 flex items-center justify-center gap-2"
+                    >
+                      {expandedPlayers[playerStat.player] ? (
+                        <>Show Less <ChevronUp className="w-4 h-4" /></>
+                      ) : (
+                        <>Show {playerStat.stats.length - 3} More <ChevronDown className="w-4 h-4" /></>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 
