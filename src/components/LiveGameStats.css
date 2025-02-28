@@ -32,8 +32,8 @@
 
 .player-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
   margin-bottom: 30px;
 }
 
@@ -50,8 +50,83 @@
 }
 
 @media (max-width: 480px) {
-  .player-stats-grid {
-    grid-template-columns: 1fr;
+  .live-game-stats-container {
+    padding: 10px;
+  }
+  
+  .player-stat-card {
+    font-size: 0.8rem;
+  }
+  
+  .player-header {
+    height: 60px;
+    padding: 8px;
+  }
+  
+  .player-avatar {
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+    border-width: 2px;
+  }
+  
+  .player-name {
+    font-size: 0.7rem;
+    margin-bottom: 2px;
+  }
+  
+  .player-plusminus {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+  }
+  
+  .stat-box .stat-value {
+    font-size: 1.2rem;
+  }
+  
+  .stat-box .stat-label {
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+  
+  .shooting-stats {
+    padding: 8px;
+  }
+  
+  .shooting-stat {
+    margin-bottom: 6px;
+  }
+  
+  .shooting-label, .shooting-value {
+    font-size: 0.7rem;
+  }
+  
+  .secondary-stats {
+    padding: 8px;
+  }
+  
+  .stat-item .stat-label {
+    font-size: 0.65rem;
+  }
+  
+  .stat-item .stat-value {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .player-avatar {
+    width: 35px;
+    height: 35px;
+    border-width: 1px;
+  }
+  
+  .player-name {
+    font-size: 0.65rem;
+  }
+  
+  .stat-box .stat-value {
+    font-size: 1rem;
   }
 }
 
