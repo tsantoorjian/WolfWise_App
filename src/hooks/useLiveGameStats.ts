@@ -18,10 +18,67 @@ interface PlayerGameStats {
   min: string;       // Minutes played
 }
 
+interface GameInfo {
+  game_id: string;
+  game_status: string;
+  game_clock: string;
+  period: number;
+  home_team: string;
+  away_team: string;
+  home_score: number;
+  away_score: number;
+  game_date: string;
+  arena: string;
+  city: string;
+  is_halftime: boolean;
+  is_end_of_period: boolean;
+}
+
+interface PlayByPlay {
+  id: number;
+  game_id: string;
+  event_num: number;
+  clock: string;
+  period: number;
+  event_type: string;
+  description: string;
+  home_score: number;
+  away_score: number;
+  team_tricode: string;
+  player_name: string;
+  is_scoring_play: boolean;
+  score_margin: number;
+  time_seconds: number;
+  created_at: string;
+}
+
 export const useLiveGameStats = () => {
   const [playerStats, setPlayerStats] = useState<PlayerGameStats[]>([]);
+  const [gameInfo, setGameInfo] = useState<GameInfo | null>(null);
+  const [playByPlay, setPlayByPlay] = useState<PlayByPlay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const parseMinutes = (minutesStr: string): string => {
+    // Handle the PT23M format
+    if (minutesStr.startsWith('PT') && minutesStr.endsWith('M')) {
+      const minutes = parseInt(minutesStr.substring(2, minutesStr.length - 1), 10);
+      return `${minutes}:00`;
+    }
+    
+    // If it's already in MM:SS format, return as is
+    if (/^\d+:\d{2}$/.test(minutesStr)) {
+      return minutesStr;
+    }
+    
+    // If it's just a number, format as MM:00
+    if (/^\d+$/.test(minutesStr)) {
+      return `${minutesStr}:00`;
+    }
+    
+    // Default fallback
+    return '0:00';
+  };
 
   const fetchLiveGameStats = async () => {
     try {
@@ -36,6 +93,25 @@ export const useLiveGameStats = () => {
       if (gameStatsError) {
         console.error('Error fetching in-game stats:', gameStatsError);
         throw new Error(`Error fetching in-game stats: ${gameStatsError.message}`);
+      }
+
+      // Fetch game information
+      const { data: gameInfoData, error: gameInfoError } = await supabase
+        .from('in_game_info')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (gameInfoError) {
+        console.error('Error fetching game info:', gameInfoError);
+        throw new Error(`Error fetching game info: ${gameInfoError.message}`);
+      }
+
+      // Set game info if available
+      if (gameInfoData && gameInfoData.length > 0) {
+        setGameInfo(gameInfoData[0] as GameInfo);
+      } else {
+        setGameInfo(null);
       }
 
       console.log('Game stats data:', JSON.stringify(gameStatsData, null, 2));
@@ -87,7 +163,7 @@ export const useLiveGameStats = () => {
           plusminuspoints: parseFloat(stat.plusMinusPoints) || stat.plusminuspoints || 0,
           fgp: stat.FGp || stat.fgp || '0.0%',
           threeptp: stat.threePtP || stat.threeptp || '0.0%',
-          min: stat.Min || stat.min || '0:00'
+          min: parseMinutes(stat.minutes || stat.Min || stat.min || 'PT0M')
         };
         
         if (!normalizedStat.player) {
@@ -106,6 +182,24 @@ export const useLiveGameStats = () => {
 
       console.log('Combined data after normalization:', combinedData);
       setPlayerStats(combinedData as PlayerGameStats[]);
+
+      // Fetch play-by-play data
+      if (gameInfoData && gameInfoData.length > 0) {
+        const gameId = gameInfoData[0].game_id;
+        
+        const { data: playByPlayData, error: playByPlayError } = await supabase
+          .from('in_game_play_by_play')
+          .select('*')
+          .eq('game_id', gameId)
+          .order('event_num', { ascending: true });
+
+        if (playByPlayError) {
+          console.error('Error fetching play-by-play data:', playByPlayError);
+          throw new Error(`Error fetching play-by-play data: ${playByPlayError.message}`);
+        }
+
+        setPlayByPlay(playByPlayData as PlayByPlay[]);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       console.error('Error in fetchLiveGameStats:', errorMessage);
@@ -118,8 +212,8 @@ export const useLiveGameStats = () => {
   useEffect(() => {
     fetchLiveGameStats();
 
-    // Set up real-time subscription
-    const subscription = supabase
+    // Set up real-time subscription for player stats
+    const playerStatsSubscription = supabase
       .channel('in_game_player_stats_changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'in_game_player_stats' }, 
@@ -129,12 +223,24 @@ export const useLiveGameStats = () => {
       )
       .subscribe();
 
+    // Set up real-time subscription for game info
+    const gameInfoSubscription = supabase
+      .channel('in_game_info_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'in_game_info' }, 
+        () => {
+          fetchLiveGameStats();
+        }
+      )
+      .subscribe();
+
     return () => {
-      subscription.unsubscribe();
+      playerStatsSubscription.unsubscribe();
+      gameInfoSubscription.unsubscribe();
     };
   }, []);
 
-  return { playerStats, loading, error, refreshStats: fetchLiveGameStats };
+  return { playerStats, gameInfo, playByPlay, loading, error, refreshStats: fetchLiveGameStats };
 };
 
 export default useLiveGameStats; 

@@ -1,10 +1,11 @@
 import React from 'react';
 import useLiveGameStats from '../hooks/useLiveGameStats';
+import GameFlowChart from './GameFlowChart';
 import './LiveGameStats.css';
-import { Activity, ArrowDown, ArrowUp } from 'lucide-react';
+import { Activity, ArrowDown, ArrowUp, Clock } from 'lucide-react';
 
 const LiveGameStats: React.FC = () => {
-  const { playerStats, loading, error, refreshStats } = useLiveGameStats();
+  const { playerStats, gameInfo, playByPlay, loading, error, refreshStats } = useLiveGameStats();
 
   if (loading) {
     return (
@@ -35,7 +36,7 @@ const LiveGameStats: React.FC = () => {
     );
   }
 
-  if (!playerStats || playerStats.length === 0) {
+  if ((!playerStats || playerStats.length === 0) && !gameInfo) {
     return (
       <div className="empty-container">
         <h1>Live Game Stats</h1>
@@ -55,14 +56,78 @@ const LiveGameStats: React.FC = () => {
   }
 
   // Filter out players with no stats and sort by points in descending order
-  const sortedPlayerStats = [...playerStats]
+  const sortedPlayerStats = [...(playerStats || [])]
     .filter(player => player && player.player && (player.pts > 0 || player.reb > 0 || player.ast > 0 || player.blk > 0 || player.stl > 0))
     .sort((a, b) => b.pts - a.pts);
+
+  // Format period display
+  const formatPeriod = (period: number) => {
+    if (period <= 4) return `Q${period}`;
+    return `OT${period - 4}`;
+  };
+
+  // Format game status for display
+  const getGameStatusDisplay = () => {
+    if (!gameInfo) return null;
+    
+    if (gameInfo.is_halftime) return "HALFTIME";
+    if (gameInfo.is_end_of_period) return `END OF ${formatPeriod(gameInfo.period)}`;
+    if (gameInfo.game_status === "in_progress") return `${formatPeriod(gameInfo.period)} • ${gameInfo.game_clock}`;
+    if (gameInfo.game_status === "final") return "FINAL";
+    if (gameInfo.game_status === "scheduled") return "SCHEDULED";
+    
+    return gameInfo.game_status.toUpperCase();
+  };
 
   return (
     <div className="live-game-stats-container">
       <div className="stats-header">
         <h1>Live Game Stats</h1>
+        
+        {gameInfo && (
+          <div className="game-info-container">
+            <div className="game-scoreboard">
+              <div className="team-score">
+                <span className="team-name">{gameInfo.home_team}</span>
+                <span className="score">{gameInfo.home_score}</span>
+              </div>
+              
+              <div className="game-status">
+                <div className="status-indicator">
+                  {gameInfo.game_status === "in_progress" ? (
+                    <span className="live-indicator">LIVE</span>
+                  ) : null}
+                </div>
+                <div className="period-time">
+                  <Clock className="w-4 h-4 mr-1 inline-block" />
+                  {getGameStatusDisplay()}
+                </div>
+              </div>
+              
+              <div className="team-score">
+                <span className="team-name">{gameInfo.away_team}</span>
+                <span className="score">{gameInfo.away_score}</span>
+              </div>
+            </div>
+            
+            {playByPlay && playByPlay.length > 0 && (
+              <div className="game-flow-container">
+                <GameFlowChart 
+                  playByPlay={playByPlay} 
+                  homeTeam={gameInfo.home_team} 
+                  awayTeam={gameInfo.away_team} 
+                />
+              </div>
+            )}
+            
+            <div className="game-details">
+              <div className="venue">
+                <span>{gameInfo.arena}, {gameInfo.city}</span>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <button 
           className="refresh-button"
           onClick={refreshStats}
@@ -70,6 +135,7 @@ const LiveGameStats: React.FC = () => {
           Refresh Stats
         </button>
       </div>
+      
       <div className="player-stats-grid">
         {sortedPlayerStats.map((player, index) => {
           const isPlusMinus = parseFloat(String(player.plusminuspoints)) > 0;
