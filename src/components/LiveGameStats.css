@@ -54,77 +54,98 @@
     padding: 10px 5px;
   }
   
-  .player-stat-card {
-    font-size: 0.7rem;
+  /* Completely redesign the player card for mobile */
+  .player-stats-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 10px;
+    gap: 12px;
+    padding: 10px 0;
+    margin: 0 -5px 20px;
+    -webkit-overflow-scrolling: touch;
   }
   
+  .player-stat-card {
+    flex: 0 0 85%;
+    scroll-snap-align: start;
+    width: 85%;
+    max-width: 300px;
+    margin-bottom: 0;
+  }
+  
+  /* Show scrollbar indicator */
+  .live-game-stats-container::after {
+    content: 'Swipe to see more players →';
+    display: block;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: -15px;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+  
+  /* Reset some of the extreme mobile optimizations */
   .player-header {
-    height: 50px;
-    padding: 5px;
+    height: 80px;
+    padding: 10px;
+    flex-direction: row;
+    text-align: left;
   }
   
   .player-avatar {
-    width: 35px;
-    height: 35px;
-    margin-right: 5px;
-    border-width: 2px;
+    width: 60px;
+    height: 60px;
+    margin-right: 10px;
+    margin-bottom: 0;
+    border-width: 3px;
+  }
+  
+  .player-info {
+    align-items: flex-start;
   }
   
   .player-name {
-    font-size: 0.65rem;
-    margin-bottom: 1px;
-  }
-  
-  .player-plusminus {
-    font-size: 0.6rem;
-    padding: 1px 3px;
+    font-size: 0.8rem;
+    text-align: left;
+    white-space: nowrap;
   }
   
   .main-stats {
-    gap: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 10px 5px;
   }
   
   .stat-box {
-    padding: 5px 2px;
+    flex-direction: column;
+    padding: 8px 2px;
   }
   
   .stat-box .stat-value {
-    font-size: 0.9rem;
+    font-size: 1.2rem;
+    margin-right: 0;
   }
   
   .stat-box .stat-label {
-    font-size: 0.55rem;
-    margin-top: 1px;
+    margin-top: 3px;
   }
   
-  .shooting-stats {
-    padding: 5px;
-  }
-  
-  .shooting-stat {
-    margin-bottom: 3px;
-  }
-  
-  .shooting-label, .shooting-value, .shooting-percentage {
-    font-size: 0.55rem;
-  }
-  
-  .shooting-bar-container {
-    height: 4px;
-    margin-bottom: 2px;
-  }
-  
+  /* Show secondary stats again */
   .secondary-stats {
-    padding: 5px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 8px;
   }
   
   .stat-item .stat-label {
-    font-size: 0.5rem;
-    margin-bottom: 1px;
+    font-size: 0.6rem;
+    margin-bottom: 2px;
   }
   
   .stat-item .stat-value {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
   }
 }
 
@@ -149,6 +170,11 @@
   
   .stat-item .stat-value {
     font-size: 0.65rem;
+  }
+  
+  .player-stat-card {
+    flex: 0 0 90%;
+    width: 90%;
   }
 }
 
