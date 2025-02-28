@@ -2,52 +2,79 @@
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  background-color: #f8fafc;
+  min-height: 100vh;
 }
 
 .live-game-stats-container h1 {
   text-align: center;
   margin-bottom: 30px;
-  color: #1a365d;
-  font-size: 2rem;
-  font-weight: 700;
+  color: #0c2340;
+  font-size: 2.2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.live-game-stats-container h1:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(to right, #0c2340, #78BE20);
+  border-radius: 2px;
 }
 
 .player-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin-bottom: 30px;
 }
 
 .player-stat-card {
   background-color: white;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .player-stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 .player-header {
   display: flex;
   align-items: center;
-  padding: 16px;
-  background: linear-gradient(to right, #0c2340, #236192);
+  padding: 20px;
+  background: linear-gradient(135deg, #0c2340 0%, #1a365d 100%);
   color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.player-header:before {
+  display: none;
 }
 
 .player-avatar {
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   overflow: hidden;
-  margin-right: 15px;
+  margin-right: 18px;
   background-color: #e2e8f0;
-  border: 3px solid white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: 4px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
 }
 
 .player-avatar img {
@@ -61,38 +88,38 @@
 }
 
 .player-name {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .player-plusminus {
   display: flex;
   align-items: center;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
   width: fit-content;
 }
 
 .player-plusminus.positive {
-  background-color: rgba(120, 190, 32, 0.2);
+  background-color: rgba(120, 190, 32, 0.25);
   color: #78BE20;
 }
 
 .player-plusminus.negative {
-  background-color: rgba(220, 38, 38, 0.2);
+  background-color: rgba(220, 38, 38, 0.25);
   color: #DC2626;
 }
 
 .main-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
-  background-color: #f8f9fa;
-  padding: 2px;
+  gap: 1px;
+  background-color: #f1f5f9;
 }
 
 .stat-box {
@@ -101,31 +128,113 @@
   align-items: center;
   justify-content: center;
   background-color: white;
-  padding: 12px 8px;
+  padding: 16px 8px;
   text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.stat-box:hover {
+  background-color: #f8fafc;
 }
 
 .stat-box .stat-value {
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 800;
   color: #0c2340;
   line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.stat-box:hover .stat-value {
+  transform: scale(1.1);
 }
 
 .stat-box .stat-label {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #718096;
+  color: #64748b;
   text-transform: uppercase;
-  margin-top: 4px;
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+}
+
+/* Color coding for stats */
+.high-stat {
+  background-color: rgba(120, 190, 32, 0.1);
+}
+
+.high-stat .stat-value {
+  color: #2F855A;
+}
+
+.medium-stat {
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+.medium-stat .stat-value {
+  color: #C05621;
+}
+
+/* New shooting stats section */
+.shooting-stats {
+  padding: 16px;
+  background-color: white;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.shooting-stat {
+  margin-bottom: 12px;
+}
+
+.shooting-stat:last-child {
+  margin-bottom: 0;
+}
+
+.shooting-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.shooting-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.shooting-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.shooting-bar-container {
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.shooting-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.shooting-percentage {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-align: right;
+  display: block;
 }
 
 .secondary-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  padding: 12px 16px;
-  background-color: #f8f9fa;
-  border-top: 1px solid #e2e8f0;
+  padding: 14px 16px;
+  background-color: #f8fafc;
 }
 
 .stat-item {
@@ -135,23 +244,27 @@
 }
 
 .stat-item .stat-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #718096;
+  color: #64748b;
   text-transform: uppercase;
+  margin-bottom: 4px;
 }
 
 .stat-item .stat-value {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #2d3748;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
 }
 
 .empty-container, .loading-container, .error-container {
-  padding: 40px 20px;
+  padding: 60px 20px;
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
 
 .empty-message {
@@ -161,49 +274,85 @@
   justify-content: center;
   padding: 60px 20px;
   background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   margin-top: 20px;
 }
 
 .empty-message p {
   margin-top: 20px;
-  color: #718096;
-  font-size: 1.1rem;
+  color: #64748b;
+  font-size: 1.2rem;
 }
 
 .empty-message .hint {
-  font-size: 0.9rem;
-  margin-top: 10px;
+  font-size: 1rem;
+  margin-top: 12px;
+  color: #94a3b8;
 }
 
 .loading {
-  margin-top: 16px;
-  font-size: 1.2rem;
-  color: #718096;
+  margin-top: 20px;
+  font-size: 1.3rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .error {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: #e53e3e;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
-.retry-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #4299e1;
+.retry-button, .refresh-button {
+  margin-top: 24px;
+  padding: 12px 24px;
+  background-color: #0c2340;
   color: white;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
   border: none;
+  box-shadow: 0 4px 6px rgba(12, 35, 64, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.retry-button:hover {
-  background-color: #3182ce;
+.refresh-button {
+  display: block;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #0c2340 0%, #1a365d 100%);
+}
+
+.retry-button:hover, .refresh-button:hover {
+  background-color: #1a365d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(12, 35, 64, 0.15);
+}
+
+.retry-button:active, .refresh-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(12, 35, 64, 0.1);
+}
+
+.stats-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.stats-header h1 {
+  margin-bottom: 15px;
+}
+
+.refresh-button {
+  margin-top: 0;
 }
 
 @media (max-width: 768px) {
@@ -211,12 +360,23 @@
     grid-template-columns: 1fr;
   }
   
-  .main-stats {
-    grid-template-columns: repeat(2, 1fr);
+  .live-game-stats-container h1 {
+    font-size: 1.8rem;
   }
   
-  .secondary-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+  .player-name {
+    font-size: 1.3rem;
+  }
+  
+  .stat-box .stat-value {
+    font-size: 1.7rem;
+  }
+  
+  .stats-header {
+    gap: 10px;
+  }
+  
+  .stats-header h1 {
+    margin-bottom: 10px;
   }
 } 

@@ -13,6 +13,9 @@ interface PlayerGameStats {
   threept: string;
   plusminuspoints: number;
   player_image?: string;
+  fgp: string;       // Field goal percentage
+  threeptp: string;  // Three-point percentage
+  min: string;       // Minutes played
 }
 
 export const useLiveGameStats = () => {
@@ -81,7 +84,10 @@ export const useLiveGameStats = () => {
           tov: stat.TOV || stat.tov || 0,
           fgs: stat.FGs || stat.fgs || '0-0',
           threept: stat.threePt || stat.threept || '0-0',
-          plusminuspoints: parseFloat(stat.plusMinusPoints) || stat.plusminuspoints || 0
+          plusminuspoints: parseFloat(stat.plusMinusPoints) || stat.plusminuspoints || 0,
+          fgp: stat.FGp || stat.fgp || '0.0%',
+          threeptp: stat.threePtP || stat.threeptp || '0.0%',
+          min: stat.Min || stat.min || '0:00'
         };
         
         if (!normalizedStat.player) {
