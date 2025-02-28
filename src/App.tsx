@@ -68,26 +68,11 @@ function App() {
   };
 
   const getTabColor = (tab: Tab) => {
-    switch (tab) {
-      case 'stats':
-        return 'from-blue-500 to-blue-600 shadow-blue-200';
-      case 'distribution':
-        return 'from-emerald-500 to-emerald-600 shadow-emerald-200';
-      case 'lineups':
-        return 'from-violet-500 to-violet-600 shadow-violet-200';
-      case 'records':
-        return 'from-amber-500 to-amber-600 shadow-amber-200';
-      case 'leaders':
-        return 'from-rose-500 to-rose-600 shadow-rose-200';
-      case 'live-stats':
-        return 'from-orange-500 to-orange-600 shadow-orange-200';
-      default:
-        return 'from-gray-500 to-gray-600 shadow-gray-200';
-    }
+    return 'from-[#0C2340] to-[#0C2340]/90 shadow-gray-200';
   };
 
   const getIconColor = () => {
-    return 'text-white';
+    return 'text-[#78BE20]';
   };
 
   const getTabDescription = (tab: Tab): string => {
@@ -114,7 +99,7 @@ function App() {
     
     return (
       <div className="mt-4">
-        <h2 className="text-xl md:text-2xl font-bold text-[#0C2340] mb-4 md:mb-6 text-center">Choose Your Dashboard</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-[#0C2340] mb-4 md:mb-6 text-center"></h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
           {tileTabs.map((tile) => (
             <button
@@ -132,7 +117,7 @@ function App() {
                   {getTabDescription(tile)}
                 </p>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 group-hover:bg-white/50 transition-colors"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#78BE20] group-hover:bg-[#78BE20]/80 transition-colors"></div>
             </button>
           ))}
         </div>
