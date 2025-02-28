@@ -51,82 +51,104 @@
 
 @media (max-width: 480px) {
   .live-game-stats-container {
-    padding: 10px;
+    padding: 10px 5px;
   }
   
   .player-stat-card {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
   }
   
   .player-header {
-    height: 60px;
-    padding: 8px;
+    height: 50px;
+    padding: 5px;
   }
   
   .player-avatar {
-    width: 40px;
-    height: 40px;
-    margin-right: 8px;
+    width: 35px;
+    height: 35px;
+    margin-right: 5px;
     border-width: 2px;
   }
   
   .player-name {
-    font-size: 0.7rem;
-    margin-bottom: 2px;
+    font-size: 0.65rem;
+    margin-bottom: 1px;
   }
   
   .player-plusminus {
-    font-size: 0.7rem;
-    padding: 2px 5px;
+    font-size: 0.6rem;
+    padding: 1px 3px;
+  }
+  
+  .main-stats {
+    gap: 0;
+  }
+  
+  .stat-box {
+    padding: 5px 2px;
   }
   
   .stat-box .stat-value {
-    font-size: 1.2rem;
+    font-size: 0.9rem;
   }
   
   .stat-box .stat-label {
-    font-size: 0.7rem;
-    margin-top: 2px;
+    font-size: 0.55rem;
+    margin-top: 1px;
   }
   
   .shooting-stats {
-    padding: 8px;
+    padding: 5px;
   }
   
   .shooting-stat {
-    margin-bottom: 6px;
+    margin-bottom: 3px;
   }
   
-  .shooting-label, .shooting-value {
-    font-size: 0.7rem;
+  .shooting-label, .shooting-value, .shooting-percentage {
+    font-size: 0.55rem;
+  }
+  
+  .shooting-bar-container {
+    height: 4px;
+    margin-bottom: 2px;
   }
   
   .secondary-stats {
-    padding: 8px;
+    padding: 5px;
   }
   
   .stat-item .stat-label {
-    font-size: 0.65rem;
+    font-size: 0.5rem;
+    margin-bottom: 1px;
   }
   
   .stat-item .stat-value {
-    font-size: 0.9rem;
+    font-size: 0.7rem;
   }
 }
 
 @media (max-width: 360px) {
   .player-avatar {
-    width: 35px;
-    height: 35px;
+    width: 30px;
+    height: 30px;
     border-width: 1px;
   }
   
   .player-name {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
   }
   
   .stat-box .stat-value {
-    font-size: 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .stat-box .stat-label {
+    font-size: 0.5rem;
+  }
+  
+  .stat-item .stat-value {
+    font-size: 0.65rem;
   }
 }
 
