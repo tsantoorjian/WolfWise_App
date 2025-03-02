@@ -51,113 +51,99 @@
 
 @media (max-width: 480px) {
   .live-game-stats-container {
-    padding: 10px 5px;
+    padding: 8px;
   }
   
-  /* Completely redesign the player card for mobile */
   .player-stats-grid {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding: 10px;
-    gap: 12px;
-    padding: 10px 0;
-    margin: 0 -5px 20px;
-    -webkit-overflow-scrolling: touch;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 0;
+    margin: 0;
   }
   
   .player-stat-card {
-    flex: 0 0 85%;
-    scroll-snap-align: start;
-    width: 85%;
-    max-width: 300px;
+    width: 100%;
     margin-bottom: 0;
+    font-size: 0.9rem;
   }
   
-  /* Show scrollbar indicator */
-  .live-game-stats-container::after {
-    content: 'Swipe to see more players →';
-    display: block;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #64748b;
-    margin-top: -15px;
-    margin-bottom: 20px;
-    font-style: italic;
-  }
-  
-  /* Reset some of the extreme mobile optimizations */
   .player-header {
-    height: 80px;
-    padding: 10px;
-    flex-direction: row;
-    text-align: left;
+    height: auto;
+    padding: 8px;
+    min-height: 60px;
   }
   
   .player-avatar {
-    width: 60px;
-    height: 60px;
-    margin-right: 10px;
-    margin-bottom: 0;
-    border-width: 3px;
-  }
-  
-  .player-info {
-    align-items: flex-start;
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+    border-width: 2px;
   }
   
   .player-name {
     font-size: 0.8rem;
-    text-align: left;
-    white-space: nowrap;
+    margin-bottom: 2px;
+  }
+  
+  .player-plusminus {
+    font-size: 0.7rem;
+    padding: 2px 6px;
   }
   
   .main-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    padding: 10px 5px;
+    padding: 4px 0;
   }
   
   .stat-box {
-    flex-direction: column;
-    padding: 8px 2px;
+    padding: 4px 2px;
   }
   
   .stat-box .stat-value {
-    font-size: 1.2rem;
-    margin-right: 0;
+    font-size: 0.85rem;
   }
   
   .stat-box .stat-label {
-    margin-top: 3px;
+    font-size: 0.6rem;
+    margin-top: 2px;
   }
   
-  /* Show secondary stats again */
+  /* Hide shooting stats on initial view to save space */
+  .shooting-stats {
+    display: none;
+  }
+  
   .secondary-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
     padding: 8px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
   }
   
   .stat-item .stat-label {
     font-size: 0.6rem;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
   }
   
   .stat-item .stat-value {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 }
 
 @media (max-width: 360px) {
+  .live-game-stats-container {
+    padding: 4px;
+  }
+
+  .player-stats-grid {
+    gap: 6px;
+  }
+  
   .player-avatar {
-    width: 30px;
-    height: 30px;
-    border-width: 1px;
+    width: 35px;
+    height: 35px;
   }
   
   .player-name {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   
   .stat-box .stat-value {
@@ -165,16 +151,7 @@
   }
   
   .stat-box .stat-label {
-    font-size: 0.5rem;
-  }
-  
-  .stat-item .stat-value {
-    font-size: 0.65rem;
-  }
-  
-  .player-stat-card {
-    flex: 0 0 90%;
-    width: 90%;
+    font-size: 0.55rem;
   }
 }
 
@@ -290,7 +267,7 @@
 }
 
 .stat-box .stat-value {
-  font-size: 2rem;
+  font-size: 1.2rem;
   font-weight: 800;
   color: #0c2340;
   line-height: 1;
@@ -302,11 +279,11 @@
 }
 
 .stat-box .stat-label {
-  font-size: 0.85rem;
+  font-size: 0.6rem;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
-  margin-top: 6px;
+  margin-top: 4px;
   letter-spacing: 0.5px;
 }
 
@@ -757,5 +734,27 @@
   .chart-container {
     height: 140px;
     padding: 6px;
+  }
+}
+
+/* Adjust grid layout for different screen sizes */
+@media (min-width: 1024px) {
+  .player-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .player-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+  .player-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 } 

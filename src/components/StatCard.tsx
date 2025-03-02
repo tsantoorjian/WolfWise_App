@@ -38,15 +38,14 @@ const StatCard: React.FC<StatCardProps> = ({
   const last10Value = playerName && last10Stats ? last10Stats[playerName]?.[statKey as keyof RecentStats] : undefined;
 
   const getPerformanceIndicator = (recentValue: number, seasonValue: number) => {
-    const threshold = 0.1; // 10% difference threshold
-    const percentDiff = Math.abs(recentValue - seasonValue) / seasonValue;
+    // Round both values to 1 decimal place for comparison
+    const roundedRecent = Number(recentValue.toFixed(1));
+    const roundedSeason = Number(seasonValue.toFixed(1));
     
-    if (percentDiff > threshold) {
-      if (recentValue > seasonValue) {
-        return <TrendingUp className="w-3 h-3 text-[#78BE20]" />;
-      } else {
-        return <TrendingDown className="w-3 h-3 text-[#DC2626]" />;
-      }
+    if (roundedRecent > roundedSeason) {
+      return <TrendingUp className="w-3 h-3 text-[#78BE20]" />;
+    } else if (roundedRecent < roundedSeason) {
+      return <TrendingDown className="w-3 h-3 text-[#DC2626]" />;
     }
     return <Minus className="w-3 h-3 text-white/40" />;
   };

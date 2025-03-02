@@ -49,6 +49,15 @@ interface GameFlowChartProps {
   awayTeam: string;
 }
 
+// Helper function to add at the top of the file
+function interpolateZeroCrossing(value1: number, value2: number, index: number): number {
+  // If values are on opposite sides of zero, calculate the interpolated index
+  if (value1 * value2 < 0) {
+    return index + Math.abs(value1) / Math.abs(value2 - value1);
+  }
+  return -1;
+}
+
 const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awayTeam }) => {
   const chartData = useMemo(() => {
     // Sort plays by event number to ensure chronological order
@@ -66,62 +75,102 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
     });
     
     if (scoringPlays.length === 0) {
-      // If no scoring plays are found, just use all plays to show game progression
       const differentials = sortedPlays.map(play => play.away_score - play.home_score);
       
+      // Create arrays with interpolated zero crossings
+      const allPoints: [number, number][] = [];
+      for (let i = 0; i < differentials.length; i++) {
+        allPoints.push([i, differentials[i]]);
+        if (i < differentials.length - 1) {
+          const zeroCrossing = interpolateZeroCrossing(differentials[i], differentials[i + 1], i);
+          if (zeroCrossing >= 0) {
+            allPoints.push([zeroCrossing, 0]);
+          }
+        }
+      }
+      
+      const positiveData = allPoints.map(([x, y]) => y >= 0 ? y : null);
+      const negativeData = allPoints.map(([x, y]) => y <= 0 ? y : null);
+      
       return {
-        labels: sortedPlays.map(play => `Q${play.period} ${play.clock}`),
-        datasets: [{
-          label: `${awayTeam} Lead/Deficit`,
-          data: differentials,
-          segment: {
-            borderColor: ctx => differentials[ctx.p0DataIndex] >= 0 ? 
-              '#78BE20' : // Green when winning
-              '#DC2626', // Red when losing
+        labels: allPoints.map(([x, _]) => {
+          const originalIndex = Math.floor(x);
+          const play = sortedPlays[originalIndex];
+          return `Q${play.period} ${play.clock}`;
+        }),
+        datasets: [
+          {
+            label: `${awayTeam} Lead`,
+            data: positiveData,
+            borderColor: '#78BE20',
+            backgroundColor: 'rgba(120, 190, 32, 0.1)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.3,
+            fill: true
           },
-          backgroundColor: ctx => {
-            const diff = differentials[ctx.p0DataIndex];
-            return diff >= 0 ? 
-              'rgba(120, 190, 32, 0.1)' : // Green with transparency
-              'rgba(220, 38, 38, 0.1)';   // Red with transparency
-          },
-          borderWidth: 2,
-          pointRadius: 0, // Hide the dots
-          pointHoverRadius: 4, // Show dots on hover
-          tension: 0.3, // Smoother curve
-          fill: 'origin'
-        }]
+          {
+            label: `${awayTeam} Deficit`,
+            data: negativeData,
+            borderColor: '#DC2626',
+            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            tension: 0.3,
+            fill: true
+          }
+        ]
       };
     }
-    
-    // Create labels for each scoring play (period and time)
-    const labels = scoringPlays.map(play => `Q${play.period} ${play.clock}`);
     
     // Calculate point differential from away team perspective (away - home)
     const pointDifferential = scoringPlays.map(play => play.away_score - play.home_score);
     
+    // Do the same for the scoring plays section
+    const allPoints: [number, number][] = [];
+    for (let i = 0; i < pointDifferential.length; i++) {
+      allPoints.push([i, pointDifferential[i]]);
+      if (i < pointDifferential.length - 1) {
+        const zeroCrossing = interpolateZeroCrossing(pointDifferential[i], pointDifferential[i + 1], i);
+        if (zeroCrossing >= 0) {
+          allPoints.push([zeroCrossing, 0]);
+        }
+      }
+    }
+    
+    const positiveData = allPoints.map(([x, y]) => y >= 0 ? y : null);
+    const negativeData = allPoints.map(([x, y]) => y <= 0 ? y : null);
+    
     return {
-      labels,
+      labels: allPoints.map(([x, _]) => {
+        const originalIndex = Math.floor(x);
+        const play = scoringPlays[originalIndex];
+        return `Q${play.period} ${play.clock}`;
+      }),
       datasets: [
         {
-          label: `${awayTeam} Lead/Deficit`,
-          data: pointDifferential,
-          segment: {
-            borderColor: ctx => pointDifferential[ctx.p0DataIndex] >= 0 ? 
-              '#78BE20' : // Green when winning
-              '#DC2626', // Red when losing
-          },
-          backgroundColor: ctx => {
-            const diff = pointDifferential[ctx.p0DataIndex];
-            return diff >= 0 ? 
-              'rgba(120, 190, 32, 0.1)' : // Green with transparency
-              'rgba(220, 38, 38, 0.1)';   // Red with transparency
-          },
+          label: `${awayTeam} Lead`,
+          data: positiveData,
+          borderColor: '#78BE20',
+          backgroundColor: 'rgba(120, 190, 32, 0.1)',
           borderWidth: 2,
-          pointRadius: 0, // Hide the dots
-          pointHoverRadius: 4, // Show dots on hover
-          tension: 0.3, // Smoother curve
-          fill: 'origin'
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: `${awayTeam} Deficit`,
+          data: negativeData,
+          borderColor: '#DC2626',
+          backgroundColor: 'rgba(220, 38, 38, 0.1)',
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.3,
+          fill: true
         }
       ]
     };
@@ -157,8 +206,8 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
         },
         // Add a zero line to show when teams are tied
         afterFit: (scale) => {
-          scale.options.grid = {
-            ...scale.options.grid,
+          (scale.options as any).grid = {
+            ...(scale.options as any).grid,
             zeroLineColor: 'rgba(0, 0, 0, 0.3)',
             zeroLineWidth: 2
           };
@@ -167,16 +216,7 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
     },
     plugins: {
       legend: {
-        position: 'top',
-        labels: {
-          boxWidth: 12,
-          usePointStyle: true,
-          pointStyle: 'rectRounded',
-          color: '#333',
-          font: {
-            weight: 'bold'
-          }
-        }
+        display: false
       },
       tooltip: {
         mode: 'index',

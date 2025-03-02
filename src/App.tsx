@@ -19,10 +19,10 @@ import {
 import './index.css';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-type Tab = 'home' | 'stats' | 'distribution' | 'lineups' | 'records' | 'leaders' | 'live-stats';
+type Tab = 'live-stats' | 'stats' | 'lineups' | 'leaders' | 'records' | 'distribution';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [activeTab, setActiveTab] = useState<Tab>('live-stats');
   const [selectedStat, setSelectedStat] = useState<string>('3pt percentage');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { players, distributionData, leaderboardData, playerImageUrl, fetchDistributionData } = useSupabase();
@@ -31,98 +31,36 @@ function App() {
     const baseClasses = `w-5 h-5 ${isActive ? 'text-[#78BE20]' : 'text-[#9EA2A2] group-hover:text-[#0C2340]'}`;
     
     switch (tab) {
-      case 'home':
-        return <Home className={baseClasses} />;
-      case 'stats':
-        return <BarChart3 className={baseClasses} />;
-      case 'distribution':
-        return <LineChart className={baseClasses} />;
-      case 'lineups':
-        return <Users2 className={baseClasses} />;
-      case 'records':
-        return <Trophy className={baseClasses} />;
-      case 'leaders':
-        return <Crown className={baseClasses} />;
       case 'live-stats':
         return <Activity className={baseClasses} />;
+      case 'stats':
+        return <BarChart3 className={baseClasses} />;
+      case 'lineups':
+        return <Users2 className={baseClasses} />;
+      case 'leaders':
+        return <Crown className={baseClasses} />;
+      case 'records':
+        return <Trophy className={baseClasses} />;
+      case 'distribution':
+        return <LineChart className={baseClasses} />;
     }
   };
 
   const getTabLabel = (tab: Tab) => {
     switch (tab) {
-      case 'home':
-        return 'Home';
-      case 'stats':
-        return 'Player Stats';
-      case 'distribution':
-        return 'Distributions';
-      case 'lineups':
-        return 'Lineups';
-      case 'records':
-        return 'Record Tracker';
-      case 'leaders':
-        return 'League Leaders';
       case 'live-stats':
         return 'Live Game Stats';
-    }
-  };
-
-  const getTabColor = (tab: Tab) => {
-    return 'from-[#0C2340] to-[#0C2340]/90 shadow-gray-200';
-  };
-
-  const getIconColor = () => {
-    return 'text-[#78BE20]';
-  };
-
-  const getTabDescription = (tab: Tab): string => {
-    switch (tab) {
       case 'stats':
-        return 'View detailed player statistics and performance metrics';
-      case 'distribution':
-        return 'Analyze statistical distributions across different metrics';
+        return 'Player Stats';
       case 'lineups':
-        return 'Explore team lineup combinations and their effectiveness';
-      case 'records':
-        return 'Track team and player records throughout the season';
+        return 'Lineups';
       case 'leaders':
-        return 'See who leads the league in various statistical categories';
-      case 'live-stats':
-        return 'Follow real-time statistics for ongoing games';
-      default:
-        return '';
+        return 'League Leaders';
+      case 'records':
+        return 'Record Tracker';
+      case 'distribution':
+        return 'Distributions';
     }
-  };
-
-  const renderHomePage = () => {
-    const tileTabs: Tab[] = ['stats', 'distribution', 'lineups', 'records', 'leaders', 'live-stats'];
-    
-    return (
-      <div className="mt-4">
-        <h2 className="text-xl md:text-2xl font-bold text-[#0C2340] mb-4 md:mb-6 text-center"></h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
-          {tileTabs.map((tile) => (
-            <button
-              key={tile}
-              onClick={() => setActiveTab(tile)}
-              className="group relative overflow-hidden rounded-lg md:rounded-xl transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-[#78BE20] focus:ring-offset-2"
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${getTabColor(tile)} opacity-90`}></div>
-              <div className="relative p-3 md:p-6 flex flex-col items-center text-center h-full">
-                <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-2 md:mb-4 shadow-lg">
-                  {React.cloneElement(getTabIcon(tile, false), { className: `w-5 h-5 md:w-7 md:h-7 ${getIconColor()}` })}
-                </div>
-                <h3 className="text-sm md:text-lg font-bold text-white mb-1 md:mb-2">{getTabLabel(tile)}</h3>
-                <p className="text-white/80 text-xs md:text-sm font-medium hidden md:block">
-                  {getTabDescription(tile)}
-                </p>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#78BE20] group-hover:bg-[#78BE20]/80 transition-colors"></div>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -134,64 +72,53 @@ function App() {
               WolfWise Statistics
             </h1>
             
-            {/* Mobile Menu Button - Only show if not on home page */}
-            {activeTab !== 'home' && (
-              <div className="md:hidden mb-4">
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm text-[#0C2340]"
-                >
-                  <Menu className="w-5 h-5" />
-                  <span>{getTabLabel(activeTab)}</span>
-                </button>
-              </div>
-            )}
+            {/* Mobile Menu Button */}
+            <div className="md:hidden mb-4">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm text-[#0C2340]"
+              >
+                <Menu className="w-5 h-5" />
+                <span>{getTabLabel(activeTab)}</span>
+              </button>
+            </div>
 
-            {/* Navigation - Only show if not on home page */}
-            {activeTab !== 'home' && (
-              <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block border-b border-gray-200 mb-6`}>
-                <div className="flex flex-col md:flex-row md:border-b md:border-gray-200">
+            {/* Navigation */}
+            <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block border-b border-gray-200 mb-6`}>
+              <div className="flex flex-col md:flex-row md:border-b md:border-gray-200">
+                {(['live-stats', 'stats', 'lineups', 'leaders', 'records', 'distribution'] as Tab[]).map((tab) => (
                   <button
+                    key={tab}
                     onClick={() => {
-                      setActiveTab('home');
+                      setActiveTab(tab);
                       setIsMenuOpen(false);
                     }}
-                    className={`group py-3 md:py-4 px-4 md:px-6 text-sm font-medium transition-all duration-200 text-[#9EA2A2] hover:text-[#0C2340] hover:bg-gray-50 md:hover:bg-transparent`}
+                    className={`group py-3 md:py-4 px-4 md:px-6 text-sm font-medium transition-all duration-200 ${
+                      activeTab === tab
+                        ? 'bg-[#78BE20]/10 md:bg-transparent md:border-b-2 md:border-[#78BE20] text-[#0C2340]'
+                        : 'text-[#9EA2A2] hover:text-[#0C2340] hover:bg-gray-50 md:hover:bg-transparent'
+                    }`}
                   >
                     <div className="flex items-center gap-2">
-                      {getTabIcon('home', false)}
-                      <span>Home</span>
+                      {getTabIcon(tab, activeTab === tab)}
+                      <span className={activeTab === tab ? 'font-semibold' : ''}>
+                        {getTabLabel(tab)}
+                      </span>
                     </div>
                   </button>
-                  {(['stats', 'distribution', 'lineups', 'records', 'leaders', 'live-stats'] as Tab[]).map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => {
-                        setActiveTab(tab);
-                        setIsMenuOpen(false);
-                      }}
-                      className={`group py-3 md:py-4 px-4 md:px-6 text-sm font-medium transition-all duration-200 ${
-                        activeTab === tab
-                          ? 'bg-[#78BE20]/10 md:bg-transparent md:border-b-2 md:border-[#78BE20] text-[#0C2340]'
-                          : 'text-[#9EA2A2] hover:text-[#0C2340] hover:bg-gray-50 md:hover:bg-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {getTabIcon(tab, activeTab === tab)}
-                        <span className={activeTab === tab ? 'font-semibold' : ''}>
-                          {getTabLabel(tab)}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </nav>
-            )}
+                ))}
+              </div>
+            </nav>
 
             {/* Render active page */}
             <div className="mt-4 md:mt-0">
-              {activeTab === 'home' && renderHomePage()}
+              {activeTab === 'live-stats' && <LiveGameStats />}
               {activeTab === 'stats' && <PlayerStats />}
+              {activeTab === 'lineups' && <Lineups />}
+              {activeTab === 'leaders' && <LeagueLeaders leaderboardData={leaderboardData} />}
+              {activeTab === 'records' && (
+                <RecordTracker playerImageUrl={playerImageUrl || undefined} />
+              )}
               {activeTab === 'distribution' && (
                 <ThreePointDistribution 
                   distributionData={distributionData} 
@@ -203,12 +130,6 @@ function App() {
                   selectedStat={selectedStat}
                 />
               )}
-              {activeTab === 'lineups' && <Lineups />}
-              {activeTab === 'records' && (
-                <RecordTracker playerImageUrl={playerImageUrl || undefined} />
-              )}
-              {activeTab === 'leaders' && <LeagueLeaders leaderboardData={leaderboardData} />}
-              {activeTab === 'live-stats' && <LiveGameStats />}
             </div>
           </div>
         </div>

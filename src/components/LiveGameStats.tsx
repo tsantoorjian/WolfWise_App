@@ -2,10 +2,14 @@ import React from 'react';
 import useLiveGameStats from '../hooks/useLiveGameStats';
 import GameFlowChart from './GameFlowChart';
 import './LiveGameStats.css';
-import { Activity, ArrowDown, ArrowUp, Clock } from 'lucide-react';
+import { Activity, Clock } from 'lucide-react';
 
 const LiveGameStats: React.FC = () => {
   const { playerStats, gameInfo, playByPlay, loading, error, refreshStats } = useLiveGameStats();
+
+  const formatMinutes = (minutes: string) => {
+    return minutes.split(':')[0];
+  };
 
   if (loading) {
     return (
@@ -186,7 +190,6 @@ const LiveGameStats: React.FC = () => {
                 <div className="player-info">
                   <h2 className="player-name">{player.player}</h2>
                   <div className={`player-plusminus ${isPlusMinus ? 'positive' : 'negative'}`}>
-                    {isPlusMinus ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
                     <span>{isPlusMinus ? '+' : ''}{player.plusminuspoints}</span>
                   </div>
                 </div>
@@ -255,7 +258,7 @@ const LiveGameStats: React.FC = () => {
               <div className="secondary-stats">
                 <div className="stat-item">
                   <span className="stat-label">MIN</span>
-                  <span className="stat-value">{player.min}</span>
+                  <span className="stat-value">{formatMinutes(player.min)}</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">BLK</span>
