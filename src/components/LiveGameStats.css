@@ -126,6 +126,14 @@
   .shooting-bar-container {
     height: 4px;
     margin-bottom: 2px;
+    display: block;
+    width: 100%;
+  }
+
+  .shooting-bar {
+    height: 100%;
+    min-height: 4px;
+    display: block;
   }
 
   .shooting-percentage {
@@ -370,6 +378,7 @@
   height: 100%;
   border-radius: 3px;
   transition: width 0.5s ease;
+  display: block;
 }
 
 .shooting-percentage {
