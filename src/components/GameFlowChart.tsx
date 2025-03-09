@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
+import type { ChartData, ChartOptions } from 'chart.js';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,8 +10,9 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartOptions,
-  Filler
+  Filler,
+  Scale,
+  TooltipItem
 } from 'chart.js';
 
 // Register ChartJS components
@@ -205,9 +207,9 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
           }
         },
         // Add a zero line to show when teams are tied
-        afterFit: (scale) => {
-          (scale.options as any).grid = {
-            ...(scale.options as any).grid,
+        afterFit: (scale: any) => {
+          scale.options.grid = {
+            ...scale.options.grid,
             zeroLineColor: 'rgba(0, 0, 0, 0.3)',
             zeroLineWidth: 2
           };
@@ -234,17 +236,17 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
         padding: 12,
         cornerRadius: 6,
         callbacks: {
-          title: (items) => {
+          title: (items: any[]) => {
             if (items.length > 0) {
               const index = items[0].dataIndex;
-              const filteredPlays = playByPlay.filter(p => 
+              const filteredPlays = playByPlay.filter((p: PlayByPlay) => 
                 p.is_scoring_play || 
                 (p.description && (
                   p.description.includes("SCORE") || 
                   p.description.includes("made") || 
                   p.description.includes("free throw")
                 ))
-              ).sort((a, b) => a.event_num - b.event_num);
+              ).sort((a: PlayByPlay, b: PlayByPlay) => a.event_num - b.event_num);
               
               if (filteredPlays[index]) {
                 return `${filteredPlays[index].description} (${filteredPlays[index].clock}, Q${filteredPlays[index].period})`;
@@ -252,7 +254,7 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
             }
             return '';
           },
-          label: (context) => {
+          label: (context: any) => {
             const value = context.parsed.y;
             if (value > 0) {
               return `${awayTeam} +${value}`;
