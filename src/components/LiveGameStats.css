@@ -107,9 +107,29 @@
     margin-top: 2px;
   }
   
-  /* Hide shooting stats on initial view to save space */
   .shooting-stats {
-    display: none;
+    padding: 8px;
+  }
+
+  .shooting-stat {
+    margin-bottom: 8px;
+  }
+
+  .shooting-header {
+    margin-bottom: 2px;
+  }
+
+  .shooting-label, .shooting-value {
+    font-size: 0.75rem;
+  }
+
+  .shooting-bar-container {
+    height: 4px;
+    margin-bottom: 2px;
+  }
+
+  .shooting-percentage {
+    font-size: 0.7rem;
   }
   
   .secondary-stats {
