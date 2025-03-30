@@ -2,7 +2,6 @@
 
 WolfWise is a modern web application built with React, TypeScript, and Vite that provides live game statistics and analysis. This is version 3 of the application, featuring enhanced visualizations and real-time data updates.
 
-[Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/tsantoorjian/WolfWisev3)
 
 ## Features
 
