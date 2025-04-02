@@ -153,8 +153,10 @@ const LiveGameStats: React.FC = () => {
           const isRebMedium = player.reb >= 5 && player.reb < 10;
           const isAstHigh = player.ast >= 8;
           const isAstMedium = player.ast >= 4 && player.ast < 8;
-          const isBlkStlHigh = player.blk >= 3 || player.stl >= 3;
-          const isBlkStlMedium = player.blk >= 1 || player.stl >= 1;
+          const isBlkHigh = player.blk > 2;
+          const isBlkMedium = player.blk > 1;
+          const isStlHigh = player.stl > 2;
+          const isStlMedium = player.stl > 1;
           
           // Calculate FG and 3PT percentages
           const fgParts = player.fgs.split('-').map(n => parseInt(n, 10));
@@ -191,31 +193,48 @@ const LiveGameStats: React.FC = () => {
                 </div>
                 <div className="player-info">
                   <h2 className="player-name">{player.player}</h2>
-                  <div className={`player-plusminus ${isPlusMinus ? 'positive' : 'negative'}`}>
-                    <span>{isPlusMinus ? '+' : ''}{player.plusminuspoints}</span>
+                  <div className="player-stats-row">
+                    <div className={`player-plusminus ${isPlusMinus ? 'positive' : 'negative'}`}>
+                      <span>{isPlusMinus ? '+' : ''}{player.plusminuspoints}</span>
+                    </div>
+                    <div className="player-minutes">
+                      <span>{formatMinutes(player.min)} MIN</span>
+                    </div>
                   </div>
                 </div>
               </div>
               
               <div className="main-stats">
-                <div className={`stat-box ${isPtsHigh ? 'high-stat' : isPtsMedium ? 'medium-stat' : ''}`}>
-                  <span className="stat-value">{player.pts}</span>
-                  <span className="stat-label">PTS</span>
-                </div>
-                
-                <div className={`stat-box ${isRebHigh ? 'high-stat' : isRebMedium ? 'medium-stat' : ''}`}>
-                  <span className="stat-value">{player.reb}</span>
-                  <span className="stat-label">REB</span>
-                </div>
-                
-                <div className={`stat-box ${isAstHigh ? 'high-stat' : isAstMedium ? 'medium-stat' : ''}`}>
-                  <span className="stat-value">{player.ast}</span>
-                  <span className="stat-label">AST</span>
-                </div>
-                
-                <div className={`stat-box ${isBlkStlHigh ? 'high-stat' : isBlkStlMedium ? 'medium-stat' : ''}`}>
-                  <span className="stat-value">{player.blk + player.stl}</span>
-                  <span className="stat-label">BLK+STL</span>
+                <div className="stats-row">
+                  <div className={`stat-box ${isPtsHigh ? 'high-stat' : isPtsMedium ? 'medium-stat' : ''}`}>
+                    <span className="stat-value">{player.pts}</span>
+                    <span className="stat-label">PTS</span>
+                  </div>
+                  
+                  <div className={`stat-box ${isRebHigh ? 'high-stat' : isRebMedium ? 'medium-stat' : ''}`}>
+                    <span className="stat-value">{player.reb}</span>
+                    <span className="stat-label">REB</span>
+                  </div>
+                  
+                  <div className={`stat-box ${isAstHigh ? 'high-stat' : isAstMedium ? 'medium-stat' : ''}`}>
+                    <span className="stat-value">{player.ast}</span>
+                    <span className="stat-label">AST</span>
+                  </div>
+
+                  <div className={`stat-box ${isBlkHigh ? 'high-stat' : isBlkMedium ? 'medium-stat' : ''}`}>
+                    <span className="stat-value">{player.blk}</span>
+                    <span className="stat-label">BLK</span>
+                  </div>
+
+                  <div className={`stat-box ${isStlHigh ? 'high-stat' : isStlMedium ? 'medium-stat' : ''}`}>
+                    <span className="stat-value">{player.stl}</span>
+                    <span className="stat-label">STL</span>
+                  </div>
+
+                  <div className={`stat-box ${player.tov > 3 ? 'high-turnover' : player.tov > 2 ? 'medium-turnover' : ''}`}>
+                    <span className="stat-value">{player.tov}</span>
+                    <span className="stat-label">TO</span>
+                  </div>
                 </div>
               </div>
               
@@ -231,7 +250,7 @@ const LiveGameStats: React.FC = () => {
                       style={{ 
                         width: `${Math.min(parseFloat(fgPercentage), 100)}%`,
                         backgroundColor: parseFloat(fgPercentage) > 50 ? '#4ade80' : 
-                                        parseFloat(fgPercentage) > 40 ? '#facc15' : '#f87171'
+                                      parseFloat(fgPercentage) > 40 ? '#facc15' : '#f87171'
                       }}
                     ></div>
                   </div>
@@ -249,30 +268,11 @@ const LiveGameStats: React.FC = () => {
                       style={{ 
                         width: `${Math.min(parseFloat(threePtPercentage), 100)}%`,
                         backgroundColor: parseFloat(threePtPercentage) > 40 ? '#4ade80' : 
-                                        parseFloat(threePtPercentage) > 33 ? '#facc15' : '#f87171'
+                                      parseFloat(threePtPercentage) > 33 ? '#facc15' : '#f87171'
                       }}
                     ></div>
                   </div>
                   <span className="shooting-percentage">{threePtPercentage}%</span>
-                </div>
-              </div>
-              
-              <div className="secondary-stats">
-                <div className="stat-item">
-                  <span className="stat-label">MIN</span>
-                  <span className="stat-value">{formatMinutes(player.min)}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">BLK</span>
-                  <span className="stat-value">{player.blk}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">STL</span>
-                  <span className="stat-value">{player.stl}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">TO</span>
-                  <span className="stat-value">{player.tov}</span>
                 </div>
               </div>
             </div>
