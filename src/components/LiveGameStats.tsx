@@ -2,7 +2,7 @@ import React from 'react';
 import useLiveGameStats from '../hooks/useLiveGameStats';
 import GameFlowChart from './GameFlowChart';
 import './LiveGameStats.css';
-import { Activity, Clock } from 'lucide-react';
+import { Activity, Clock, RefreshCw } from 'lucide-react';
 
 const LiveGameStats: React.FC = () => {
   const { playerStats, gameInfo, playByPlay, loading, error, refreshStats } = useLiveGameStats();
@@ -14,7 +14,7 @@ const LiveGameStats: React.FC = () => {
   if (loading) {
     return (
       <div className="loading-container">
-        <Activity className="w-12 h-12 text-[#78BE20] animate-pulse" />
+        <Activity className="w-12 h-12 text-[#4ade80] animate-pulse" />
         <div className="loading">Loading live game stats...</div>
       </div>
     );
@@ -45,7 +45,7 @@ const LiveGameStats: React.FC = () => {
       <div className="empty-container">
         <h1>Live Game Stats</h1>
         <div className="empty-message">
-          <Activity className="w-16 h-16 text-gray-300" />
+          <Activity className="w-16 h-16 text-gray-500 opacity-50" />
           <p>No live game stats available at the moment.</p>
           <p className="hint">Check back during the next game!</p>
         </div>
@@ -53,6 +53,7 @@ const LiveGameStats: React.FC = () => {
           className="retry-button"
           onClick={refreshStats}
         >
+          <RefreshCw className="w-4 h-4 mr-2" />
           Refresh Data
         </button>
       </div>
@@ -103,7 +104,7 @@ const LiveGameStats: React.FC = () => {
                   ) : null}
                 </div>
                 <div className="period-time">
-                  <Clock className="w-4 h-4 mr-1 inline-block" />
+                  <Clock className="w-4 h-4 mr-1 inline-block text-[#4ade80]" />
                   {getGameStatusDisplay()}
                 </div>
               </div>
@@ -136,6 +137,7 @@ const LiveGameStats: React.FC = () => {
           className="refresh-button"
           onClick={refreshStats}
         >
+          <RefreshCw className="w-4 h-4 mr-2 inline-block" />
           Refresh Stats
         </button>
       </div>
@@ -174,7 +176,7 @@ const LiveGameStats: React.FC = () => {
                       src={player.player_image} 
                       alt={player.player}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80';
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80?text=' + player.player.substring(0,1);
                       }}
                     />
                   ) : (
@@ -182,7 +184,7 @@ const LiveGameStats: React.FC = () => {
                       src={`/player-images/${player.player.replace(/\s+/g, '-').toLowerCase()}.jpg`} 
                       alt={player.player}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80';
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80?text=' + player.player.substring(0,1);
                       }}
                     />
                   )}
@@ -228,8 +230,8 @@ const LiveGameStats: React.FC = () => {
                       className="shooting-bar" 
                       style={{ 
                         width: `${Math.min(parseFloat(fgPercentage), 100)}%`,
-                        backgroundColor: parseFloat(fgPercentage) > 50 ? '#78BE20' : 
-                                        parseFloat(fgPercentage) > 40 ? '#F59E0B' : '#DC2626'
+                        backgroundColor: parseFloat(fgPercentage) > 50 ? '#4ade80' : 
+                                        parseFloat(fgPercentage) > 40 ? '#facc15' : '#f87171'
                       }}
                     ></div>
                   </div>
@@ -246,8 +248,8 @@ const LiveGameStats: React.FC = () => {
                       className="shooting-bar" 
                       style={{ 
                         width: `${Math.min(parseFloat(threePtPercentage), 100)}%`,
-                        backgroundColor: parseFloat(threePtPercentage) > 40 ? '#78BE20' : 
-                                        parseFloat(threePtPercentage) > 33 ? '#F59E0B' : '#DC2626'
+                        backgroundColor: parseFloat(threePtPercentage) > 40 ? '#4ade80' : 
+                                        parseFloat(threePtPercentage) > 33 ? '#facc15' : '#f87171'
                       }}
                     ></div>
                   </div>

@@ -139,13 +139,13 @@ export function ThreePointDistribution({
   const histogramData = calculateHistogram(sortedData);
 
   const option = {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1e2129',
     title: {
       text: `League-wide ${getStatName()} Distribution`,
       left: 'center',
       top: 10,
       textStyle: {
-        color: '#0C2340',
+        color: '#FFFFFF',
         fontSize: 16,
         fontWeight: 'bold'
       }
@@ -153,8 +153,8 @@ export function ThreePointDistribution({
     tooltip: {
       trigger: 'item',
       axisPointer: { type: 'none' },
-      backgroundColor: '#0C2340',
-      borderColor: '#0C2340',
+      backgroundColor: '#141923',
+      borderColor: '#141923',
       textStyle: { color: '#FFFFFF' },
       formatter: function(params: any) {
         if (params.seriesName === 'Timberwolves Players') {
@@ -178,9 +178,9 @@ export function ThreePointDistribution({
       min: 0,
       axisLabel: {
         formatter: (value: number) => getStatLabel(value),
-        color: '#0C2340'
+        color: '#FFFFFF'
       },
-      axisLine: { lineStyle: { color: '#0C2340' } },
+      axisLine: { lineStyle: { color: '#FFFFFF' } },
       splitLine: { show: false }
     },
     yAxis: {
@@ -189,9 +189,9 @@ export function ThreePointDistribution({
       nameLocation: 'middle',
       nameGap: 40,
       minInterval: 1,
-      axisLabel: { color: '#0C2340' },
-      axisLine: { lineStyle: { color: '#0C2340' } },
-      splitLine: { lineStyle: { type: 'dashed', color: '#E5E7EB' } }
+      axisLabel: { color: '#FFFFFF' },
+      axisLine: { lineStyle: { color: '#FFFFFF' } },
+      splitLine: { lineStyle: { type: 'dashed', color: '#333844' } }
     },
     series: [
       {
@@ -232,8 +232,8 @@ export function ThreePointDistribution({
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: '#9EA2A2' },
-              { offset: 1, color: 'rgba(158, 162, 162, 0.3)' }
+              { offset: 0, color: '#333844' },
+              { offset: 1, color: 'rgba(51, 56, 68, 0.3)' }
             ]
           }
         },
@@ -253,7 +253,7 @@ export function ThreePointDistribution({
         emphasis: {
           scale: true,
           itemStyle: {
-            borderColor: '#236192',
+            borderColor: '#4ade80',
             borderWidth: 3
           }
         },
@@ -264,18 +264,18 @@ export function ThreePointDistribution({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div className="relative w-full md:w-auto">
             <button
               onClick={() => setShowStatSelect(!showStatSelect)}
-              className="w-full md:w-auto px-4 py-2 bg-[#0C2340] text-white rounded-lg flex items-center justify-between gap-2 hover:bg-[#236192] transition-colors"
+              className="w-full md:w-auto px-4 py-2 bg-[#141923] text-white rounded-lg flex items-center justify-between gap-2 hover:bg-[#78BE20] transition-colors"
             >
               <span>{getStatName()}</span>
               <ChevronDown className={`w-4 h-4 transform transition-transform duration-200 ${showStatSelect ? 'rotate-180' : ''}`} />
             </button>
             {showStatSelect && (
-              <div className="absolute z-10 mt-2 w-full md:w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+              <div className="absolute z-10 mt-2 w-full md:w-48 bg-[#141923] rounded-lg shadow-lg border border-gray-700/50 py-1">
                 {AVAILABLE_STATS.map(stat => (
                   <button
                     key={stat.value}
@@ -283,8 +283,8 @@ export function ThreePointDistribution({
                       onStatChange(stat.value);
                       setShowStatSelect(false);
                     }}
-                    className={`w-full px-4 py-2 text-left hover:bg-gray-50 ${
-                      selectedStat === stat.value ? 'text-[#78BE20] font-medium' : 'text-[#0C2340]'
+                    className={`w-full px-4 py-2 text-left hover:bg-[#1e2129] ${
+                      selectedStat === stat.value ? 'text-[#78BE20] font-medium' : 'text-white'
                     }`}
                   >
                     {stat.label}
@@ -296,12 +296,12 @@ export function ThreePointDistribution({
 
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-gradient-to-br from-[#78BE20] to-[#236192] rounded"></div>
-              <span className="text-[#0C2340]">Timberwolves Players</span>
+              <div className="w-3 h-3 bg-gradient-to-br from-[#78BE20] to-[#4ade80] rounded"></div>
+              <span className="text-white">Timberwolves Players</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-gradient-to-br from-[#9EA2A2] to-[#E5E7EB] rounded"></div>
-              <span className="text-[#0C2340]">League Distribution</span>
+              <div className="w-3 h-3 bg-gradient-to-br from-[#9EA2A2] to-[#333844] rounded"></div>
+              <span className="text-white">League Distribution</span>
             </div>
           </div>
         </div>
@@ -317,7 +317,7 @@ export function ThreePointDistribution({
 
         <div className="mt-6 space-y-4">
           <div className="flex flex-wrap gap-3 items-center">
-            <h3 className="text-sm font-medium text-[#0C2340]">Timberwolves Players:</h3>
+            <h3 className="text-sm font-medium text-white">Timberwolves Players:</h3>
             <div className="flex flex-wrap gap-2">
               {twolvesData.map(player => {
                 const playerData = players.find(p => p.PLAYER_NAME === player.player_name);
@@ -332,7 +332,7 @@ export function ThreePointDistribution({
                       <img
                         src={playerData.image_url}
                         alt={player.player_name}
-                        className="w-10 h-10 rounded-full border-2 border-[#78BE20] bg-white object-cover hover:border-[#236192] transition-colors cursor-pointer"
+                        className="w-10 h-10 rounded-full border-2 border-[#78BE20] bg-[#141923] object-cover hover:border-[#4ade80] transition-colors cursor-pointer"
                         onMouseEnter={() => setHoveredPlayer(player)}
                         onMouseLeave={() => setHoveredPlayer(null)}
                         onError={(e) => {
@@ -343,7 +343,7 @@ export function ThreePointDistribution({
                       <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#78BE20]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
                     {hoveredPlayer?.player_name === player.player_name && (
-                      <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-[#0C2340] text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap z-10 shadow-lg">
+                      <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-[#0f1119] text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap z-10 shadow-lg border border-gray-700/50">
                         <div className="font-semibold mb-1">{player.player_name}</div>
                         <div className="space-y-0.5">
                           <div className="flex justify-between gap-4">
@@ -363,7 +363,7 @@ export function ThreePointDistribution({
             </div>
           </div>
           
-          <div className="flex items-center gap-2 text-sm text-[#9EA2A2]">
+          <div className="flex items-center gap-2 text-sm text-gray-400 bg-[#141923]/60 rounded-lg p-3">
             <Info className="w-4 h-4" />
             <span>Minimum 600 minutes played required for inclusion</span>
           </div>

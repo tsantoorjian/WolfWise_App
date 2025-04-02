@@ -79,13 +79,13 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
     }
     if (ranking <= 10) {
       return (
-        <div className="w-6 h-6 bg-[#236192] text-white rounded-full flex items-center justify-center text-[10px] font-bold">
+        <div className="w-6 h-6 bg-[#10b981] text-white rounded-full flex items-center justify-center text-[10px] font-bold">
           {ranking}
         </div>
       );
     }
     return (
-      <div className="w-6 h-6 bg-[#0C2340] text-white rounded-full flex items-center justify-center text-[10px] font-bold">
+      <div className="w-6 h-6 bg-[#141923] text-white rounded-full flex items-center justify-center text-[10px] font-bold">
         {ranking}
       </div>
     );
@@ -112,37 +112,37 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
     if (ranking <= 3) {
       return isNegative 
         ? 'bg-gradient-to-r from-red-400/20 to-transparent'
-        : 'bg-gradient-to-r from-[#78BE20]/20 to-transparent';
+        : 'bg-gradient-to-r from-[#10b981]/20 to-transparent';
     }
     if (ranking <= 5) {
       return isNegative 
         ? 'bg-gradient-to-r from-red-300/10 to-transparent'
-        : 'bg-gradient-to-r from-[#78BE20]/10 to-transparent';
+        : 'bg-gradient-to-r from-[#10b981]/10 to-transparent';
     }
     if (ranking <= 10) {
       return isNegative 
         ? 'bg-gradient-to-r from-red-200/5 to-transparent'
-        : 'bg-gradient-to-r from-[#78BE20]/5 to-transparent';
+        : 'bg-gradient-to-r from-[#10b981]/5 to-transparent';
     }
-    return 'hover:bg-gray-50';
+    return 'hover:bg-[#1e2129]';
   };
 
   return (
     <div className="space-y-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-2">
             <Crown className="w-6 h-6 text-[#78BE20]" />
-            <h2 className="text-2xl font-bold text-[#0C2340]">League Leaders</h2>
+            <h2 className="text-2xl font-bold text-white">League Leaders</h2>
           </div>
-          <p className="text-[#9EA2A2]">Timberwolves players ranked in the top 20 league-wide</p>
+          <p className="text-gray-400">Timberwolves players ranked in the top 20 league-wide</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Object.values(playerStats).map((playerStat) => (
             <div 
               key={playerStat.player}
-              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+              className="bg-[#141923] rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-700/50"
             >
               <div className="p-6 space-y-4">
                 <div className="flex items-center gap-4">
@@ -151,24 +151,24 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
                       <img
                         src={playerStat.image_url}
                         alt={playerStat.player}
-                        className="w-16 h-16 rounded-full object-cover border-2 border-[#236192] bg-white group-hover:border-[#78BE20] transition-colors duration-300"
+                        className="w-16 h-16 rounded-full object-cover border-2 border-[#78BE20] bg-[#1e2129] group-hover:border-[#4ade80] transition-colors duration-300"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = 'https://via.placeholder.com/64';
                         }}
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded-full border-2 border-[#236192] bg-white flex items-center justify-center group-hover:border-[#78BE20] transition-colors duration-300">
-                        <UserRound className="w-8 h-8 text-[#236192]" />
+                      <div className="w-16 h-16 rounded-full border-2 border-[#78BE20] bg-[#1e2129] flex items-center justify-center group-hover:border-[#4ade80] transition-colors duration-300">
+                        <UserRound className="w-8 h-8 text-[#78BE20]" />
                       </div>
                     )}
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#78BE20]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-[#0C2340] group-hover:text-[#78BE20] transition-colors duration-300">
+                    <h3 className="text-xl font-bold text-white group-hover:text-[#78BE20] transition-colors duration-300">
                       {playerStat.player}
                     </h3>
-                    <p className="text-sm text-[#9EA2A2]">
+                    <p className="text-sm text-gray-400">
                       {playerStat.stats.length} League Rankings
                     </p>
                   </div>
@@ -185,14 +185,14 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
                         <div className="flex items-center gap-2">
                           {getRankingBadge(stat.Ranking)}
                           <div>
-                            <span className="text-[#0C2340] font-medium">{stat["Stat Category"]}</span>
-                            <div className="text-xs text-[#9EA2A2]">
+                            <span className="text-white font-medium">{stat["Stat Category"]}</span>
+                            <div className="text-xs text-gray-400">
                               League Rank: #{stat.Ranking}
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <span className="font-bold text-[#0C2340]">
+                          <span className="font-bold text-white">
                             {formatValue(stat["Stat Category"], stat.Value)}
                           </span>
                         </div>
@@ -202,7 +202,7 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
                   {playerStat.stats.length > 3 && (
                     <button
                       onClick={() => togglePlayerStats(playerStat.player)}
-                      className="w-full mt-2 py-2 px-4 text-sm font-medium text-[#236192] hover:text-[#78BE20] transition-colors duration-300 flex items-center justify-center gap-2"
+                      className="w-full mt-2 py-2 px-4 text-sm font-medium text-[#78BE20] hover:text-[#4ade80] transition-colors duration-300 flex items-center justify-center gap-2"
                     >
                       {expandedPlayers[playerStat.player] ? (
                         <>Show Less <ChevronUp className="w-4 h-4" /></>
@@ -214,13 +214,13 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
                 </div>
               </div>
 
-              <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 rounded-b-lg">
+              <div className="px-6 py-3 border-t border-gray-700/50 bg-[#0f1119] rounded-b-lg">
                 <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1 text-[#9EA2A2]">
+                  <div className="flex items-center gap-1 text-gray-400">
                     <TrendingUp className="w-4 h-4" />
                     <span>Best Rank:</span>
                   </div>
-                  <span className="font-medium text-[#0C2340]">
+                  <span className="font-medium text-white">
                     #{Math.min(...playerStat.stats.map(s => getRankingNumber(s.Ranking)))}
                   </span>
                 </div>
@@ -229,7 +229,7 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
           ))}
         </div>
 
-        <div className="mt-6 flex items-center gap-2 text-sm text-[#9EA2A2] bg-gray-50 rounded-lg p-3">
+        <div className="mt-6 flex items-center gap-2 text-sm text-gray-400 bg-[#141923]/60 rounded-lg p-3">
           <Info className="w-4 h-4 flex-shrink-0" />
           <span>Rankings are based on players with minimum qualifying minutes</span>
         </div>

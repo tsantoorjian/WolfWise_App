@@ -38,7 +38,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
     .sort((a, b) => statOrder.indexOf(a) - statOrder.indexOf(b));
 
   if (loading || !recordData.length) {
-    return <div>Loading...</div>;
+    return <div className="text-gray-400">Loading...</div>;
   }
 
   const currentRecord = recordData.find(d => d.stat === selectedStat);
@@ -47,14 +47,14 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">
             <div className="relative group">
               <img
                 src={playerImageUrl || 'https://via.placeholder.com/80'}
                 alt="Anthony Edwards"
-                className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-[#236192] group-hover:border-[#78BE20] transition-colors duration-300"
+                className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-[#78BE20]/60 group-hover:border-[#78BE20] transition-colors duration-300"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = 'https://via.placeholder.com/96';
@@ -63,29 +63,29 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                 }}
               />
               <div className="fallback-icon hidden">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#0C2340] flex items-center justify-center">
-                  <UserRound className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#141923] flex items-center justify-center">
+                  <UserRound className="w-10 h-10 md:w-12 md:h-12 text-[#78BE20]" />
                 </div>
               </div>
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#78BE20]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-[#0C2340]">Record Tracker</h2>
-              <p className="text-[#9EA2A2] text-sm">Track progress towards NBA milestones</p>
+              <h2 className="text-xl md:text-2xl font-bold text-white">Record Tracker</h2>
+              <p className="text-gray-400 text-sm">Track progress towards NBA milestones</p>
             </div>
           </div>
 
           <div className="relative">
             <button
               onClick={() => setShowStatSelect(!showStatSelect)}
-              className="px-4 py-2 bg-[#0C2340] text-white rounded-lg flex items-center gap-2 hover:bg-[#236192] transition-colors"
+              className="px-4 py-2 bg-[#141923] text-white rounded-lg flex items-center gap-2 hover:bg-[#78BE20] transition-colors"
             >
               <Target className="w-4 h-4" />
               <span>{getStatDisplayName(selectedStat)}</span>
               <ChevronDown className={`w-4 h-4 transform transition-transform duration-200 ${showStatSelect ? 'rotate-180' : ''}`} />
             </button>
             {showStatSelect && (
-              <div className="absolute z-10 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+              <div className="absolute z-10 mt-2 w-48 bg-[#141923] rounded-lg shadow-lg border border-gray-700/50 py-1">
                 {sortedStats.map(stat => (
                   <button
                     key={stat}
@@ -93,8 +93,8 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                       setSelectedStat(stat);
                       setShowStatSelect(false);
                     }}
-                    className={`w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2 ${
-                      selectedStat === stat ? 'text-[#78BE20] font-medium' : 'text-[#0C2340]'
+                    className={`w-full px-4 py-2 text-left hover:bg-[#1e2129] flex items-center gap-2 ${
+                      selectedStat === stat ? 'text-[#78BE20] font-medium' : 'text-white'
                     }`}
                   >
                     {selectedStat === stat && <Award className="w-4 h-4" />}
@@ -109,13 +109,13 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
         {recordData.filter(d => d.stat === selectedStat).map((record, index) => {
           const totalGames = record.GP + record.GAMES_REMAINING;
           const chartOption = {
-            backgroundColor: '#FFFFFF',
+            backgroundColor: '#1e2129',
             title: {
               text: `${getStatDisplayName(record.stat)} Progress`,
               left: 'center',
               top: 10,
               textStyle: {
-                color: '#0C2340',
+                color: '#FFFFFF',
                 fontSize: 16,
                 fontWeight: 'bold'
               }
@@ -129,12 +129,12 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
             },
             legend: {
               top: 40,
-              textStyle: { color: '#0C2340' }
+              textStyle: { color: '#FFFFFF' }
             },
             tooltip: {
               trigger: 'axis',
-              backgroundColor: '#0C2340',
-              borderColor: '#0C2340',
+              backgroundColor: '#141923',
+              borderColor: '#141923',
               textStyle: { color: '#FFFFFF' },
               formatter: function(params: any) {
                 const param = Array.isArray(params) ? params[0] : params;
@@ -156,9 +156,9 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
               nameGap: 35,
               min: 0,
               max: totalGames,
-              nameTextStyle: { color: '#0C2340' },
+              nameTextStyle: { color: '#FFFFFF' },
               axisLabel: {
-                color: '#0C2340',
+                color: '#FFFFFF',
                 formatter: function(value: number) {
                   if (value === 0) return 'Start';
                   if (value === record.GP) return `Current (${record.GP})`;
@@ -166,7 +166,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                   return value;
                 }
               },
-              axisLine: { lineStyle: { color: '#0C2340' } },
+              axisLine: { lineStyle: { color: '#FFFFFF' } },
               splitLine: { show: false }
             },
             yAxis: {
@@ -174,10 +174,10 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
               name: getStatDisplayName(record.stat),
               nameLocation: 'middle',
               nameGap: 50,
-              nameTextStyle: { color: '#0C2340' },
-              axisLabel: { color: '#0C2340' },
-              axisLine: { lineStyle: { color: '#0C2340' } },
-              splitLine: { lineStyle: { type: 'dashed', color: '#E5E7EB' } }
+              nameTextStyle: { color: '#FFFFFF' },
+              axisLabel: { color: '#FFFFFF' },
+              axisLine: { lineStyle: { color: '#FFFFFF' } },
+              splitLine: { lineStyle: { type: 'dashed', color: '#333844' } }
             },
             series: [
               {
@@ -193,7 +193,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                 type: 'line',
                 symbolSize: 8,
                 data: [[currentPoint[0], currentPoint[1]], [totalGames, record.projection]],
-                itemStyle: { color: '#236192' },
+                itemStyle: { color: '#4ade80' },
                 lineStyle: { width: 3, type: 'dashed' }
               },
               {
@@ -224,7 +224,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                     align: 'center',
                     fontSize: 11,
                     padding: [4, 8],
-                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    backgroundColor: 'rgba(20, 25, 35, 0.8)',
                     avoidLabelOverlap: true
                   },
                   data: [
@@ -240,10 +240,10 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                     {
                       name: 'Franchise Record',
                       yAxis: record.franchise_record,
-                      lineStyle: { color: '#0C2340', type: 'dashed' },
+                      lineStyle: { color: '#78BE20', type: 'dashed' },
                       label: { 
                         formatter: `Franchise Record: ${record.franchise_record.toFixed(1)}`,
-                        color: '#0C2340' 
+                        color: '#78BE20' 
                       }
                     },
                     {
@@ -264,7 +264,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
           return (
             <div key={index} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gradient-to-br from-[#0C2340] to-[#236192] rounded-lg p-6 text-white">
+                <div className="bg-gradient-to-br from-[#141923] to-[#0f1119] rounded-lg p-6 text-white border border-gray-700/50">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-lg font-semibold">Current Pace</h4>
                     <Trophy className="w-5 h-5 text-[#78BE20]" />
@@ -306,10 +306,10 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                 </div>
 
                 <div className="space-y-6">
-                  <div className="bg-white rounded-lg p-6 shadow-sm space-y-4">
+                  <div className="bg-[#141923] rounded-lg p-6 shadow-md space-y-4 border border-gray-700/50">
                     <div className="flex items-center gap-2 mb-2">
-                      <Medal className="w-5 h-5 text-[#9EA2A2]" />
-                      <h4 className="text-lg font-semibold text-[#0C2340]">Record Progress</h4>
+                      <Medal className="w-5 h-5 text-gray-400" />
+                      <h4 className="text-lg font-semibold text-white">Record Progress</h4>
                     </div>
                     <RecordProgressBar
                       current={record.current}
@@ -333,7 +333,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-sm p-4 h-[400px]">
+              <div className="bg-[#141923] rounded-lg shadow-md p-4 h-[400px] border border-gray-700/50">
                 <ReactECharts
                   option={chartOption}
                   style={{ height: '100%', width: '100%' }}
@@ -342,7 +342,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                 />
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-[#9EA2A2] bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-sm text-gray-400 bg-[#141923]/60 rounded-lg p-3">
                 <Info className="w-4 h-4 flex-shrink-0" />
                 <span>Projections are based on current per-game averages and remaining games</span>
               </div>

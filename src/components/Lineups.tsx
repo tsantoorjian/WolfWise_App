@@ -80,7 +80,7 @@ const Lineups: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center space-y-4">
           <Users2 className="w-12 h-12 text-[#78BE20] animate-pulse mx-auto" />
-          <p className="text-[#9EA2A2]">Loading lineups...</p>
+          <p className="text-gray-400">Loading lineups...</p>
         </div>
       </div>
     );
@@ -88,11 +88,11 @@ const Lineups: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-xl font-bold text-[#0C2340]">Lineup Analysis</h2>
-            <p className="text-[#9EA2A2] text-sm">Explore the performance of different Timberwolves lineup combinations</p>
+            <h2 className="text-xl font-bold text-white">Lineup Analysis</h2>
+            <p className="text-gray-400 text-sm">Explore the performance of different Timberwolves lineup combinations</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ const Lineups: React.FC = () => {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                 showTopLineups
                   ? 'bg-[#78BE20] text-white shadow-lg shadow-[#78BE20]/20'
-                  : 'bg-gray-100 text-[#9EA2A2] hover:bg-gray-200'
+                  : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
               }`}
             >
               Top Lineups
@@ -111,7 +111,7 @@ const Lineups: React.FC = () => {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                 !showTopLineups
                   ? 'bg-[#DC2626] text-white shadow-lg shadow-[#DC2626]/20'
-                  : 'bg-gray-100 text-[#9EA2A2] hover:bg-gray-200'
+                  : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
               }`}
             >
               Bottom Lineups
@@ -130,22 +130,22 @@ const Lineups: React.FC = () => {
               placeholder="Search for players to filter lineups..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#78BE20] focus:border-transparent"
+              className="pl-10 pr-4 py-2 w-full bg-[#141923] border border-gray-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#78BE20] focus:border-transparent text-white"
               disabled={selectedPlayers.length >= 5}
             />
             {searchResults.length > 0 && (
-              <div className="absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-auto">
+              <div className="absolute z-10 mt-1 w-full bg-[#141923] rounded-lg shadow-lg border border-gray-700/50 max-h-60 overflow-auto">
                 {searchResults.map((player) => (
                   <div
                     key={player.PLAYER_NAME}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
+                    className="px-4 py-2 hover:bg-[#1e2129] cursor-pointer flex items-center gap-2 text-white"
                     onClick={() => handleAddPlayer(player)}
                   >
                     {player.image_url ? (
                       <img src={player.image_url} alt={player.PLAYER_NAME} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                        <Users2 className="w-4 h-4 text-gray-500" />
+                      <div className="w-8 h-8 rounded-full bg-[#1e2129] flex items-center justify-center">
+                        <Users2 className="w-4 h-4 text-gray-400" />
                       </div>
                     )}
                     <span>{player.PLAYER_NAME}</span>
@@ -160,7 +160,7 @@ const Lineups: React.FC = () => {
               {selectedPlayers.map((player) => (
                 <div
                   key={player.PLAYER_NAME}
-                  className="flex items-center gap-1 bg-[#0C2340] text-white px-3 py-1 rounded-full text-sm"
+                  className="flex items-center gap-1 bg-[#78BE20] text-white px-3 py-1 rounded-full text-sm"
                 >
                   {player.PLAYER_NAME}
                   <button
@@ -174,7 +174,7 @@ const Lineups: React.FC = () => {
               {selectedPlayers.length > 0 && (
                 <button
                   onClick={() => setSelectedPlayers([])}
-                  className="text-xs text-[#9EA2A2] hover:text-[#0C2340] underline"
+                  className="text-xs text-gray-400 hover:text-white underline"
                 >
                   Clear all
                 </button>
@@ -188,8 +188,8 @@ const Lineups: React.FC = () => {
             onClick={() => setActiveSection('two')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
               activeSection === 'two'
-                ? 'bg-[#0C2340] text-white'
-                : 'bg-gray-100 text-[#9EA2A2] hover:bg-gray-200'
+                ? 'bg-[#78BE20] text-white'
+                : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
             }`}
           >
             2-Man Lineups
@@ -198,8 +198,8 @@ const Lineups: React.FC = () => {
             onClick={() => setActiveSection('three')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
               activeSection === 'three'
-                ? 'bg-[#0C2340] text-white'
-                : 'bg-gray-100 text-[#9EA2A2] hover:bg-gray-200'
+                ? 'bg-[#78BE20] text-white'
+                : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
             }`}
           >
             3-Man Lineups
@@ -208,8 +208,8 @@ const Lineups: React.FC = () => {
             onClick={() => setActiveSection('five')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
               activeSection === 'five'
-                ? 'bg-[#0C2340] text-white'
-                : 'bg-gray-100 text-[#9EA2A2] hover:bg-gray-200'
+                ? 'bg-[#78BE20] text-white'
+                : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
             }`}
           >
             5-Man Lineups
@@ -224,7 +224,7 @@ const Lineups: React.FC = () => {
                   <LineupCard key={index} lineup={lineup} />
                 ))
               ) : (
-                <div className="col-span-full text-center py-8 text-[#9EA2A2]">
+                <div className="col-span-full text-center py-8 text-gray-400">
                   No lineups found with the selected players.
                 </div>
               )}
@@ -238,7 +238,7 @@ const Lineups: React.FC = () => {
                   <LineupCard key={index} lineup={lineup} />
                 ))
               ) : (
-                <div className="col-span-full text-center py-8 text-[#9EA2A2]">
+                <div className="col-span-full text-center py-8 text-gray-400">
                   No lineups found with the selected players.
                 </div>
               )}
@@ -252,7 +252,7 @@ const Lineups: React.FC = () => {
                   <LineupCard key={index} lineup={lineup} />
                 ))
               ) : (
-                <div className="col-span-full text-center py-8 text-[#9EA2A2]">
+                <div className="col-span-full text-center py-8 text-gray-400">
                   No lineups found with the selected players.
                 </div>
               )}
@@ -260,7 +260,7 @@ const Lineups: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center gap-2 text-sm text-[#9EA2A2] bg-gray-50 rounded-lg p-3">
+        <div className="mt-6 flex items-center gap-2 text-sm text-gray-400 bg-[#141923]/60 rounded-lg p-3">
           <Info className="w-4 h-4 flex-shrink-0" />
           <span>Minimum 50 minutes played together required for inclusion</span>
         </div>

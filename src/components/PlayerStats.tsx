@@ -14,13 +14,13 @@ type PlayerStatsViewProps = {
 function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewProps) {
   if (!player) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 flex flex-col items-center justify-center text-center space-y-4">
-        <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
-          <UserRound className="w-10 h-10 text-[#9EA2A2]" />
+      <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-8 flex flex-col items-center justify-center text-center space-y-4">
+        <div className="w-20 h-20 rounded-full bg-[#141923] flex items-center justify-center border-4 border-gray-700/30">
+          <UserRound className="w-10 h-10 text-gray-400" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-[#0C2340]">Select a Player</h3>
-          <p className="text-[#9EA2A2] text-sm">Choose a player to view their detailed statistics</p>
+          <h3 className="text-lg font-semibold text-white">Select a Player</h3>
+          <p className="text-gray-400 text-sm">Choose a player to view their detailed statistics</p>
         </div>
       </div>
     );
@@ -41,39 +41,57 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
-      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-6">
-        <div className="relative group">
+    <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-4 md:p-6">
+      <div className="flex flex-col md:flex-row items-start gap-6 mb-8">
+        <div className="relative group mx-auto md:mx-0">
           {player.image_url ? (
             <img
               src={player.image_url}
               alt={player.PLAYER_NAME}
-              className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-[#236192] group-hover:border-[#78BE20] transition-colors duration-300"
+              className="w-24 h-24 md:w-36 md:h-36 rounded-full object-cover border-4 border-[#4ade80]/60 group-hover:border-[#78BE20] transition-colors duration-300 shadow-[0_0_15px_rgba(74,222,128,0.3)]"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = 'https://via.placeholder.com/128';
+                target.src = 'https://via.placeholder.com/128?text=' + player.PLAYER_NAME?.substring(0,1);
               }}
             />
           ) : (
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-[#0C2340] flex items-center justify-center group-hover:bg-[#78BE20] transition-colors duration-300">
-              <UserRound className="w-12 h-12 md:w-16 md:h-16 text-white" />
+            <div className="w-24 h-24 md:w-36 md:h-36 rounded-full bg-[#141923] flex items-center justify-center group-hover:bg-[#1e2129] transition-colors duration-300 border-4 border-[#4ade80]/30 shadow-[0_0_15px_rgba(74,222,128,0.2)]">
+              <UserRound className="w-12 h-12 md:w-20 md:h-20 text-[#4ade80]" />
             </div>
           )}
-          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-[#78BE20] text-white text-xs px-2 py-1 rounded-full">
+          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-[#78BE20] to-[#4ade80] text-white text-xs px-3 py-1 rounded-full shadow-lg font-medium">
             #{player.jersey_number || '00'}
           </div>
         </div>
-        <div className="text-center md:text-left">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#0C2340] mb-1">{player.PLAYER_NAME}</h2>
-          <p className="text-[#9EA2A2] text-sm md:text-base">{player.position || 'N/A'}</p>
+
+        <div className="flex-grow w-full flex flex-col items-center md:items-start gap-3 md:gap-4">
+          <div className="text-center md:text-left w-full">
+            <h2 className="text-2xl md:text-4xl font-bold text-white leading-tight">{player.PLAYER_NAME}</h2>
+            <div className="flex items-center justify-center md:justify-start gap-2 mt-1">
+              <p className="text-gray-400 text-sm md:text-base">{player.position || 'N/A'}</p>
+              <span className="text-gray-600">•</span>
+              <p className="text-gray-400 text-sm md:text-base">#{player.jersey_number || '00'}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-center md:justify-start w-full gap-4 md:gap-6 mt-2 md:mt-0">
+            <div className="flex-1 md:flex-none flex flex-col items-center px-3 md:px-4 py-2 rounded-lg bg-[#141923]/80 border border-gray-700/30">
+              <p className="text-[0.65rem] md:text-[0.7rem] text-gray-400 uppercase font-medium tracking-wider">Games</p>
+              <p className="text-base md:text-lg font-bold text-white mt-0.5 md:mt-1">{stats.GP}</p>
+            </div>
+            <div className="flex-1 md:flex-none flex flex-col items-center px-3 md:px-4 py-2 rounded-lg bg-[#141923]/80 border border-gray-700/30">
+              <p className="text-[0.65rem] md:text-[0.7rem] text-gray-400 uppercase font-medium tracking-wider">MPG</p>
+              <p className="text-base md:text-lg font-bold text-white mt-0.5 md:mt-1">{stats.MIN.toFixed(1)}</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-2 md:gap-4">
         <StatCard
           label="Points"
           value={stats.PTS}
-          bgColor="bg-gradient-to-br from-[#0C2340] to-[#1E3A5F]"
+          bgColor=""
           textColor="text-white"
           playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
@@ -82,7 +100,7 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
         <StatCard
           label="Rebounds"
           value={stats.REB}
-          bgColor="bg-gradient-to-br from-[#1E3A5F] to-[#2F547E]"
+          bgColor=""
           textColor="text-white"
           playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
@@ -91,7 +109,7 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
         <StatCard
           label="Assists"
           value={stats.AST}
-          bgColor="bg-gradient-to-br from-[#2F547E] to-[#0C2340]"
+          bgColor=""
           textColor="text-white"
           playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
@@ -100,7 +118,7 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
         <StatCard
           label="Steals"
           value={stats.STL}
-          bgColor="bg-gradient-to-br from-[#0C2340] to-[#1E3A5F]"
+          bgColor=""
           textColor="text-white"
           playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
@@ -109,7 +127,7 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
         <StatCard
           label="Blocks"
           value={stats.BLK}
-          bgColor="bg-gradient-to-br from-[#1E3A5F] to-[#2F547E]"
+          bgColor=""
           textColor="text-white"
           playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
@@ -118,41 +136,12 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
         <StatCard
           label="+/-"
           value={stats.PLUS_MINUS}
-          bgColor="bg-gradient-to-br from-[#2F547E] to-[#0C2340]"
+          bgColor=""
           textColor="text-white"
           playerName={player.PLAYER_NAME}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-          <h3 className="text-sm font-semibold text-[#0C2340] uppercase tracking-wide">Game Stats</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-[#9EA2A2] text-xs uppercase">Games</p>
-              <p className="text-xl font-bold text-[#0C2340]">{stats.GP}</p>
-            </div>
-            <div>
-              <p className="text-[#9EA2A2] text-xs uppercase">Minutes</p>
-              <p className="text-xl font-bold text-[#0C2340]">{stats.MIN.toFixed(1)}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-          <h3 className="text-sm font-semibold text-[#0C2340] uppercase tracking-wide">Performance</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-[#9EA2A2] text-xs uppercase">Win %</p>
-              <p className="text-xl font-bold text-[#0C2340]">{(stats.W_PCT * 100).toFixed(1)}%</p>
-            </div>
-            <div>
-              <p className="text-[#9EA2A2] text-xs uppercase">Fantasy</p>
-              <p className="text-xl font-bold text-[#0C2340]">{stats.NBA_FANTASY_PTS.toFixed(1)}</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -169,7 +158,7 @@ export function PlayerStats() {
       <div className="md:hidden">
         <button
           onClick={() => setShowPlayerList(!showPlayerList)}
-          className="w-full px-4 py-3 bg-white rounded-lg shadow-md text-[#0C2340] font-medium flex items-center justify-between"
+          className="w-full px-4 py-3 bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 text-white font-medium flex items-center justify-between"
         >
           <span>{selectedPlayer ? selectedPlayer.PLAYER_NAME : 'Select Player'}</span>
           <ChevronDown className={`w-5 h-5 transform transition-transform duration-200 ${showPlayerList ? 'rotate-180' : ''}`} />
