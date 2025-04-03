@@ -28,7 +28,7 @@ function App() {
   const { players, distributionData, leaderboardData, playerImageUrl, fetchDistributionData } = useSupabase();
 
   const getTabIcon = (tab: Tab, isActive: boolean) => {
-    const baseClasses = `w-5 h-5 ${isActive ? 'text-[#78BE20]' : 'text-gray-400 group-hover:text-gray-200'}`;
+    const baseClasses = `w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'}`;
     
     switch (tab) {
       case 'live-stats':

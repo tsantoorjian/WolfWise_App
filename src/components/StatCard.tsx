@@ -11,6 +11,7 @@ type StatCardProps = {
   last5Stats?: Record<string, RecentStats>;
   last10Stats?: Record<string, RecentStats>;
   accentColor?: string;
+  className?: string;
 };
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -22,6 +23,7 @@ const StatCard: React.FC<StatCardProps> = ({
   last5Stats,
   last10Stats,
   accentColor = '#78BE20',
+  className
 }) => {
   const getStatKey = () => {
     switch (label.toUpperCase()) {
@@ -69,13 +71,13 @@ const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div 
-      className={`${cardStyles.bg} rounded-xl p-3.5 md:p-4.5 relative overflow-hidden transition-all hover:translate-y-[-4px] duration-300 border ${cardStyles.border}`}
+      className={`${cardStyles.bg} rounded-xl p-3 md:p-4 relative overflow-hidden transition-all hover:translate-y-[-4px] duration-300 border ${cardStyles.border} ${className || ''}`}
     >
       <div className="relative z-10">
         {/* Header with accent line */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2 md:mb-3">
           <div className="flex items-center space-x-2">
-            <div className="w-1 h-5 bg-gradient-to-b from-emerald-400 to-cyan-400 rounded-full"></div>
+            <div className="w-1 h-4 md:h-5 bg-gradient-to-b from-emerald-400 to-cyan-400 rounded-full"></div>
             <p className="text-xs md:text-sm font-medium text-white">
               {label}
             </p>
@@ -83,22 +85,22 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
         
         {/* Content */}
-        <div className="flex justify-between items-end mt-2">
+        <div className="flex justify-between items-end mt-1 md:mt-2">
           <div>
-            <p className="text-xl md:text-3xl font-bold text-white">
+            <p className="text-lg md:text-2xl lg:text-3xl font-bold text-white">
               {value !== null ? value.toFixed(1) : '0.0'}
             </p>
-            <p className="text-[0.65rem] md:text-[0.7rem] text-gray-400 mt-1 font-medium uppercase tracking-wide">Season Avg</p>
+            <p className="text-[0.6rem] md:text-[0.65rem] lg:text-[0.7rem] text-gray-400 mt-0.5 md:mt-1 font-medium uppercase tracking-wide">Season Avg</p>
           </div>
           
           {last5Value !== undefined && last10Value !== undefined && (
-            <div className="text-[0.65rem] md:text-[0.7rem] text-gray-300 text-right bg-[#232838] p-2 rounded-lg">
-              <div className="flex items-center justify-end gap-1.5 md:gap-2 mb-1.5">
+            <div className="text-[0.6rem] md:text-[0.65rem] lg:text-[0.7rem] text-gray-300 text-right bg-[#232838] p-1.5 md:p-2 rounded-lg">
+              <div className="flex items-center justify-end gap-1 md:gap-1.5 lg:gap-2 mb-1 md:mb-1.5">
                 <span className="text-gray-400 font-medium">L5</span>
                 <span className="font-semibold">{(last5Value as number).toFixed(1)}</span>
                 {value && getPerformanceIndicator(last5Value as number, value)}
               </div>
-              <div className="flex items-center justify-end gap-1.5 md:gap-2">
+              <div className="flex items-center justify-end gap-1 md:gap-1.5 lg:gap-2">
                 <span className="text-gray-400 font-medium">L10</span>
                 <span className="font-semibold">{(last10Value as number).toFixed(1)}</span>
                 {value && getPerformanceIndicator(last10Value as number, value)}

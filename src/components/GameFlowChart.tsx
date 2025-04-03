@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { Line } from 'react-chartjs-2';
 import type { ChartData, ChartOptions } from 'chart.js';
 import {
@@ -14,6 +14,7 @@ import {
   Scale,
   TooltipItem
 } from 'chart.js';
+import { supabase } from '../lib/supabase';
 
 // Register ChartJS components
 ChartJS.register(
@@ -26,6 +27,50 @@ ChartJS.register(
   Legend,
   Filler
 );
+
+// Team abbreviation to full team name mapping
+const getFullTeamName = (abbr: string): string => {
+  const teamMap: Record<string, string> = {
+    'ATL': 'atlanta_hawks',
+    'BOS': 'boston_celtics',
+    'BKN': 'brooklyn_nets',
+    'CHA': 'charlotte_hornets',
+    'CHI': 'chicago_bulls',
+    'CLE': 'cleveland_cavaliers',
+    'DAL': 'dallas_mavericks',
+    'DEN': 'denver_nuggets',
+    'DET': 'detroit_pistons',
+    'GSW': 'golden_state_warriors',
+    'HOU': 'houston_rockets',
+    'IND': 'indiana_pacers',
+    'LAC': 'los_angeles_clippers',
+    'LAL': 'los_angeles_lakers',
+    'MEM': 'memphis_grizzlies',
+    'MIA': 'miami_heat',
+    'MIL': 'milwaukee_bucks',
+    'MIN': 'minnesota_timberwolves',
+    'NOP': 'new_orleans_pelicans',
+    'NYK': 'new_york_knicks',
+    'OKC': 'oklahoma_city_thunder',
+    'ORL': 'orlando_magic',
+    'PHI': 'philadelphia_76ers',
+    'PHX': 'phoenix_suns',
+    'POR': 'portland_trail_blazers',
+    'SAC': 'sacramento_kings',
+    'SAS': 'san_antonio_spurs',
+    'TOR': 'toronto_raptors',
+    'UTA': 'utah_jazz',
+    'WAS': 'washington_wizards'
+  };
+  
+  return teamMap[abbr] || abbr.toLowerCase();
+};
+
+// Helper function to get team logo URL
+const getTeamLogoUrl = (teamAbbr: string): string => {
+  const fullTeamName = getFullTeamName(teamAbbr);
+  return `${supabase.storage.from('nba-logos').getPublicUrl(fullTeamName + '.png').data.publicUrl}`;
+};
 
 interface PlayByPlay {
   id: number;
@@ -61,6 +106,50 @@ function interpolateZeroCrossing(value1: number, value2: number, index: number):
 }
 
 const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awayTeam }) => {
+  const chartRef = useRef<ChartJS<'line'>>(null);
+  
+  // Get team logo URLs
+  const homeTeamLogoUrl = useMemo(() => getTeamLogoUrl(homeTeam), [homeTeam]);
+  const awayTeamLogoUrl = useMemo(() => getTeamLogoUrl(awayTeam), [awayTeam]);
+
+  // Preload the team logos to ensure they're available for the chart
+  useEffect(() => {
+    const preloadImages = (urls: string[]) => {
+      urls.forEach(url => {
+        const img = new Image();
+        img.src = url;
+      });
+    };
+    
+    preloadImages([homeTeamLogoUrl, awayTeamLogoUrl]);
+  }, [homeTeamLogoUrl, awayTeamLogoUrl]);
+
+  // Create an external tooltip div that can contain HTML including images
+  useEffect(() => {
+    // Create tooltip container if it doesn't exist
+    let tooltipEl = document.getElementById('chartjs-tooltip');
+    if (!tooltipEl) {
+      tooltipEl = document.createElement('div');
+      tooltipEl.id = 'chartjs-tooltip';
+      tooltipEl.innerHTML = '<table></table>';
+      document.body.appendChild(tooltipEl);
+      
+      // Add tooltip styling
+      tooltipEl.style.opacity = '0';
+      tooltipEl.style.position = 'absolute';
+      tooltipEl.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+      tooltipEl.style.color = 'white';
+      tooltipEl.style.borderRadius = '8px';
+      tooltipEl.style.padding = '12px';
+      tooltipEl.style.pointerEvents = 'none';
+      tooltipEl.style.transform = 'translate(-50%, 0)';
+      tooltipEl.style.transition = 'opacity 0.2s ease';
+      tooltipEl.style.zIndex = '100';
+      tooltipEl.style.minWidth = '200px';
+      tooltipEl.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.3)';
+    }
+  }, []);
+
   const chartData = useMemo(() => {
     // Sort plays by event number to ensure chronological order
     const sortedPlays = [...playByPlay].sort((a, b) => a.event_num - b.event_num);
@@ -108,20 +197,20 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
             backgroundColor: 'rgba(120, 190, 32, 0.1)',
             borderWidth: 2,
             pointRadius: 0,
-            pointHoverRadius: 4,
+            pointHoverRadius: 0,
             tension: 0.3,
-            fill: true
+            fill: 'start'
           },
           {
-            label: `${awayTeam} Deficit`,
+            label: `${homeTeam} Lead`,
             data: negativeData,
             borderColor: '#DC2626',
             backgroundColor: 'rgba(220, 38, 38, 0.1)',
             borderWidth: 2,
             pointRadius: 0,
-            pointHoverRadius: 4,
+            pointHoverRadius: 0,
             tension: 0.3,
-            fill: true
+            fill: 'start'
           }
         ]
       };
@@ -142,12 +231,16 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
       }
     }
     
-    const positiveData = allPoints.map(([x, y]) => y >= 0 ? y : null);
-    const negativeData = allPoints.map(([x, y]) => y <= 0 ? y : null);
+    const positiveData = allPoints.map(([x, y]) => y > 0 ? y : null);
+    const negativeData = allPoints.map(([x, y]) => y < 0 ? y : null);
+    const zeroData = allPoints.map(([x, y]) => y === 0 ? 0 : null);
     
     return {
       labels: allPoints.map(([x, _]) => {
         const originalIndex = Math.floor(x);
+        if (originalIndex >= scoringPlays.length) {
+          return "";
+        }
         const play = scoringPlays[originalIndex];
         return `Q${play.period} ${play.clock}`;
       }),
@@ -159,20 +252,29 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
           backgroundColor: 'rgba(120, 190, 32, 0.1)',
           borderWidth: 2,
           pointRadius: 0,
-          pointHoverRadius: 4,
+          pointHoverRadius: 0,
           tension: 0.3,
-          fill: true
+          fill: 'start'
         },
         {
-          label: `${awayTeam} Deficit`,
+          label: `${homeTeam} Lead`,
           data: negativeData,
           borderColor: '#DC2626',
           backgroundColor: 'rgba(220, 38, 38, 0.1)',
           borderWidth: 2,
           pointRadius: 0,
-          pointHoverRadius: 4,
+          pointHoverRadius: 0,
           tension: 0.3,
-          fill: true
+          fill: 'start'
+        },
+        {
+          label: 'Tied',
+          data: zeroData,
+          borderColor: 'rgba(255, 255, 255, 0.5)',
+          pointRadius: 2,
+          pointBackgroundColor: 'rgba(255, 255, 255, 0.8)',
+          fill: false,
+          borderWidth: 0
         }
       ]
     };
@@ -181,38 +283,41 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
   const chartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: {
+        top: 20,
+        right: 10,
+        bottom: 10,
+        left: 10
+      }
+    },
     scales: {
       x: {
-        display: false, // Hide the x-axis completely
+        display: false,
         grid: {
           display: false
         }
       },
       y: {
-        title: {
-          display: true,
-          text: 'Point Differential',
-          color: '#333',
-          font: {
-            weight: 'bold'
-          }
+        min: -15,
+        max: 10,
+        border: {
+          display: false
         },
         grid: {
-          color: 'rgba(0, 0, 0, 0.05)'
+          color: 'rgba(255, 255, 255, 0.1)',
+          lineWidth: 0.5
         },
         ticks: {
-          color: '#333',
+          color: 'rgba(255, 255, 255, 0.7)',
           font: {
-            weight: 'bold'
+            size: 10
+          },
+          padding: 10,
+          stepSize: 5,
+          callback: function(value) {
+            return value === 0 ? '0' : Math.abs(Number(value));
           }
-        },
-        // Add a zero line to show when teams are tied
-        afterFit: (scale: any) => {
-          scale.options.grid = {
-            ...scale.options.grid,
-            zeroLineColor: 'rgba(0, 0, 0, 0.3)',
-            zeroLineWidth: 2
-          };
         }
       }
     },
@@ -221,68 +326,20 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
         display: false
       },
       tooltip: {
-        mode: 'index',
-        intersect: false,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: '#fff',
-        bodyColor: '#fff',
-        titleFont: {
-          weight: 'bold',
-          size: 14
-        },
-        bodyFont: {
-          size: 13
-        },
-        padding: 12,
-        cornerRadius: 6,
-        callbacks: {
-          title: (items: any[]) => {
-            if (items.length > 0) {
-              const index = items[0].dataIndex;
-              const filteredPlays = playByPlay.filter((p: PlayByPlay) => 
-                p.is_scoring_play || 
-                (p.description && (
-                  p.description.includes("SCORE") || 
-                  p.description.includes("made") || 
-                  p.description.includes("free throw")
-                ))
-              ).sort((a: PlayByPlay, b: PlayByPlay) => a.event_num - b.event_num);
-              
-              if (filteredPlays[index]) {
-                return `${filteredPlays[index].description} (${filteredPlays[index].clock}, Q${filteredPlays[index].period})`;
-              }
-            }
-            return '';
-          },
-          label: (context: any) => {
-            const value = context.parsed.y;
-            if (value > 0) {
-              return `${awayTeam} +${value}`;
-            } else if (value < 0) {
-              return `${homeTeam} +${Math.abs(value)}`;
-            } else {
-              return 'Tied';
-            }
-          }
-        }
+        enabled: false
       }
     },
     elements: {
       line: {
-        borderWidth: 2
+        tension: 0.4,
+        borderWidth: 2,
       },
       point: {
-        hitRadius: 8 // Larger hit area for tooltips
+        radius: 0,
       }
     },
-    interaction: {
-      mode: 'nearest',
-      axis: 'x',
-      intersect: false
-    },
     animation: {
-      duration: 1000,
-      easing: 'easeOutQuart'
+      duration: 1000
     }
   };
 
@@ -295,11 +352,8 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
   }
 
   return (
-    <div className="game-flow-chart">
-      <h3 className="chart-title">Game Flow</h3>
-      <div className="chart-container">
-        <Line data={chartData} options={chartOptions} height={200} />
-      </div>
+    <div className="chart-container">
+      <Line data={chartData} options={chartOptions} height={130} />
     </div>
   );
 };

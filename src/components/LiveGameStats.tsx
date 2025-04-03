@@ -3,6 +3,51 @@ import useLiveGameStats from '../hooks/useLiveGameStats';
 import GameFlowChart from './GameFlowChart';
 import './LiveGameStats.css';
 import { Activity, Clock, RefreshCw } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+// Team abbreviation to full team name mapping
+const getFullTeamName = (abbr: string): string => {
+  const teamMap: Record<string, string> = {
+    'ATL': 'atlanta_hawks',
+    'BOS': 'boston_celtics',
+    'BKN': 'brooklyn_nets',
+    'CHA': 'charlotte_hornets',
+    'CHI': 'chicago_bulls',
+    'CLE': 'cleveland_cavaliers',
+    'DAL': 'dallas_mavericks',
+    'DEN': 'denver_nuggets',
+    'DET': 'detroit_pistons',
+    'GSW': 'golden_state_warriors',
+    'HOU': 'houston_rockets',
+    'IND': 'indiana_pacers',
+    'LAC': 'los_angeles_clippers',
+    'LAL': 'los_angeles_lakers',
+    'MEM': 'memphis_grizzlies',
+    'MIA': 'miami_heat',
+    'MIL': 'milwaukee_bucks',
+    'MIN': 'minnesota_timberwolves',
+    'NOP': 'new_orleans_pelicans',
+    'NYK': 'new_york_knicks',
+    'OKC': 'oklahoma_city_thunder',
+    'ORL': 'orlando_magic',
+    'PHI': 'philadelphia_76ers',
+    'PHX': 'phoenix_suns',
+    'POR': 'portland_trail_blazers',
+    'SAC': 'sacramento_kings',
+    'SAS': 'san_antonio_spurs',
+    'TOR': 'toronto_raptors',
+    'UTA': 'utah_jazz',
+    'WAS': 'washington_wizards'
+  };
+  
+  return teamMap[abbr] || abbr.toLowerCase();
+};
+
+// Helper function to get team logo URL
+const getTeamLogoUrl = (teamAbbr: string): string => {
+  const fullTeamName = getFullTeamName(teamAbbr);
+  return `${supabase.storage.from('nba-logos').getPublicUrl(fullTeamName + '.png').data.publicUrl}`;
+};
 
 const LiveGameStats: React.FC = () => {
   const { playerStats, gameInfo, playByPlay, loading, error, refreshStats } = useLiveGameStats();
@@ -91,45 +136,66 @@ const LiveGameStats: React.FC = () => {
         
         {gameInfo && (
           <div className="game-info-container">
-            <div className="game-scoreboard">
-              <div className="team-score">
-                <span className="team-name">{gameInfo.home_team}</span>
-                <span className="score">{gameInfo.home_score}</span>
+            <div className="scoreboard-wrapper">
+              <div className="game-time">
+                <span className="period-display">{getGameStatusDisplay()}</span>
               </div>
               
-              <div className="game-status">
-                <div className="status-indicator">
-                  {gameInfo.game_status === "in_progress" ? (
-                    <span className="live-indicator">LIVE</span>
-                  ) : null}
+              <div className="team-row">
+                <div className="team-info">
+                  {gameInfo.home_team && (
+                    <img 
+                      src={getTeamLogoUrl(gameInfo.home_team)} 
+                      alt={gameInfo.home_team} 
+                      className="team-logo" 
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
+                  <span className="team-abbr">{gameInfo.home_team}</span>
                 </div>
-                <div className="period-time">
-                  <Clock className="w-4 h-4 mr-1 inline-block text-[#4ade80]" />
-                  {getGameStatusDisplay()}
-                </div>
+                <div className="score-display">{gameInfo.home_score}</div>
               </div>
               
-              <div className="team-score">
-                <span className="team-name">{gameInfo.away_team}</span>
-                <span className="score">{gameInfo.away_score}</span>
+              <div className="team-row">
+                <div className="team-info">
+                  {gameInfo.away_team && (
+                    <img 
+                      src={getTeamLogoUrl(gameInfo.away_team)} 
+                      alt={gameInfo.away_team} 
+                      className="team-logo" 
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
+                  <span className="team-abbr">{gameInfo.away_team}</span>
+                </div>
+                <div className="score-display">{gameInfo.away_score}</div>
               </div>
             </div>
             
             {playByPlay && playByPlay.length > 0 && (
               <div className="game-flow-container">
+                <div className="lead-indicator-legend">
+                  <div className="lead-item">
+                    <span className="lead-dot min-lead"></span>
+                    <span className="lead-team">MIN Lead</span>
+                  </div>
+                  <div className="lead-item">
+                    <span className="lead-dot den-lead"></span>
+                    <span className="lead-team">DEN Lead</span>
+                  </div>
+                </div>
                 <GameFlowChart 
                   playByPlay={playByPlay} 
                   homeTeam={gameInfo.home_team} 
                   awayTeam={gameInfo.away_team} 
                 />
+                <div className="venue-display">Ball Arena, Denver</div>
               </div>
             )}
-            
-            <div className="game-details">
-              <div className="venue">
-                <span>{gameInfo.arena}, {gameInfo.city}</span>
-              </div>
-            </div>
           </div>
         )}
         
