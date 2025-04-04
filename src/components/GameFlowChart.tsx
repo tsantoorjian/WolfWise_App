@@ -105,6 +105,21 @@ function interpolateZeroCrossing(value1: number, value2: number, index: number):
   return -1;
 }
 
+// Helper function to format clock time
+function formatClockTime(clock: string): string {
+  // Check if the format is PT followed by minutes and seconds
+  if (clock.startsWith('PT') && clock.includes('M') && clock.includes('S')) {
+    // Extract minutes and seconds
+    const minutes = clock.match(/(\d+)M/)?.[1] || '0';
+    const seconds = parseFloat(clock.match(/(\d+\.\d+|\d+)S/)?.[1] || '0').toFixed(0);
+    
+    // Format as M:SS
+    return `${minutes}:${seconds.padStart(2, '0')}`;
+  }
+  
+  return clock; // Return original if not in expected format
+}
+
 const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awayTeam }) => {
   const chartRef = useRef<ChartJS<'line'>>(null);
   
@@ -187,7 +202,7 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
         labels: allPoints.map(([x, _]) => {
           const originalIndex = Math.floor(x);
           const play = sortedPlays[originalIndex];
-          return `Q${play.period} ${play.clock}`;
+          return `Q${play.period} ${formatClockTime(play.clock)}`;
         }),
         datasets: [
           {
@@ -199,7 +214,7 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
             pointRadius: 0,
             pointHoverRadius: 0,
             tension: 0.3,
-            fill: 'start'
+            fill: false
           },
           {
             label: `${homeTeam} Lead`,
@@ -210,7 +225,7 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
             pointRadius: 0,
             pointHoverRadius: 0,
             tension: 0.3,
-            fill: 'start'
+            fill: false
           }
         ]
       };
@@ -242,7 +257,7 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
           return "";
         }
         const play = scoringPlays[originalIndex];
-        return `Q${play.period} ${play.clock}`;
+        return `Q${play.period} ${formatClockTime(play.clock)}`;
       }),
       datasets: [
         {
@@ -254,7 +269,7 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
           pointRadius: 0,
           pointHoverRadius: 0,
           tension: 0.3,
-          fill: 'start'
+          fill: false
         },
         {
           label: `${homeTeam} Lead`,
@@ -265,7 +280,7 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
           pointRadius: 0,
           pointHoverRadius: 0,
           tension: 0.3,
-          fill: 'start'
+          fill: false
         },
         {
           label: 'Tied',
@@ -299,14 +314,20 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
         }
       },
       y: {
-        min: -15,
-        max: 10,
+        suggestedMin: -20,
+        suggestedMax: 20,
         border: {
           display: false
         },
         grid: {
-          color: 'rgba(255, 255, 255, 0.1)',
-          lineWidth: 0.5
+          color: (context) => {
+            return context.tick.value === 0 
+              ? 'rgba(255, 255, 255, 0.5)' 
+              : 'rgba(255, 255, 255, 0.1)';
+          },
+          lineWidth: (context) => {
+            return context.tick.value === 0 ? 2 : 0.5;
+          }
         },
         ticks: {
           color: 'rgba(255, 255, 255, 0.7)',
@@ -326,7 +347,54 @@ const GameFlowChart: React.FC<GameFlowChartProps> = ({ playByPlay, homeTeam, awa
         display: false
       },
       tooltip: {
-        enabled: false
+        enabled: true,
+        mode: 'index',
+        intersect: false,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: 'white',
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyColor: 'white',
+        bodyFont: {
+          size: 12
+        },
+        padding: 12,
+        caretPadding: 6,
+        displayColors: false,
+        callbacks: {
+          title: (tooltipItems: TooltipItem<'line'>[]) => {
+            if (tooltipItems.length === 0) return '';
+            const label = tooltipItems[0].label;
+            
+            if (!label) return '';
+            
+            // Parse the quarter and clock time
+            const parts = label.split(' ');
+            if (parts.length >= 2) {
+              const quarter = parts[0]; // Q1, Q2, etc.
+              const clock = formatClockTime(parts[1]);
+              return `${quarter} ${clock}`;
+            }
+            
+            return label;
+          },
+          label: (tooltipItem: TooltipItem<'line'>) => {
+            const dataIndex = tooltipItem.dataIndex;
+            const value = tooltipItem.parsed.y;
+            
+            if (value === null) return '';
+            
+            if (value === 0) {
+              return 'Game Tied';
+            } else if (value > 0) {
+              return `${awayTeam} leads by ${Math.abs(value)}`;
+            } else {
+              return `${homeTeam} leads by ${Math.abs(value)}`;
+            }
+          }
+        }
       }
     },
     elements: {
