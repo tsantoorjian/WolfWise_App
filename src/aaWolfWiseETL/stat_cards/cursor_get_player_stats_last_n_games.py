@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize Supabase client
-supabase_url = 'https://kuthirbcjtofsdwsfhkj.supabase.co'
-supabase_key = os.getenv('SUPABASE_KEY')
+supabase_url = os.getenv('VITE_SUPABASE_URL')
+supabase_key = os.getenv('VITE_SUPABASE_ANON_KEY')
 supabase = create_client(supabase_url, supabase_key)
 
 

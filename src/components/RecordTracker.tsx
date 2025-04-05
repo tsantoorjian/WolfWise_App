@@ -43,7 +43,26 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
 
   const currentRecord = recordData.find(d => d.stat === selectedStat);
   const progressionData = getProgressionData(selectedStat);
-  const currentPoint = progressionData[progressionData.length - 1] || [currentRecord?.GP || 0, currentRecord?.current || 0];
+  const currentPoint = [currentRecord?.GP || 0, currentRecord?.current || 0];
+  
+  // Fill in missing data points between last progression point and current point
+  const fullProgressionData = [...progressionData];
+  const lastProgressionPoint = progressionData[progressionData.length - 1];
+  
+  if (lastProgressionPoint && currentPoint[0] > lastProgressionPoint[0]) {
+    const gamesGap = currentPoint[0] - lastProgressionPoint[0];
+    const valueDiff = currentPoint[1] - lastProgressionPoint[1];
+    const valuePerGame = valueDiff / gamesGap;
+    
+    // Add interpolated points for each missing game
+    for (let i = 1; i <= gamesGap; i++) {
+      const game = lastProgressionPoint[0] + i;
+      const value = lastProgressionPoint[1] + (valuePerGame * i);
+      fullProgressionData.push([game, value]);
+    }
+  } else if (!lastProgressionPoint) {
+    fullProgressionData.push(currentPoint);
+  }
 
   return (
     <div className="space-y-6">
@@ -121,15 +140,11 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
               }
             },
             grid: {
-              top: 100,
+              top: 60,
               right: 40,
               bottom: 60,
               left: 60,
               containLabel: true
-            },
-            legend: {
-              top: 40,
-              textStyle: { color: '#FFFFFF' }
             },
             tooltip: {
               trigger: 'axis',
@@ -145,6 +160,11 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
 
                 let games = param.data[0];
                 let value = param.data[1];
+                
+                // Check if this is the final projected point
+                if (param.seriesName === 'Projected' && games === totalGames) {
+                  return `Games: ${games} (End of Season)<br/>Projected ${getStatDisplayName(record.stat)}: ${value.toFixed(1)}`;
+                }
                 
                 return `Games: ${games}<br/>${getStatDisplayName(record.stat)}: ${value.toFixed(1)}`;
               }
@@ -184,7 +204,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                 name: 'Current Progress',
                 type: 'line',
                 symbolSize: 4,
-                data: progressionData,
+                data: fullProgressionData,
                 itemStyle: { color: '#78BE20' },
                 lineStyle: { width: 3 }
               },
@@ -193,8 +213,13 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                 type: 'line',
                 symbolSize: 8,
                 data: [[currentPoint[0], currentPoint[1]], [totalGames, record.projection]],
-                itemStyle: { color: '#4ade80' },
-                lineStyle: { width: 3, type: 'dashed' }
+                itemStyle: { color: '#FFFFFF' },
+                lineStyle: { 
+                  width: 2,
+                  type: 'dashed',
+                  color: '#FFFFFF',
+                  opacity: 0.6
+                }
               },
               {
                 name: 'Current Point',
@@ -263,49 +288,49 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
 
           return (
             <div key={index} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gradient-to-br from-[#141923] to-[#0f1119] rounded-lg p-6 text-white border border-gray-700/50">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-lg font-semibold">Current Pace</h4>
-                    <Trophy className="w-5 h-5 text-[#78BE20]" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                      <p className="text-white/70 text-sm">Games Played</p>
-                      <p className="text-2xl font-bold">{record.GP}</p>
-                      <div className="h-1 bg-white/20 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-[#78BE20]"
-                          style={{ width: `${(record.GP / totalGames) * 100}%` }}
-                        ></div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-br from-[#141923] to-[#0f1119] rounded-lg p-6 text-white border border-gray-700/50">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold">Current Pace</h4>
+                      <Trophy className="w-5 h-5 text-[#78BE20]" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <p className="text-white/70 text-sm">Games Played</p>
+                        <p className="text-2xl font-bold">{record.GP}</p>
+                        <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-[#78BE20]"
+                            style={{ width: `${(record.GP / totalGames) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-white/70 text-sm">Games Left</p>
+                        <p className="text-2xl font-bold">{record.GAMES_REMAINING}</p>
+                        <div className="h-1 bg-white/20 rounded-full"></div>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-white/70 text-sm">Current Total</p>
+                        <p className="text-2xl font-bold">{record.current.toFixed(1)}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-white/70 text-sm">Per Game</p>
+                        <p className="text-2xl font-bold">{record.per_game.toFixed(1)}</p>
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-white/70 text-sm">Games Left</p>
-                      <p className="text-2xl font-bold">{record.GAMES_REMAINING}</p>
-                      <div className="h-1 bg-white/20 rounded-full"></div>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-white/70 text-sm">Current Total</p>
-                      <p className="text-2xl font-bold">{record.current.toFixed(1)}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-white/70 text-sm">Per Game</p>
-                      <p className="text-2xl font-bold">{record.per_game.toFixed(1)}</p>
+                    <div className="mt-6 pt-4 border-t border-white/10">
+                      <p className="text-white/70 text-sm mb-1">Season Projection</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-3xl font-bold text-[#78BE20]">
+                          {record.projection.toFixed(1)}
+                        </p>
+                        <p className="text-white/50 text-sm">projected</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-white/10">
-                    <p className="text-white/70 text-sm mb-1">Season Projection</p>
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-3xl font-bold text-[#78BE20]">
-                        {record.projection.toFixed(1)}
-                      </p>
-                      <p className="text-white/50 text-sm">projected</p>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="space-y-6">
                   <div className="bg-[#141923] rounded-lg p-6 shadow-md space-y-4 border border-gray-700/50">
                     <div className="flex items-center gap-2 mb-2">
                       <Medal className="w-5 h-5 text-gray-400" />
@@ -331,15 +356,15 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                     />
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-[#141923] rounded-lg shadow-md p-4 h-[400px] border border-gray-700/50">
-                <ReactECharts
-                  option={chartOption}
-                  style={{ height: '100%', width: '100%' }}
-                  notMerge={true}
-                  lazyUpdate={true}
-                />
+                <div className="bg-[#141923] rounded-lg shadow-md p-4 h-[600px] border border-gray-700/50">
+                  <ReactECharts
+                    option={chartOption}
+                    style={{ height: '100%', width: '100%' }}
+                    notMerge={true}
+                    lazyUpdate={true}
+                  />
+                </div>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-400 bg-[#141923]/60 rounded-lg p-3">

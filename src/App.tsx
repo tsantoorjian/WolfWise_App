@@ -66,7 +66,7 @@ function App() {
   return (
     <Router>
       <div className="App min-h-screen grid-pattern">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="w-full max-w-[95%] xl:max-w-[90%] 2xl:max-w-[85%] mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-2xl md:text-3xl font-bold text-white relative">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#78BE20] to-[#4ade80]">WolfWise</span> 

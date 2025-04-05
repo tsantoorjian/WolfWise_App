@@ -216,9 +216,9 @@ const Lineups: React.FC = () => {
           </button>
         </div>
 
-        <div className="relative">
-          <div className={`transition-all duration-500 ${activeSection === 'two' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="relative min-h-[200px]">
+          {activeSection === 'two' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {lineups.twoMan.length > 0 ? (
                 lineups.twoMan.map((lineup, index) => (
                   <LineupCard key={index} lineup={lineup} />
@@ -229,10 +229,10 @@ const Lineups: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
+          )}
 
-          <div className={`transition-all duration-500 ${activeSection === 'three' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {activeSection === 'three' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {lineups.threeMan.length > 0 ? (
                 lineups.threeMan.map((lineup, index) => (
                   <LineupCard key={index} lineup={lineup} />
@@ -243,10 +243,10 @@ const Lineups: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
+          )}
 
-          <div className={`transition-all duration-500 ${activeSection === 'five' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {activeSection === 'five' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {lineups.fiveMan.length > 0 ? (
                 lineups.fiveMan.map((lineup, index) => (
                   <LineupCard key={index} lineup={lineup} />
@@ -257,7 +257,7 @@ const Lineups: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
+          )}
         </div>
 
         <div className="mt-6 flex items-center gap-2 text-sm text-gray-400 bg-[#141923]/60 rounded-lg p-3">

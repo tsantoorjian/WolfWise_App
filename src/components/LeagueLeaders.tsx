@@ -138,7 +138,7 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
           <p className="text-gray-400">Timberwolves players ranked in the top 20 league-wide</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {Object.values(playerStats).map((playerStat) => (
             <div 
               key={playerStat.player}
