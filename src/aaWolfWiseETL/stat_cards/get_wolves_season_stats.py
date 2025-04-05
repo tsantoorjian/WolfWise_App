@@ -6,6 +6,7 @@ import logging
 from supabase import create_client
 from dotenv import load_dotenv
 import os
+import re
 
 # Configure logging to output progress messages
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -18,9 +19,38 @@ BASE_IMAGE_URL = "https://kuthirbcjtofsdwsfhkj.supabase.co/storage/v1/object/pub
 
 # Load environment variables and initialize Supabase client
 load_dotenv()
-supabase_url = 'https://kuthirbcjtofsdwsfhkj.supabase.co'
-supabase_key = os.getenv('SUPABASE_KEY')
+supabase_url = os.getenv('VITE_SUPABASE_URL')
+supabase_key = os.getenv('VITE_SUPABASE_ANON_KEY')
 supabase = create_client(supabase_url, supabase_key)
+
+def normalize_player_name(name):
+    """
+    Normalize a player's name for image URL construction by:
+    1. Removing suffixes (Jr., Sr., III, etc.)
+    2. Converting to lowercase
+    3. Replacing spaces and hyphens with underscores
+    4. Removing special characters (except underscores)
+    """
+    if not isinstance(name, str):
+        return None
+    
+    # Remove common suffixes
+    suffixes = r'\s+(Jr\.|Sr\.|I{2,}|IV)\.?$'
+    name = re.sub(suffixes, '', name, flags=re.IGNORECASE)
+    
+    # Convert to lowercase and replace hyphens with underscores
+    name = name.lower().strip().replace('-', '_')
+    
+    # Remove any special characters (keeping only letters, numbers, spaces, and underscores)
+    name = re.sub(r'[^a-z0-9\s_]', '', name)
+    
+    # Replace spaces with underscores (after special character removal)
+    name = name.replace(' ', '_')
+    
+    # Remove any duplicate underscores that might have been created
+    name = re.sub(r'_+', '_', name)
+    
+    return name
 
 def fetch_timberwolves_stats(season=SEASON, team_id=TEAM_ID):
     """
@@ -100,10 +130,10 @@ def fetch_timberwolves_stats(season=SEASON, team_id=TEAM_ID):
     logging.info("Adding nickname column")
     df_merged['nickname'] = df_merged['player_name'].apply(lambda x: x.split()[0] if isinstance(x, str) else None)
     
-    # Construct the image_url column by converting the player's name to a lower-case, underscore-separated string.
+    # Construct the image_url column by converting the player's name to a normalized format
     logging.info("Adding image_url column")
     df_merged['image_url'] = df_merged['player_name'].apply(
-        lambda x: BASE_IMAGE_URL + x.lower().replace(" ", "_") + ".png" if isinstance(x, str) else None
+        lambda x: BASE_IMAGE_URL + normalize_player_name(x) + ".png" if isinstance(x, str) else None
     )
     
     # Create an 'id' column as a sequential unique identifier starting at 1.
