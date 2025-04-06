@@ -6,6 +6,16 @@ This directory contains Python scripts used for data extraction, transformation,
 
 These Python scripts are excluded from the Netlify build process using configuration in the root `netlify.toml` file. This prevents build failures related to Python dependencies while allowing the scripts to be version-controlled in the same repository.
 
+## Python Dependencies
+
+The Python dependencies for these scripts are listed in the `requirements.txt` file in this directory. The file has been moved here from the root directory to prevent Netlify from automatically trying to install these dependencies during the build process.
+
+To install the dependencies locally, run:
+
+```bash
+pip install -r src/aaWolfWiseETL/requirements.txt
+```
+
 ## Usage
 
 These scripts are intended to be run locally or in a separate environment from the web application deployment.
