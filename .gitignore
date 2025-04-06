@@ -55,26 +55,3 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
-
-# Python specific
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-pythonenv*
-.env
-.venv
-pip-log.txt
-pip-delete-this-directory.txt
-.coverage
-htmlcov/
-.tox/
-.nox/
-.hypothesis/
-.pytest_cache/

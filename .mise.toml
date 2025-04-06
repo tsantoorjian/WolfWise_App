@@ -1,9 +1,0 @@
-[tools]
-# Only use Node.js, no Python
-node = "18"
-
-[env]
-# Explicitly disable Python
-PYTHON_DISABLE = "true"
-NETLIFY_USE_PYTHON = "false"
-SKIP_PYTHON_SETUP = "true" 
