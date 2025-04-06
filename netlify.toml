@@ -1,18 +1,25 @@
 [build]
-  # Your existing build settings (if any) would go here
+  # Explicitly set the build command to use Node/npm
+  command = "npm run build"
+  publish = "dist"
   
-  # This ignore pattern ensures changes to Python scripts don't trigger rebuilds
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':!src/aaWolfWiseETL/'"
-  
-  # Explicitly disable Python processing
-  environment = { NETLIFY_USE_PYTHON = "false" }
+  # Disable Python processing entirely
+  environment = { NETLIFY_USE_PYTHON = "false", NODE_VERSION = "18" }
 
-[build.processing]
-  skip_processing = false
+# Ignore changes to Python scripts
+[ignore]
+  files = ["src/aaWolfWiseETL/**/*"]
 
-# You can also explicitly exclude the directory from processing
+# Exclude Python directory from processing
 [[redirects]]
   from = "/src/aaWolfWiseETL/*"
   to = "/404.html"
   status = 404
-  force = true 
+  force = true
+
+# Block Python files from being served
+[[headers]]
+  for = "/src/aaWolfWiseETL/*"
+    [headers.values]
+    X-Robots-Tag = "noindex"
+    Content-Type = "text/plain" 
