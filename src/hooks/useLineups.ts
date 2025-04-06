@@ -84,7 +84,6 @@ export function useLineups(showTopLineups: boolean, players: PlayerWithStats[]):
             .select('*, group_name, lineup_size, min, player1, player2, player3, player4, player5')
             .eq('team_abbreviation', 'MIN')
             .eq('lineup_size', size)
-            .gte('min', 50)
             .order('net_rating', { ascending: !showTopLineups });
 
           if (error) throw error;

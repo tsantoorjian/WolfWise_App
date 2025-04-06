@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import ReactECharts from 'echarts-for-react';
-import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal } from 'lucide-react';
+import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal, BarChart2 } from 'lucide-react';
 import RecordProgressBar from './RecordProgressBar';
 import { useRecordData } from '../hooks/useRecordData';
 
@@ -67,7 +67,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
   return (
     <div className="space-y-6">
       <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="relative group">
               <img
@@ -93,35 +93,53 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
               <p className="text-gray-400 text-sm">Track progress towards NBA milestones</p>
             </div>
           </div>
-
-          <div className="relative">
-            <button
-              onClick={() => setShowStatSelect(!showStatSelect)}
-              className="px-4 py-2 bg-[#141923] text-white rounded-lg flex items-center gap-2 hover:bg-[#78BE20] transition-colors"
-            >
-              <Target className="w-4 h-4" />
-              <span>{getStatDisplayName(selectedStat)}</span>
-              <ChevronDown className={`w-4 h-4 transform transition-transform duration-200 ${showStatSelect ? 'rotate-180' : ''}`} />
-            </button>
-            {showStatSelect && (
-              <div className="absolute z-10 mt-2 w-48 bg-[#141923] rounded-lg shadow-lg border border-gray-700/50 py-1">
-                {sortedStats.map(stat => (
-                  <button
-                    key={stat}
-                    onClick={() => {
-                      setSelectedStat(stat);
-                      setShowStatSelect(false);
-                    }}
-                    className={`w-full px-4 py-2 text-left hover:bg-[#1e2129] flex items-center gap-2 ${
-                      selectedStat === stat ? 'text-[#78BE20] font-medium' : 'text-white'
-                    }`}
-                  >
-                    {selectedStat === stat && <Award className="w-4 h-4" />}
-                    {getStatDisplayName(stat)}
-                  </button>
-                ))}
-              </div>
-            )}
+        </div>
+        
+        {/* Prominent Stat Selector Card */}
+        <div className="mt-6 mb-8 bg-[#141923] rounded-lg p-4 border border-gray-700/50 shadow-lg">
+          <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
+            <div className="flex items-center gap-3">
+              <BarChart2 className="w-5 h-5 text-[#78BE20]" />
+              <span className="text-white font-medium">Currently Tracking:</span>
+              <span className="text-[#78BE20] font-bold text-xl">{getStatDisplayName(selectedStat)}</span>
+            </div>
+            
+            <div className="relative">
+              <button
+                onClick={() => setShowStatSelect(!showStatSelect)}
+                className="px-5 py-2.5 bg-[#78BE20] text-white rounded-lg flex items-center gap-2 hover:bg-[#8CD43A] transition-colors shadow-md font-medium"
+                aria-label="Choose a different stat to track"
+              >
+                <Target className="w-5 h-5" />
+                <span>Change Stat</span>
+                <ChevronDown className={`w-5 h-5 transform transition-transform duration-200 ${showStatSelect ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showStatSelect && (
+                <div className="absolute z-10 mt-8 w-56 bg-[#141923] rounded-lg shadow-lg border border-gray-700/50 py-1 max-h-80 overflow-y-auto">
+                  <div className="px-3 py-2 text-xs text-[#78BE20]/80 border-b border-gray-700/50 font-medium">
+                    Select a stat to track progress
+                  </div>
+                  {sortedStats.map(stat => (
+                    <button
+                      key={stat}
+                      onClick={() => {
+                        setSelectedStat(stat);
+                        setShowStatSelect(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-[#1e2129] flex items-center gap-2 ${
+                        selectedStat === stat 
+                          ? 'text-white bg-[#78BE20]/20 font-medium border-l-4 border-[#78BE20]' 
+                          : 'text-white'
+                      }`}
+                    >
+                      {selectedStat === stat && <Award className="w-4 h-4" />}
+                      {getStatDisplayName(stat)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

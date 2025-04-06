@@ -7,6 +7,7 @@ import { PlayerWithStats } from '../hooks/useSupabase';
 
 const Lineups: React.FC = () => {
   const [showTopLineups, setShowTopLineups] = useState(true);
+  const [minMinutes, setMinMinutes] = useState(0); // Changed default to 0
   const { players, loading: playersLoading } = useSupabase();
   const { lineups: allLineups, loading: lineupsLoading } = useLineups(showTopLineups, players);
   const loading = playersLoading || lineupsLoading;
@@ -15,6 +16,26 @@ const Lineups: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<PlayerWithStats[]>([]);
   const [searchResults, setSearchResults] = useState<PlayerWithStats[]>([]);
+
+  // Calculate max minutes for each lineup type
+  const maxMinutes = useMemo(() => {
+    if (!allLineups) return 50;
+    
+    const getMaxMinutes = (lineups: any[]) => {
+      return Math.max(...lineups.map(l => l.min), 50);
+    };
+
+    switch (activeSection) {
+      case 'two':
+        return getMaxMinutes(allLineups.twoMan);
+      case 'three':
+        return getMaxMinutes(allLineups.threeMan);
+      case 'five':
+        return getMaxMinutes(allLineups.fiveMan);
+      default:
+        return 50;
+    }
+  }, [allLineups, activeSection]);
 
   // Filter players based on search query
   useEffect(() => {
@@ -31,7 +52,7 @@ const Lineups: React.FC = () => {
     setSearchResults(filteredPlayers.slice(0, 5));
   }, [searchQuery, players, selectedPlayers]);
 
-  // Filter lineups based on selected players
+  // Filter lineups based on selected players and minimum minutes
   const lineups = useMemo(() => {
     if (!allLineups) return { twoMan: [], threeMan: [], fiveMan: [] };
     
@@ -49,6 +70,10 @@ const Lineups: React.FC = () => {
       });
     };
     
+    const filterByMinutes = (lineupList: any[]) => {
+      return lineupList.filter(lineup => lineup.min >= minMinutes);
+    };
+    
     const sortLineups = (lineupList: any[]) => {
       return [...lineupList].sort((a, b) => 
         showTopLineups ? b.net_rating - a.net_rating : a.net_rating - b.net_rating
@@ -56,11 +81,11 @@ const Lineups: React.FC = () => {
     };
     
     return {
-      twoMan: sortLineups(filterLineupsByPlayers(allLineups.twoMan)),
-      threeMan: sortLineups(filterLineupsByPlayers(allLineups.threeMan)),
-      fiveMan: sortLineups(filterLineupsByPlayers(allLineups.fiveMan)),
+      twoMan: sortLineups(filterByMinutes(filterLineupsByPlayers(allLineups.twoMan))),
+      threeMan: sortLineups(filterByMinutes(filterLineupsByPlayers(allLineups.threeMan))),
+      fiveMan: sortLineups(filterByMinutes(filterLineupsByPlayers(allLineups.fiveMan))),
     };
-  }, [allLineups, showTopLineups, selectedPlayers]);
+  }, [allLineups, showTopLineups, selectedPlayers, minMinutes]);
 
   const handleAddPlayer = (player: PlayerWithStats) => {
     if (selectedPlayers.length < 5) {
@@ -183,37 +208,54 @@ const Lineups: React.FC = () => {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-6">
-          <button
-            onClick={() => setActiveSection('two')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-              activeSection === 'two'
-                ? 'bg-[#78BE20] text-white'
-                : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
-            }`}
-          >
-            2-Man Lineups
-          </button>
-          <button
-            onClick={() => setActiveSection('three')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-              activeSection === 'three'
-                ? 'bg-[#78BE20] text-white'
-                : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
-            }`}
-          >
-            3-Man Lineups
-          </button>
-          <button
-            onClick={() => setActiveSection('five')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-              activeSection === 'five'
-                ? 'bg-[#78BE20] text-white'
-                : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
-            }`}
-          >
-            5-Man Lineups
-          </button>
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveSection('two')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                activeSection === 'two'
+                  ? 'bg-[#78BE20] text-white'
+                  : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
+              }`}
+            >
+              2-Man Lineups
+            </button>
+            <button
+              onClick={() => setActiveSection('three')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                activeSection === 'three'
+                  ? 'bg-[#78BE20] text-white'
+                  : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
+              }`}
+            >
+              3-Man Lineups
+            </button>
+            <button
+              onClick={() => setActiveSection('five')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                activeSection === 'five'
+                  ? 'bg-[#78BE20] text-white'
+                  : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
+              }`}
+            >
+              5-Man Lineups
+            </button>
+          </div>
+
+          <div className="bg-[#141923] rounded-lg p-4 border border-gray-700/50">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="text-gray-400 text-sm">Minimum Minutes Played:</div>
+              <div className="text-[#78BE20] font-medium">{minMinutes.toLocaleString()}</div>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max={maxMinutes}
+              value={minMinutes}
+              onChange={(e) => setMinMinutes(Number(e.target.value))}
+              className="w-full h-2 bg-[#1e2129] rounded-lg appearance-none cursor-pointer accent-[#78BE20]"
+            />
+          </div>
         </div>
 
         <div className="relative min-h-[200px]">
@@ -225,7 +267,7 @@ const Lineups: React.FC = () => {
                 ))
               ) : (
                 <div className="col-span-full text-center py-8 text-gray-400">
-                  No lineups found with the selected players.
+                  No lineups found with the selected players and minutes filter.
                 </div>
               )}
             </div>
@@ -239,7 +281,7 @@ const Lineups: React.FC = () => {
                 ))
               ) : (
                 <div className="col-span-full text-center py-8 text-gray-400">
-                  No lineups found with the selected players.
+                  No lineups found with the selected players and minutes filter.
                 </div>
               )}
             </div>
@@ -253,7 +295,7 @@ const Lineups: React.FC = () => {
                 ))
               ) : (
                 <div className="col-span-full text-center py-8 text-gray-400">
-                  No lineups found with the selected players.
+                  No lineups found with the selected players and minutes filter.
                 </div>
               )}
             </div>
@@ -262,7 +304,7 @@ const Lineups: React.FC = () => {
 
         <div className="mt-6 flex items-center gap-2 text-sm text-gray-400 bg-[#141923]/60 rounded-lg p-3">
           <Info className="w-4 h-4 flex-shrink-0" />
-          <span>Minimum 50 minutes played together required for inclusion</span>
+          <span>Showing lineups with {minMinutes}+ minutes played together</span>
         </div>
       </div>
     </div>
