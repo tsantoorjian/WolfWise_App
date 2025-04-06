@@ -158,10 +158,10 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
               }
             },
             grid: {
-              top: 60,
-              right: 40,
-              bottom: 60,
-              left: 60,
+              top: 40,
+              right: 10,
+              bottom: 30,
+              left: 30,
               containLabel: true
             },
             tooltip: {
@@ -191,16 +191,22 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
               type: 'value',
               name: 'Games',
               nameLocation: 'middle',
-              nameGap: 35,
+              nameGap: 25,
               min: 0,
               max: totalGames,
-              nameTextStyle: { color: '#FFFFFF' },
+              nameTextStyle: { 
+                color: '#FFFFFF',
+                fontSize: 12,
+                padding: [5, 0, 0, 0]
+              },
               axisLabel: {
                 color: '#FFFFFF',
+                margin: 8,
+                fontSize: 11,
                 formatter: function(value: number) {
                   if (value === 0) return 'Start';
-                  if (value === record.GP) return `Current (${record.GP})`;
-                  if (value === totalGames) return `Total (${totalGames})`;
+                  if (value === record.GP) return `Current`;
+                  if (value === totalGames) return `Total`;
                   return value;
                 }
               },
@@ -211,9 +217,19 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
               type: 'value',
               name: getStatDisplayName(record.stat),
               nameLocation: 'middle',
-              nameGap: 50,
-              nameTextStyle: { color: '#FFFFFF' },
-              axisLabel: { color: '#FFFFFF' },
+              nameGap: 25,
+              nameTextStyle: { 
+                color: '#FFFFFF',
+                fontSize: 12,
+                padding: [0, 0, 0, -25]
+              },
+              axisLabel: { 
+                color: '#FFFFFF',
+                margin: 8,
+                fontSize: 11,
+                align: 'right',
+                padding: [0, 15, 0, 0]
+              },
               axisLine: { lineStyle: { color: '#FFFFFF' } },
               splitLine: { lineStyle: { type: 'dashed', color: '#333844' } }
             },
