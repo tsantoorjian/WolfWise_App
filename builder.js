@@ -13,6 +13,28 @@ console.log('Starting custom build process');
 console.log('NODE_VERSION:', process.version);
 console.log('Current directory:', process.cwd());
 
+// Remove any Python-related files at the root level that might trigger detection
+const filesToRemove = [
+  '.python-version',
+  'runtime.txt',
+  'requirements.txt',
+  'Pipfile',
+  'Pipfile.lock'
+];
+
+filesToRemove.forEach(file => {
+  const filePath = path.join(process.cwd(), file);
+  if (fs.existsSync(filePath)) {
+    console.log(`Removing ${file} to prevent Python detection...`);
+    fs.unlinkSync(filePath);
+  }
+});
+
+// Set environment variables to prevent Python use
+process.env.NETLIFY_USE_PYTHON = 'false';
+process.env.SKIP_PYTHON_SETUP = 'true';
+process.env.PYTHON_DISABLE = 'true';
+
 try {
   // Ensure node_modules exists
   if (!fs.existsSync('node_modules')) {

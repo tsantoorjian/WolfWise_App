@@ -3,8 +3,15 @@
   command = "node ./builder.js"
   publish = "dist"
   
-  # Force Node.js environment only
-  environment = { NETLIFY_USE_PYTHON = "false", NODE_VERSION = "18", NETLIFY_AUTH_TOKEN = "", SKIP_PYTHON_SETUP = "true" }
+  # Force Node.js environment only, configure mise
+  environment = { 
+    NETLIFY_USE_PYTHON = "false", 
+    NODE_VERSION = "18", 
+    SKIP_PYTHON_SETUP = "true",
+    PYTHON_DISABLE = "true",
+    MISE_NODE_VERSION = "18",
+    MISE_PYTHON_DISABLE = "true"
+  }
 
 # Load our custom build plugin to bypass Python
 [[plugins]]
@@ -23,18 +30,18 @@
 
 # Ignore changes to Python scripts
 [ignore]
-  files = ["src/aaWolfWiseETL/**/*", "**/*.py", "**/*requirements.txt", "**/Pipfile", "**/Pipfile.lock"]
+  files = ["src/_python_scripts/**/*", "**/*.py", "**/*requirements.txt", "**/Pipfile", "**/Pipfile.lock"]
 
 # Exclude Python directory from processing
 [[redirects]]
-  from = "/src/aaWolfWiseETL/*"
+  from = "/src/_python_scripts/*"
   to = "/404.html"
   status = 404
   force = true
 
 # Block Python files from being served
 [[headers]]
-  for = "/src/aaWolfWiseETL/*"
+  for = "/src/_python_scripts/*"
     [headers.values]
     X-Robots-Tag = "noindex"
     Content-Type = "text/plain" 
