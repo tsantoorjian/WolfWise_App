@@ -4,14 +4,7 @@
   publish = "dist"
   
   # Force Node.js environment only, configure mise
-  environment = { 
-    NETLIFY_USE_PYTHON = "false", 
-    NODE_VERSION = "18", 
-    SKIP_PYTHON_SETUP = "true",
-    PYTHON_DISABLE = "true",
-    MISE_NODE_VERSION = "18",
-    MISE_PYTHON_DISABLE = "true"
-  }
+  environment = { NETLIFY_USE_PYTHON = "false", NODE_VERSION = "18", SKIP_PYTHON_SETUP = "true", PYTHON_DISABLE = "true", MISE_NODE_VERSION = "18", MISE_PYTHON_DISABLE = "true" }
 
 # Load our custom build plugin to bypass Python
 [[plugins]]
