@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal, BarChart2 } from 'lucide-react';
 import RecordProgressBar from './RecordProgressBar';
@@ -11,7 +11,17 @@ type RecordTrackerProps = {
 export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
   const [selectedStat, setSelectedStat] = useState<string>('pts');
   const [showStatSelect, setShowStatSelect] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { recordData, loading, getProgressionData } = useRecordData();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const getStatDisplayName = (stat: string) => {
     const statMap: Record<string, string> = {
@@ -159,9 +169,9 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
             },
             grid: {
               top: 40,
-              right: 10,
+              right: 25,
               bottom: 30,
-              left: 30,
+              left: 15,
               containLabel: true
             },
             tooltip: {
@@ -208,14 +218,15 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                   if (value === record.GP) return `Current`;
                   if (value === totalGames) return `Total`;
                   return value;
-                }
+                },
+                overflow: 'truncate'
               },
               axisLine: { lineStyle: { color: '#FFFFFF' } },
               splitLine: { show: false }
             },
             yAxis: {
               type: 'value',
-              name: getStatDisplayName(record.stat),
+              name: '',
               nameLocation: 'middle',
               nameGap: 25,
               nameTextStyle: { 
@@ -391,7 +402,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                   </div>
                 </div>
 
-                <div className="bg-[#141923] rounded-lg shadow-md p-4 h-[600px] border border-gray-700/50">
+                <div className={`bg-[#141923] rounded-lg shadow-md p-4 ${isMobile ? 'h-[400px]' : 'h-[600px]'} border border-gray-700/50`}>
                   <ReactECharts
                     option={chartOption}
                     style={{ height: '100%', width: '100%' }}
