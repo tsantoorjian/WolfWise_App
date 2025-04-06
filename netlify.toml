@@ -1,14 +1,29 @@
 [build]
-  # Explicitly set the build command to use Node/npm
-  command = "npm run build"
+  # Use our custom Node.js build script to bypass Python detection
+  command = "node ./builder.js"
   publish = "dist"
   
-  # Disable Python processing entirely
-  environment = { NETLIFY_USE_PYTHON = "false", NODE_VERSION = "18" }
+  # Force Node.js environment only
+  environment = { NETLIFY_USE_PYTHON = "false", NODE_VERSION = "18", NETLIFY_AUTH_TOKEN = "", SKIP_PYTHON_SETUP = "true" }
+
+# Load our custom build plugin to bypass Python
+[[plugins]]
+  package = "./netlify-build-plugins/python-bypass"
+
+# Tell Netlify not to process anything Python-related
+[build.processing.html]
+  pretty_urls = true
+  
+[build.processing]
+  skip_processing = false
+  
+[functions]
+  # Specify the functions directory if you have any
+  directory = "functions"
 
 # Ignore changes to Python scripts
 [ignore]
-  files = ["src/aaWolfWiseETL/**/*"]
+  files = ["src/aaWolfWiseETL/**/*", "**/*.py", "**/*requirements.txt", "**/Pipfile", "**/Pipfile.lock"]
 
 # Exclude Python directory from processing
 [[redirects]]
