@@ -180,12 +180,12 @@ const LiveGameStats: React.FC = () => {
               <div className="game-flow-container">
                 <div className="lead-indicator-legend">
                   <div className="lead-item">
-                    <span className="lead-dot min-lead"></span>
-                    <span className="lead-team">MIN Lead</span>
+                    <span className="lead-dot away-team-lead"></span>
+                    <span className="lead-team">{gameInfo.away_team} Lead</span>
                   </div>
                   <div className="lead-item">
-                    <span className="lead-dot den-lead"></span>
-                    <span className="lead-team">DEN Lead</span>
+                    <span className="lead-dot home-team-lead"></span>
+                    <span className="lead-team">{gameInfo.home_team} Lead</span>
                   </div>
                 </div>
                 <GameFlowChart 

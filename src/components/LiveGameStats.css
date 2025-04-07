@@ -1100,11 +1100,11 @@
   border-radius: 50%;
 }
 
-.min-lead {
+.away-team-lead {
   background-color: #78BE20;
 }
 
-.den-lead {
+.home-team-lead {
   background-color: #DC2626;
 }
 
