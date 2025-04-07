@@ -62,6 +62,26 @@ WolfWise is a modern web application built with React, TypeScript, and Vite that
 - **State Management**: React Query
 - **Routing**: React Router DOM
 
+## Data Collection & ETL
+
+The application uses a suite of Python scripts for data extraction, transformation, and loading (ETL). These scripts are organized in the `src/_python_scripts` directory and include:
+
+### Data Collection Components
+- **Player Game Logs**: Scripts for gathering and processing individual player game statistics
+- **Lineup Analysis**: Tools for collecting and analyzing different lineup combinations
+- **In-Game Stats**: Real-time game statistics collection and processing
+- **League Leaders**: Scripts to track and update league-wide statistical leaders
+- **Record Tracking**: Automated collection of milestone and record progression
+- **Statistical Distributions**: Data gathering for statistical analysis and visualization
+- **NBA Assets**: Includes logo scraping functionality for team branding
+
+### Technical Details
+- Python-based ETL pipeline
+- Automated data collection and processing
+- Separate from the main application build process
+- Dependencies managed via dedicated requirements.txt
+- Designed for local execution or separate environment deployment
+
 ## License
 
 This project is private and not licensed for public use.
