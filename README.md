@@ -66,6 +66,13 @@ WolfWise is a modern web application built with React, TypeScript, and Vite that
 
 The application uses a suite of Python scripts for data extraction, transformation, and loading (ETL). These scripts are organized in the `src/_python_scripts` directory and include:
 
+### Data Sources
+- **NBA Official API**: Real-time game data, player statistics, and official league data
+- **Basketball Reference**: Historical statistics, advanced metrics, and player/team records
+- **NBA Stats**: Additional statistical data and advanced analytics
+- **ESPN API**: Supplementary game data and real-time updates
+- **NBA.com**: Team logos, player images, and other media assets
+
 ### Data Collection Components
 - **Player Game Logs**: Scripts for gathering and processing individual player game statistics
 - **Lineup Analysis**: Tools for collecting and analyzing different lineup combinations
@@ -74,6 +81,17 @@ The application uses a suite of Python scripts for data extraction, transformati
 - **Record Tracking**: Automated collection of milestone and record progression
 - **Statistical Distributions**: Data gathering for statistical analysis and visualization
 - **NBA Assets**: Includes logo scraping functionality for team branding
+
+### Data Pipeline Architecture
+- **Azure Functions**: Automated script execution triggered by Minnesota Timberwolves game schedule
+  - Pre-game data collection and preparation
+  - In-game real-time updates
+  - Post-game statistics processing
+- **Supabase Database**: 
+  - Central data storage for all collected statistics
+  - Real-time database updates via Supabase's PostgreSQL instance
+  - Efficient data querying through PostgREST API
+  - Row Level Security (RLS) for data access control
 
 ### Technical Details
 - Python-based ETL pipeline
