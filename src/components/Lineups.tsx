@@ -7,7 +7,6 @@ import { PlayerWithStats } from '../hooks/useSupabase';
 
 const Lineups: React.FC = () => {
   const [showTopLineups, setShowTopLineups] = useState(true);
-  const [minMinutes, setMinMinutes] = useState(0); // Changed default to 0
   const { players, loading: playersLoading } = useSupabase();
   const { lineups: allLineups, loading: lineupsLoading } = useLineups(showTopLineups, players);
   const loading = playersLoading || lineupsLoading;
@@ -36,6 +35,15 @@ const Lineups: React.FC = () => {
         return 50;
     }
   }, [allLineups, activeSection]);
+
+  // Set default minimum minutes to 25% of max minutes for the active section
+  const [minMinutes, setMinMinutes] = useState(0);
+  useEffect(() => {
+    if (allLineups) {
+      const defaultMinutes = Math.round(maxMinutes * 0.10);
+      setMinMinutes(defaultMinutes);
+    }
+  }, [activeSection]);
 
   // Filter players based on search query
   useEffect(() => {
@@ -260,7 +268,7 @@ const Lineups: React.FC = () => {
 
         <div className="relative min-h-[200px]">
           {activeSection === 'two' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {lineups.twoMan.length > 0 ? (
                 lineups.twoMan.map((lineup, index) => (
                   <LineupCard key={index} lineup={lineup} />
@@ -274,7 +282,7 @@ const Lineups: React.FC = () => {
           )}
 
           {activeSection === 'three' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {lineups.threeMan.length > 0 ? (
                 lineups.threeMan.map((lineup, index) => (
                   <LineupCard key={index} lineup={lineup} />
@@ -288,7 +296,7 @@ const Lineups: React.FC = () => {
           )}
 
           {activeSection === 'five' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {lineups.fiveMan.length > 0 ? (
                 lineups.fiveMan.map((lineup, index) => (
                   <LineupCard key={index} lineup={lineup} />
