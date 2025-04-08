@@ -146,29 +146,6 @@ const Lineups: React.FC = () => {
               <h2 className="text-xl font-bold text-white">Lineup Analysis</h2>
               <p className="text-gray-400 text-sm">Explore the performance of different Timberwolves lineup combinations</p>
             </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowTopLineups(true)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  showTopLineups
-                    ? 'bg-[#78BE20] text-white shadow-lg shadow-[#78BE20]/20'
-                    : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
-                }`}
-              >
-                Top Lineups
-              </button>
-              <button
-                onClick={() => setShowTopLineups(false)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  !showTopLineups
-                    ? 'bg-[#DC2626] text-white shadow-lg shadow-[#DC2626]/20'
-                    : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
-                }`}
-              >
-                Bottom Lineups
-              </button>
-            </div>
           </div>
 
           <div className="flex flex-col gap-4 mb-6">
@@ -210,17 +187,27 @@ const Lineups: React.FC = () => {
               <div className="text-gray-400 text-sm mb-2">Lineup Specialization:</div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => setActiveFilter('net')}
+                  onClick={() => {setActiveFilter('net'); setShowTopLineups(true);}}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    activeFilter === 'net'
+                    activeFilter === 'net' && showTopLineups
                       ? 'bg-[#78BE20] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
                 >
-                  Overall Net
+                  Best Rating
                 </button>
                 <button
-                  onClick={() => setActiveFilter('offense')}
+                  onClick={() => {setActiveFilter('net'); setShowTopLineups(false);}}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    activeFilter === 'net' && !showTopLineups
+                      ? 'bg-[#DC2626] text-white'
+                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
+                  }`}
+                >
+                  Worst Rating
+                </button>
+                <button
+                  onClick={() => {setActiveFilter('offense'); setShowTopLineups(true);}}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     activeFilter === 'offense'
                       ? 'bg-[#f97316] text-white'
@@ -230,7 +217,7 @@ const Lineups: React.FC = () => {
                   Offensive Juggernaut
                 </button>
                 <button
-                  onClick={() => setActiveFilter('defense')}
+                  onClick={() => {setActiveFilter('defense'); setShowTopLineups(true);}}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     activeFilter === 'defense'
                       ? 'bg-[#3b82f6] text-white'
@@ -240,7 +227,7 @@ const Lineups: React.FC = () => {
                   Defensive Monsters
                 </button>
                 <button
-                  onClick={() => setActiveFilter('shooting')}
+                  onClick={() => {setActiveFilter('shooting'); setShowTopLineups(true);}}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     activeFilter === 'shooting'
                       ? 'bg-[#8b5cf6] text-white'
@@ -250,7 +237,7 @@ const Lineups: React.FC = () => {
                   Sharp Shooters
                 </button>
                 <button
-                  onClick={() => setActiveFilter('pace')}
+                  onClick={() => {setActiveFilter('pace'); setShowTopLineups(true);}}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     activeFilter === 'pace'
                       ? 'bg-[#ec4899] text-white'
