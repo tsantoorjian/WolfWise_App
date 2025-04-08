@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { LineupWithAdvanced } from '../types/database.types';
 import { PlayerWithStats } from './useSupabase';
@@ -8,13 +8,6 @@ type LineupsData = {
   threeMan: LineupWithAdvanced[];
   fiveMan: LineupWithAdvanced[];
 };
-
-type LineupsCache = {
-  data: LineupsData;
-  timestamp: number;
-};
-
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 function normalizeNameForMatching(name: string): string {
   if (!name) return '';
@@ -81,37 +74,22 @@ export function useLineups(showTopLineups: boolean, players: PlayerWithStats[]):
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
-  
-  // Cache reference
-  const lineupsCache = useRef<LineupsCache | null>(null);
 
   useEffect(() => {
     async function fetchLineups() {
       try {
-        // Check if we have valid cached data
-        if (lineupsCache.current) {
-          const now = Date.now();
-          if (now - lineupsCache.current.timestamp < CACHE_DURATION) {
-            setLineups(lineupsCache.current.data);
-            setLoading(false);
-            return;
-          }
-        }
-
         const fetchLineupsForSize = async (size: number) => {
           const { data, error } = await supabase
             .from('lineups_advanced')
             .select('*, group_name, lineup_size, min, player1, player2, player3, player4, player5')
             .eq('team_abbreviation', 'MIN')
             .eq('lineup_size', size)
-            .gte('min', 10) // Only fetch lineups with at least 10 minutes
             .order('net_rating', { ascending: !showTopLineups });
 
           if (error) throw error;
           return data || [];
         };
 
-        // Fetch all lineup sizes in parallel
         const [twoManData, threeManData, fiveManData] = await Promise.all([
           fetchLineupsForSize(2),
           fetchLineupsForSize(3),
@@ -175,20 +153,11 @@ export function useLineups(showTopLineups: boolean, players: PlayerWithStats[]):
           };
         };
 
-        // Process the lineup data
-        const processedData = {
+        setLineups({
           twoMan: twoManData.map(processLineup),
           threeMan: threeManData.map(processLineup),
           fiveMan: fiveManData.map(processLineup),
-        };
-
-        // Update cache
-        lineupsCache.current = {
-          data: processedData,
-          timestamp: Date.now()
-        };
-
-        setLineups(processedData);
+        });
       } catch (err) {
         setError(err);
       } finally {
@@ -200,23 +169,4 @@ export function useLineups(showTopLineups: boolean, players: PlayerWithStats[]):
   }, [showTopLineups, players]);
 
   return { lineups, loading, error };
-}
-
-// Helper function to process a single lineup
-function processLineup(lineup: any): LineupWithAdvanced {
-  const players = [];
-  for (let i = 1; i <= 5; i++) {
-    const playerKey = `player${i}`;
-    if (lineup[playerKey]) {
-      players.push({
-        name: lineup[playerKey],
-        image_url: null // You can add image URLs here if needed
-      });
-    }
-  }
-
-  return {
-    ...lineup,
-    players
-  };
 }
