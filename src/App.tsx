@@ -70,11 +70,18 @@ function App() {
         <div className="w-full max-w-[95%] xl:max-w-[90%] 2xl:max-w-[85%] mx-auto px-4 py-8 flex flex-col min-h-screen">
           <div className="flex-grow">
             <div className="flex items-center justify-between mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold text-white relative">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#78BE20] to-[#4ade80]">WolfWise</span> 
-                <span className="ml-2">Statistics</span>
-                <div className="absolute w-16 h-1 bg-gradient-to-r from-[#78BE20] to-[#4ade80] bottom-0 left-0 -mb-2 rounded-full"></div>
-              </h1>
+              <div className="flex flex-col">
+                <div className="flex items-baseline gap-3">
+                  <h1 className="text-2xl md:text-3xl font-bold text-white">
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#78BE20] to-[#4ade80]">WolfWise</span> 
+                    <span className="ml-2">Statistics</span>
+                  </h1>
+                  <span className="hidden md:inline-block h-6 w-px bg-gray-600 mx-1"></span>
+                  <p className="hidden md:block text-gray-400 text-sm">Your home for deep insights into the Minnesota Timberwolves</p>
+                </div>
+                <div className="md:hidden text-gray-400 text-sm mt-1">Your home for deep insights into the Minnesota Timberwolves</div>
+                <div className="w-16 h-1 bg-gradient-to-r from-[#78BE20] to-[#4ade80] mt-2 rounded-full"></div>
+              </div>
               
               <div className="hidden md:flex space-x-3">
                 <div className="w-3 h-3 rounded-full bg-[#78BE20] animate-pulse"></div>
