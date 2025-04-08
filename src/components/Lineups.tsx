@@ -157,7 +157,6 @@ const Lineups: React.FC = () => {
                     ? 'bg-[#78BE20] text-white'
                     : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
                 }`}
-                title="View two-player lineup combinations"
               >
                 2-Man Lineups
               </button>
@@ -168,7 +167,6 @@ const Lineups: React.FC = () => {
                     ? 'bg-[#78BE20] text-white'
                     : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
                 }`}
-                title="View three-player lineup combinations"
               >
                 3-Man Lineups
               </button>
@@ -179,7 +177,6 @@ const Lineups: React.FC = () => {
                     ? 'bg-[#78BE20] text-white'
                     : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
                 }`}
-                title="View full five-player lineup combinations"
               >
                 5-Man Lineups
               </button>
@@ -191,69 +188,81 @@ const Lineups: React.FC = () => {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => {setActiveFilter('net'); setShowTopLineups(true);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
                     activeFilter === 'net' && showTopLineups
                       ? 'bg-[#78BE20] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
-                  title="Show lineups with the best overall net rating (offensive rating minus defensive rating)"
                 >
                   Best Rating
+                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
+                    Shows lineups with the best overall net rating (offensive rating minus defensive rating)
+                  </div>
                 </button>
                 <button
                   onClick={() => {setActiveFilter('net'); setShowTopLineups(false);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
                     activeFilter === 'net' && !showTopLineups
                       ? 'bg-[#DC2626] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
-                  title="Show lineups with the worst overall net rating (offensive rating minus defensive rating)"
                 >
                   Worst Rating
+                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
+                    Shows lineups with the worst overall net rating (offensive rating minus defensive rating)
+                  </div>
                 </button>
                 <button
                   onClick={() => {setActiveFilter('offense'); setShowTopLineups(true);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
                     activeFilter === 'offense'
                       ? 'bg-[#f97316] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
-                  title="Sort by offensive rating - shows lineups that score most efficiently"
                 >
                   Offensive Juggernaut
+                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
+                    Shows lineups with the highest offensive rating (points scored per 100 possessions)
+                  </div>
                 </button>
                 <button
                   onClick={() => {setActiveFilter('defense'); setShowTopLineups(true);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
                     activeFilter === 'defense'
                       ? 'bg-[#3b82f6] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
-                  title="Sort by defensive rating - shows lineups that defend most effectively (lower is better)"
                 >
                   Defensive Monsters
+                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
+                    Shows lineups with the lowest defensive rating (points allowed per 100 possessions)
+                  </div>
                 </button>
                 <button
                   onClick={() => {setActiveFilter('shooting'); setShowTopLineups(true);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
                     activeFilter === 'shooting'
                       ? 'bg-[#8b5cf6] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
-                  title="Sort by true shooting percentage - shows lineups with the best shooting efficiency"
                 >
                   Sharp Shooters
+                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
+                    Shows lineups with the highest true shooting percentage (accounts for 2PT, 3PT, and FT efficiency)
+                  </div>
                 </button>
                 <button
                   onClick={() => {setActiveFilter('pace'); setShowTopLineups(true);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
                     activeFilter === 'pace'
                       ? 'bg-[#ec4899] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
-                  title="Sort by pace - shows lineups that play at the fastest tempo"
                 >
                   Run And Gun
+                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
+                    Shows lineups with the fastest pace (possessions per 48 minutes)
+                  </div>
                 </button>
               </div>
             </div>
@@ -271,7 +280,6 @@ const Lineups: React.FC = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 w-full bg-[#141923] border border-gray-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#78BE20] focus:border-transparent text-white"
                   disabled={selectedPlayers.length >= 5}
-                  title="Search for players to filter lineups that include these players"
                 />
                 {searchResults.length > 0 && (
                   <div className="absolute z-10 mt-1 w-full bg-[#141923] rounded-lg shadow-lg border border-gray-700/50 max-h-60 overflow-auto">
@@ -306,7 +314,6 @@ const Lineups: React.FC = () => {
                       <button
                         onClick={() => handleRemovePlayer(player)}
                         className="ml-1 text-white hover:text-red-300"
-                        title="Remove this player from filter"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -316,7 +323,6 @@ const Lineups: React.FC = () => {
                     <button
                       onClick={() => setSelectedPlayers([])}
                       className="text-xs text-gray-400 hover:text-white underline"
-                      title="Remove all selected players from filter"
                     >
                       Clear all
                     </button>
@@ -338,7 +344,6 @@ const Lineups: React.FC = () => {
                   value={minMinutes}
                   onChange={(e) => setMinMinutes(Number(e.target.value))}
                   className="w-full h-2 bg-[#1e2129] rounded-lg appearance-none cursor-pointer accent-[#78BE20]"
-                  title={`Set minimum minutes played (current: ${minMinutes}, max: ${maxMinutes})`}
                 />
               </div>
             </div>
