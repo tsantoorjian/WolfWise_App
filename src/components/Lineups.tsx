@@ -141,14 +141,14 @@ const Lineups: React.FC = () => {
     <div className="bg-[#0d1117] p-4 rounded-xl shadow-md">
       <div className="space-y-6">
         <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
             <div>
               <h2 className="text-xl font-bold text-white">Lineup Analysis</h2>
               <p className="text-gray-400 text-sm">Explore the performance of different Timberwolves lineup combinations</p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col gap-3 mb-4">
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setActiveSection('two')}
@@ -183,15 +183,15 @@ const Lineups: React.FC = () => {
             </div>
 
             {/* Specialized Filter Options */}
-            <div className="bg-[#141923] rounded-lg p-4 border border-gray-700/50">
+            <div className="bg-[#141923] rounded-lg p-3 border border-gray-700/50">
               <div className="text-gray-400 text-sm mb-2">Lineup Specialization:</div>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => {setActiveFilter('net'); setShowTopLineups(true);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
+                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
                     activeFilter === 'net' && showTopLineups
-                      ? 'bg-[#78BE20] text-white'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
+                      ? 'bg-[#78BE20] text-white shadow-sm shadow-[#78BE20]/20'
+                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
                   }`}
                 >
                   Best Rating
@@ -201,10 +201,10 @@ const Lineups: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {setActiveFilter('net'); setShowTopLineups(false);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
+                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
                     activeFilter === 'net' && !showTopLineups
-                      ? 'bg-[#DC2626] text-white'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
+                      ? 'bg-[#DC2626] text-white shadow-sm shadow-[#DC2626]/20'
+                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
                   }`}
                 >
                   Worst Rating
@@ -214,10 +214,10 @@ const Lineups: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {setActiveFilter('offense'); setShowTopLineups(true);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
+                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
                     activeFilter === 'offense'
-                      ? 'bg-[#f97316] text-white'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
+                      ? 'bg-[#f97316] text-white shadow-sm shadow-[#f97316]/20'
+                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
                   }`}
                 >
                   Offensive Juggernaut
@@ -227,10 +227,10 @@ const Lineups: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {setActiveFilter('defense'); setShowTopLineups(true);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
+                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
                     activeFilter === 'defense'
-                      ? 'bg-[#3b82f6] text-white'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
+                      ? 'bg-[#3b82f6] text-white shadow-sm shadow-[#3b82f6]/20'
+                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
                   }`}
                 >
                   Defensive Monsters
@@ -240,10 +240,10 @@ const Lineups: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {setActiveFilter('shooting'); setShowTopLineups(true);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
+                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
                     activeFilter === 'shooting'
-                      ? 'bg-[#8b5cf6] text-white'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
+                      ? 'bg-[#8b5cf6] text-white shadow-sm shadow-[#8b5cf6]/20'
+                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
                   }`}
                 >
                   Sharp Shooters
@@ -253,10 +253,10 @@ const Lineups: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {setActiveFilter('pace'); setShowTopLineups(true);}}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors relative group ${
+                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
                     activeFilter === 'pace'
-                      ? 'bg-[#ec4899] text-white'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
+                      ? 'bg-[#ec4899] text-white shadow-sm shadow-[#ec4899]/20'
+                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
                   }`}
                 >
                   Run And Gun
@@ -267,8 +267,23 @@ const Lineups: React.FC = () => {
               </div>
             </div>
 
+            <div className="bg-[#141923] rounded-lg p-3 border border-gray-700/50">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="text-gray-400 text-sm">Minimum Minutes Played:</div>
+                <div className="text-[#78BE20] font-medium">{minMinutes.toLocaleString()}</div>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max={maxMinutes}
+                value={minMinutes}
+                onChange={(e) => setMinMinutes(Number(e.target.value))}
+                className="w-full h-2 bg-[#1e2129] rounded-lg appearance-none cursor-pointer accent-[#78BE20]"
+              />
+            </div>
+
             {/* Player Search Section */}
-            <div className="mb-6">
+            <div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-gray-400" />
@@ -286,11 +301,11 @@ const Lineups: React.FC = () => {
                     {searchResults.map((player) => (
                       <div
                         key={player.PLAYER_NAME}
-                        className="px-4 py-2 hover:bg-[#1e2129] cursor-pointer flex items-center gap-2 text-white"
+                        className="px-4 py-2.5 hover:bg-[#1e2129] cursor-pointer flex items-center gap-3 text-white transition-all duration-200"
                         onClick={() => handleAddPlayer(player)}
                       >
                         {player.image_url ? (
-                          <img src={player.image_url} alt={player.PLAYER_NAME} className="w-8 h-8 rounded-full object-cover" />
+                          <img src={player.image_url} alt={player.PLAYER_NAME} className="w-8 h-8 rounded-full object-cover border border-gray-700/60" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-[#1e2129] flex items-center justify-center">
                             <Users2 className="w-4 h-4 text-gray-400" />
@@ -304,7 +319,7 @@ const Lineups: React.FC = () => {
               </div>
 
               {selectedPlayers.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {selectedPlayers.map((player) => (
                     <div
                       key={player.PLAYER_NAME}
@@ -329,23 +344,6 @@ const Lineups: React.FC = () => {
                   )}
                 </div>
               )}
-            </div>
-
-            <div className="flex flex-col gap-4 mb-6">
-              <div className="bg-[#141923] rounded-lg p-4 border border-gray-700/50">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="text-gray-400 text-sm">Minimum Minutes Played:</div>
-                  <div className="text-[#78BE20] font-medium">{minMinutes.toLocaleString()}</div>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max={maxMinutes}
-                  value={minMinutes}
-                  onChange={(e) => setMinMinutes(Number(e.target.value))}
-                  className="w-full h-2 bg-[#1e2129] rounded-lg appearance-none cursor-pointer accent-[#78BE20]"
-                />
-              </div>
             </div>
           </div>
         </div>
