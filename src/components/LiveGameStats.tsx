@@ -212,7 +212,7 @@ const LiveGameStats: React.FC = () => {
         {sortedPlayerStats.map((player, index) => {
           const isPlusMinus = parseFloat(String(player.plusminuspoints)) > 0;
           
-          // Calculate stat performance levels for color coding
+          // Calculate stat performance levels
           const isPtsHigh = player.pts >= 20;
           const isPtsMedium = player.pts >= 10 && player.pts < 20;
           const isRebHigh = player.reb >= 10;
@@ -224,7 +224,7 @@ const LiveGameStats: React.FC = () => {
           const isStlHigh = player.stl > 2;
           const isStlMedium = player.stl > 1;
           
-          // Calculate FG and 3PT percentages
+          // Calculate percentages
           const fgParts = player.fgs.split('-').map(n => parseInt(n, 10));
           const fgMade = fgParts[0] || 0;
           const fgAttempted = fgParts[1] || 0;
@@ -261,10 +261,10 @@ const LiveGameStats: React.FC = () => {
                   <h2 className="player-name">{player.player}</h2>
                   <div className="player-stats-row">
                     <div className={`player-plusminus ${isPlusMinus ? 'positive' : 'negative'}`}>
-                      <span>{isPlusMinus ? '+' : ''}{player.plusminuspoints}</span>
+                      {isPlusMinus ? '+' : ''}{player.plusminuspoints}
                     </div>
                     <div className="player-minutes">
-                      <span>{formatMinutes(player.min)} MIN</span>
+                      {formatMinutes(player.min)} MIN
                     </div>
                   </div>
                 </div>
@@ -276,27 +276,22 @@ const LiveGameStats: React.FC = () => {
                     <span className="stat-value">{player.pts}</span>
                     <span className="stat-label">PTS</span>
                   </div>
-                  
                   <div className={`stat-box ${isRebHigh ? 'high-stat' : isRebMedium ? 'medium-stat' : ''}`}>
                     <span className="stat-value">{player.reb}</span>
                     <span className="stat-label">REB</span>
                   </div>
-                  
                   <div className={`stat-box ${isAstHigh ? 'high-stat' : isAstMedium ? 'medium-stat' : ''}`}>
                     <span className="stat-value">{player.ast}</span>
                     <span className="stat-label">AST</span>
                   </div>
-
                   <div className={`stat-box ${isBlkHigh ? 'high-stat' : isBlkMedium ? 'medium-stat' : ''}`}>
                     <span className="stat-value">{player.blk}</span>
                     <span className="stat-label">BLK</span>
                   </div>
-
                   <div className={`stat-box ${isStlHigh ? 'high-stat' : isStlMedium ? 'medium-stat' : ''}`}>
                     <span className="stat-value">{player.stl}</span>
                     <span className="stat-label">STL</span>
                   </div>
-
                   <div className={`stat-box ${player.tov > 3 ? 'high-turnover' : player.tov > 2 ? 'medium-turnover' : ''}`}>
                     <span className="stat-value">{player.tov}</span>
                     <span className="stat-label">TO</span>

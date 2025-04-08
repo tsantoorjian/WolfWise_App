@@ -129,52 +129,52 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
 
   return (
     <div className="space-y-8">
-      <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Crown className="w-6 h-6 text-[#78BE20]" />
-            <h2 className="text-2xl font-bold text-white">League Leaders</h2>
+      <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-4 md:p-6">
+        <div className="text-center mb-6 md:mb-8">
+          <div className="flex items-center justify-center gap-2 md:gap-3 mb-2">
+            <Crown className="w-5 h-5 md:w-6 md:h-6 text-[#78BE20]" />
+            <h2 className="text-xl md:text-2xl font-bold text-white">League Leaders</h2>
           </div>
-          <p className="text-gray-400">Timberwolves players ranked in the top 20 league-wide</p>
+          <p className="text-sm md:text-base text-gray-400">Timberwolves players ranked in the top 20 league-wide</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
           {Object.values(playerStats).map((playerStat) => (
             <div 
               key={playerStat.player}
-              className="bg-[#141923] rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-700/50"
+              className="bg-[#141923] rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-700/50 flex flex-col"
             >
-              <div className="p-6 space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative group">
+              <div className="p-4 md:p-6 space-y-4 flex-grow">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="relative group flex-shrink-0">
                     {playerStat.image_url ? (
                       <img
                         src={playerStat.image_url}
                         alt={playerStat.player}
-                        className="w-16 h-16 rounded-full object-cover border-2 border-[#78BE20] bg-[#1e2129] group-hover:border-[#4ade80] transition-colors duration-300"
+                        className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover border-2 border-[#78BE20] bg-[#1e2129] group-hover:border-[#4ade80] transition-colors duration-300"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = 'https://via.placeholder.com/64';
                         }}
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded-full border-2 border-[#78BE20] bg-[#1e2129] flex items-center justify-center group-hover:border-[#4ade80] transition-colors duration-300">
-                        <UserRound className="w-8 h-8 text-[#78BE20]" />
+                      <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-[#78BE20] bg-[#1e2129] flex items-center justify-center group-hover:border-[#4ade80] transition-colors duration-300">
+                        <UserRound className="w-7 h-7 md:w-8 md:h-8 text-[#78BE20]" />
                       </div>
                     )}
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#78BE20]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white group-hover:text-[#78BE20] transition-colors duration-300">
+                  <div className="min-w-0 flex-grow">
+                    <h3 className="text-lg md:text-xl font-bold text-white truncate group-hover:text-[#78BE20] transition-colors duration-300">
                       {playerStat.player}
                     </h3>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-xs md:text-sm text-gray-400">
                       {playerStat.stats.length} League Rankings
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {playerStat.stats
                     .slice(0, expandedPlayers[playerStat.player] ? undefined : 3)
                     .map((stat, index) => (
@@ -182,17 +182,21 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
                         key={`${stat["Stat Category"]}-${index}`}
                         className={`flex items-center justify-between p-2 rounded transition-all duration-300 ${getRowBackgroundColor(stat.Ranking, stat["Stat Category"])}`}
                       >
-                        <div className="flex items-center gap-2">
-                          {getRankingBadge(stat.Ranking)}
-                          <div>
-                            <span className="text-white font-medium">{stat["Stat Category"]}</span>
-                            <div className="text-xs text-gray-400">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex-shrink-0">
+                            {getRankingBadge(stat.Ranking)}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-sm md:text-base text-white font-medium block truncate">
+                              {stat["Stat Category"]}
+                            </span>
+                            <div className="text-[10px] md:text-xs text-gray-400">
                               League Rank: #{stat.Ranking}
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <span className="font-bold text-white">
+                        <div className="text-right flex-shrink-0 ml-2">
+                          <span className="text-sm md:text-base font-bold text-white">
                             {formatValue(stat["Stat Category"], stat.Value)}
                           </span>
                         </div>
@@ -202,22 +206,22 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
                   {playerStat.stats.length > 3 && (
                     <button
                       onClick={() => togglePlayerStats(playerStat.player)}
-                      className="w-full mt-2 py-2 px-4 text-sm font-medium text-[#78BE20] hover:text-[#4ade80] transition-colors duration-300 flex items-center justify-center gap-2"
+                      className="w-full mt-2 py-1.5 md:py-2 px-3 md:px-4 text-xs md:text-sm font-medium text-[#78BE20] hover:text-[#4ade80] transition-colors duration-300 flex items-center justify-center gap-1 md:gap-2"
                     >
                       {expandedPlayers[playerStat.player] ? (
-                        <>Show Less <ChevronUp className="w-4 h-4" /></>
+                        <>Show Less <ChevronUp className="w-3 h-3 md:w-4 md:h-4" /></>
                       ) : (
-                        <>Show {playerStat.stats.length - 3} More <ChevronDown className="w-4 h-4" /></>
+                        <>Show {playerStat.stats.length - 3} More <ChevronDown className="w-3 h-3 md:w-4 md:h-4" /></>
                       )}
                     </button>
                   )}
                 </div>
               </div>
 
-              <div className="px-6 py-3 border-t border-gray-700/50 bg-[#0f1119] rounded-b-lg">
-                <div className="flex items-center justify-between text-sm">
+              <div className="px-4 md:px-6 py-2 md:py-3 border-t border-gray-700/50 bg-[#0f1119] rounded-b-lg mt-auto">
+                <div className="flex items-center justify-between text-xs md:text-sm">
                   <div className="flex items-center gap-1 text-gray-400">
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
                     <span>Best Rank:</span>
                   </div>
                   <span className="font-medium text-white">
@@ -229,8 +233,8 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
           ))}
         </div>
 
-        <div className="mt-6 flex items-center gap-2 text-sm text-gray-400 bg-[#141923]/60 rounded-lg p-3">
-          <Info className="w-4 h-4 flex-shrink-0" />
+        <div className="mt-6 flex items-center gap-2 text-xs md:text-sm text-gray-400 bg-[#141923]/60 rounded-lg p-2 md:p-3">
+          <Info className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
           <span>Rankings are based on players with minimum qualifying minutes</span>
         </div>
       </div>
