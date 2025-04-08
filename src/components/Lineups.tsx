@@ -157,6 +157,7 @@ const Lineups: React.FC = () => {
                     ? 'bg-[#78BE20] text-white'
                     : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
                 }`}
+                title="View two-player lineup combinations"
               >
                 2-Man Lineups
               </button>
@@ -167,6 +168,7 @@ const Lineups: React.FC = () => {
                     ? 'bg-[#78BE20] text-white'
                     : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
                 }`}
+                title="View three-player lineup combinations"
               >
                 3-Man Lineups
               </button>
@@ -177,6 +179,7 @@ const Lineups: React.FC = () => {
                     ? 'bg-[#78BE20] text-white'
                     : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
                 }`}
+                title="View full five-player lineup combinations"
               >
                 5-Man Lineups
               </button>
@@ -193,6 +196,7 @@ const Lineups: React.FC = () => {
                       ? 'bg-[#78BE20] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
+                  title="Show lineups with the best overall net rating (offensive rating minus defensive rating)"
                 >
                   Best Rating
                 </button>
@@ -203,6 +207,7 @@ const Lineups: React.FC = () => {
                       ? 'bg-[#DC2626] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
+                  title="Show lineups with the worst overall net rating (offensive rating minus defensive rating)"
                 >
                   Worst Rating
                 </button>
@@ -213,6 +218,7 @@ const Lineups: React.FC = () => {
                       ? 'bg-[#f97316] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
+                  title="Sort by offensive rating - shows lineups that score most efficiently"
                 >
                   Offensive Juggernaut
                 </button>
@@ -223,6 +229,7 @@ const Lineups: React.FC = () => {
                       ? 'bg-[#3b82f6] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
+                  title="Sort by defensive rating - shows lineups that defend most effectively (lower is better)"
                 >
                   Defensive Monsters
                 </button>
@@ -233,6 +240,7 @@ const Lineups: React.FC = () => {
                       ? 'bg-[#8b5cf6] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
+                  title="Sort by true shooting percentage - shows lineups with the best shooting efficiency"
                 >
                   Sharp Shooters
                 </button>
@@ -243,6 +251,7 @@ const Lineups: React.FC = () => {
                       ? 'bg-[#ec4899] text-white'
                       : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80'
                   }`}
+                  title="Sort by pace - shows lineups that play at the fastest tempo"
                 >
                   Run And Gun
                 </button>
@@ -262,6 +271,7 @@ const Lineups: React.FC = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 w-full bg-[#141923] border border-gray-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#78BE20] focus:border-transparent text-white"
                   disabled={selectedPlayers.length >= 5}
+                  title="Search for players to filter lineups that include these players"
                 />
                 {searchResults.length > 0 && (
                   <div className="absolute z-10 mt-1 w-full bg-[#141923] rounded-lg shadow-lg border border-gray-700/50 max-h-60 overflow-auto">
@@ -296,6 +306,7 @@ const Lineups: React.FC = () => {
                       <button
                         onClick={() => handleRemovePlayer(player)}
                         className="ml-1 text-white hover:text-red-300"
+                        title="Remove this player from filter"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -305,6 +316,7 @@ const Lineups: React.FC = () => {
                     <button
                       onClick={() => setSelectedPlayers([])}
                       className="text-xs text-gray-400 hover:text-white underline"
+                      title="Remove all selected players from filter"
                     >
                       Clear all
                     </button>
@@ -326,6 +338,7 @@ const Lineups: React.FC = () => {
                   value={minMinutes}
                   onChange={(e) => setMinMinutes(Number(e.target.value))}
                   className="w-full h-2 bg-[#1e2129] rounded-lg appearance-none cursor-pointer accent-[#78BE20]"
+                  title={`Set minimum minutes played (current: ${minMinutes}, max: ${maxMinutes})`}
                 />
               </div>
             </div>
