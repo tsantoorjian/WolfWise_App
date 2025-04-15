@@ -11,14 +11,30 @@ const Lineups: React.FC = () => {
   const { lineups: allLineups, loading: lineupsLoading } = useLineups(showTopLineups, players);
   const loading = playersLoading || lineupsLoading;
 
-  const [activeSection, setActiveSection] = useState<'two' | 'three' | 'five'>('two');
+  const [activeSection, setActiveSection] = useState<'two' | 'three' | 'five'>('five');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<PlayerWithStats[]>([]);
   const [searchResults, setSearchResults] = useState<PlayerWithStats[]>([]);
   
   // Add specialized filter type
-  type FilterType = 'net' | 'offense' | 'defense' | 'shooting' | 'pace';
+  type FilterType = 'net' | 'offense' | 'defense' | 'shooting' | 'pace' | 'minutes';
   const [activeFilter, setActiveFilter] = useState<FilterType>('net');
+
+  // Filter options
+  const lineupSizeOptions = [
+    { value: 'five', label: '5-Man Lineups' },
+    { value: 'three', label: '3-Man Lineups' },
+    { value: 'two', label: '2-Man Lineups' },
+  ];
+
+  const specializationOptions = [
+    { value: 'net', label: 'Best Rating', description: 'Shows lineups with the best overall net rating (offensive rating minus defensive rating)' },
+    { value: 'offense', label: 'Offensive Juggernaut', description: 'Shows lineups with the highest offensive rating (points scored per 100 possessions)' },
+    { value: 'defense', label: 'Defensive Monsters', description: 'Shows lineups with the lowest defensive rating (points allowed per 100 possessions)' },
+    { value: 'shooting', label: 'Sharp Shooters', description: 'Shows lineups with the highest true shooting percentage (accounts for 2PT, 3PT, and FT efficiency)' },
+    { value: 'pace', label: 'Run And Gun', description: 'Shows lineups with the fastest pace (possessions per 48 minutes)' },
+    { value: 'minutes', label: 'Most Played', description: 'Shows lineups with the most minutes played together on the court' },
+  ];
 
   // Calculate max minutes for each lineup type
   const maxMinutes = useMemo(() => {
@@ -41,13 +57,13 @@ const Lineups: React.FC = () => {
   }, [allLineups, activeSection]);
 
   // Set default minimum minutes to 25% of max minutes for the active section
-  const [minMinutes, setMinMinutes] = useState(0);
+  const [minMinutes, setMinMinutes] = useState(5);
   useEffect(() => {
     if (allLineups) {
-      const defaultMinutes = Math.round(maxMinutes * 0.10);
+      const defaultMinutes = Math.max(5, Math.round(maxMinutes * 0.10));
       setMinMinutes(defaultMinutes);
     }
-  }, [activeSection]);
+  }, [maxMinutes, allLineups, activeSection]);
 
   // Filter players based on search query
   useEffect(() => {
@@ -99,6 +115,8 @@ const Lineups: React.FC = () => {
             return showTopLineups ? b.ts_pct - a.ts_pct : a.ts_pct - b.ts_pct;
           case 'pace':
             return showTopLineups ? b.pace - a.pace : a.pace - b.pace;
+          case 'minutes':
+            return showTopLineups ? b.min - a.min : a.min - b.min;
           case 'net':
           default:
             return showTopLineups ? b.net_rating - a.net_rating : a.net_rating - b.net_rating;
@@ -149,121 +167,40 @@ const Lineups: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-3 mb-4">
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setActiveSection('two')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  activeSection === 'two'
-                    ? 'bg-[#78BE20] text-white'
-                    : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
-                }`}
-              >
-                2-Man Lineups
-              </button>
-              <button
-                onClick={() => setActiveSection('three')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  activeSection === 'three'
-                    ? 'bg-[#78BE20] text-white'
-                    : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
-                }`}
-              >
-                3-Man Lineups
-              </button>
-              <button
-                onClick={() => setActiveSection('five')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  activeSection === 'five'
-                    ? 'bg-[#78BE20] text-white'
-                    : 'bg-[#141923] text-gray-400 hover:bg-[#1e2129]'
-                }`}
-              >
-                5-Man Lineups
-              </button>
-            </div>
+            <div className="flex flex-wrap gap-4">
+              {/* Lineup Size Dropdown */}
+              <div className="flex-1 min-w-[200px]">
+                <div className="text-gray-400 text-sm mb-2">Lineup Size:</div>
+                <select
+                  value={activeSection}
+                  onChange={(e) => setActiveSection(e.target.value as 'two' | 'three' | 'five')}
+                  className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-[#141923] text-white border border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-[#78BE20] focus:border-transparent hover:bg-[#1e2129] transition-colors"
+                >
+                  {lineupSizeOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            {/* Specialized Filter Options */}
-            <div className="bg-[#141923] rounded-lg p-3 border border-gray-700/50">
-              <div className="text-gray-400 text-sm mb-2">Lineup Specialization:</div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => {setActiveFilter('net'); setShowTopLineups(true);}}
-                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
-                    activeFilter === 'net' && showTopLineups
-                      ? 'bg-[#78BE20] text-white shadow-sm shadow-[#78BE20]/20'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
-                  }`}
+              {/* Specialization Dropdown */}
+              <div className="flex-1 min-w-[200px]">
+                <div className="text-gray-400 text-sm mb-2">Lineup Specialization:</div>
+                <select
+                  value={activeFilter}
+                  onChange={(e) => {
+                    setActiveFilter(e.target.value as FilterType);
+                    setShowTopLineups(true);
+                  }}
+                  className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-[#141923] text-white border border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-[#78BE20] focus:border-transparent hover:bg-[#1e2129] transition-colors"
                 >
-                  Best Rating
-                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
-                    Shows lineups with the best overall net rating (offensive rating minus defensive rating)
-                  </div>
-                </button>
-                <button
-                  onClick={() => {setActiveFilter('net'); setShowTopLineups(false);}}
-                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
-                    activeFilter === 'net' && !showTopLineups
-                      ? 'bg-[#DC2626] text-white shadow-sm shadow-[#DC2626]/20'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
-                  }`}
-                >
-                  Worst Rating
-                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
-                    Shows lineups with the worst overall net rating (offensive rating minus defensive rating)
-                  </div>
-                </button>
-                <button
-                  onClick={() => {setActiveFilter('offense'); setShowTopLineups(true);}}
-                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
-                    activeFilter === 'offense'
-                      ? 'bg-[#f97316] text-white shadow-sm shadow-[#f97316]/20'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
-                  }`}
-                >
-                  Offensive Juggernaut
-                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
-                    Shows lineups with the highest offensive rating (points scored per 100 possessions)
-                  </div>
-                </button>
-                <button
-                  onClick={() => {setActiveFilter('defense'); setShowTopLineups(true);}}
-                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
-                    activeFilter === 'defense'
-                      ? 'bg-[#3b82f6] text-white shadow-sm shadow-[#3b82f6]/20'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
-                  }`}
-                >
-                  Defensive Monsters
-                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
-                    Shows lineups with the lowest defensive rating (points allowed per 100 possessions)
-                  </div>
-                </button>
-                <button
-                  onClick={() => {setActiveFilter('shooting'); setShowTopLineups(true);}}
-                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
-                    activeFilter === 'shooting'
-                      ? 'bg-[#8b5cf6] text-white shadow-sm shadow-[#8b5cf6]/20'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
-                  }`}
-                >
-                  Sharp Shooters
-                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
-                    Shows lineups with the highest true shooting percentage (accounts for 2PT, 3PT, and FT efficiency)
-                  </div>
-                </button>
-                <button
-                  onClick={() => {setActiveFilter('pace'); setShowTopLineups(true);}}
-                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 relative group ${
-                    activeFilter === 'pace'
-                      ? 'bg-[#ec4899] text-white shadow-sm shadow-[#ec4899]/20'
-                      : 'bg-[#1e2129] text-gray-300 hover:bg-[#1e2129]/80 hover:scale-105'
-                  }`}
-                >
-                  Run And Gun
-                  <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-48 pointer-events-none border border-gray-700">
-                    Shows lineups with the fastest pace (possessions per 48 minutes)
-                  </div>
-                </button>
+                  {specializationOptions.map(option => (
+                    <option key={option.value} value={option.value} title={option.description}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -350,13 +287,13 @@ const Lineups: React.FC = () => {
 
         <div className="relative min-h-[200px]">
           {activeSection === 'two' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="flex flex-col gap-4">
               {lineups.twoMan.length > 0 ? (
                 lineups.twoMan.map((lineup, index) => (
                   <LineupCard key={index} lineup={lineup} />
                 ))
               ) : (
-                <div className="col-span-full text-center py-8 text-gray-400">
+                <div className="text-center py-8 text-gray-400">
                   No lineups found with the selected players and minutes filter.
                 </div>
               )}
@@ -364,13 +301,13 @@ const Lineups: React.FC = () => {
           )}
 
           {activeSection === 'three' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="flex flex-col gap-4">
               {lineups.threeMan.length > 0 ? (
                 lineups.threeMan.map((lineup, index) => (
                   <LineupCard key={index} lineup={lineup} />
                 ))
               ) : (
-                <div className="col-span-full text-center py-8 text-gray-400">
+                <div className="text-center py-8 text-gray-400">
                   No lineups found with the selected players and minutes filter.
                 </div>
               )}
@@ -378,13 +315,13 @@ const Lineups: React.FC = () => {
           )}
 
           {activeSection === 'five' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="flex flex-col gap-4">
               {lineups.fiveMan.length > 0 ? (
                 lineups.fiveMan.map((lineup, index) => (
                   <LineupCard key={index} lineup={lineup} />
                 ))
               ) : (
-                <div className="col-span-full text-center py-8 text-gray-400">
+                <div className="text-center py-8 text-gray-400">
                   No lineups found with the selected players and minutes filter.
                 </div>
               )}
