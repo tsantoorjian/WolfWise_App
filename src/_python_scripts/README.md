@@ -20,8 +20,18 @@ pip install -r src/aaWolfWiseETL/requirements.txt
 
 These scripts are intended to be run locally or in a separate environment from the web application deployment.
 
+## Shared Utilities
+
+A new `utils` package has been added to provide reusable functions across scripts. This package includes:
+
+- **Supabase utilities**: Functions for connecting to Supabase and loading data
+- **NBA API utilities**: Functions for fetching data from the NBA API with retry logic
+
+See the [`utils/README.md`](./utils/README.md) for detailed usage instructions.
+
 ## Contents
 
+- `utils/`: Shared utility functions for Supabase and NBA API operations
 - `stat_cards/`: Scripts for generating player stat cards
 - `lineups/`: Scripts for processing lineup data
 - `records/`: Record-related data processing

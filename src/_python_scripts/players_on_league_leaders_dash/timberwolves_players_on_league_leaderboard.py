@@ -3,9 +3,9 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import logging
 import re
-from supabase import create_client
 from dotenv import load_dotenv
 import os
+from src._python_scripts.utils import get_supabase_client, load_to_supabase
 
 # Configure logging
 logging.basicConfig(
@@ -18,9 +18,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Initialize Supabase client
-supabase_url = 'https://kuthirbcjtofsdwsfhkj.supabase.co'
-supabase_key = os.getenv('SUPABASE_KEY')
-supabase = create_client(supabase_url, supabase_key)
+supabase = get_supabase_client()
 
 # URL of the team leaderboard page (2024-25 season)
 URL = "https://www.basketball-reference.com/teams/MIN/2025.html"
@@ -73,20 +71,16 @@ def extract_value_and_ranking(cell):
     return None, None
 
 def save_to_supabase(df):
-    """Save DataFrame to Supabase"""
+    """Save DataFrame to Supabase using utility"""
     try:
         # First delete all existing records
         logger.info("Deleting existing records from players_on_league_leaderboard table...")
         supabase.table('players_on_league_leaderboard').delete().gte('Value', 0).execute()
         
-        # Convert DataFrame to list of dictionaries
-        records = df.to_dict('records')
-        
-        # Insert new records
+        # Use utility to insert new records
         logger.info("Inserting new records into players_on_league_leaderboard table...")
-        result = supabase.table('players_on_league_leaderboard').insert(records).execute()
-        
-        logger.info(f"Successfully saved {len(records)} records to players_on_league_leaderboard table")
+        load_to_supabase(df, 'players_on_league_leaderboard')
+        logger.info(f"Successfully saved {len(df)} records to players_on_league_leaderboard table")
         
         # Print preview of the data
         logger.info("\nPreview of inserted data:")
@@ -96,8 +90,8 @@ def save_to_supabase(df):
     except Exception as e:
         logger.error(f"Error saving to Supabase: {str(e)}")
         # Print the first record to see the data structure
-        if records:
-            logger.error(f"Sample record: {records[0]}")
+        if not df.empty:
+            logger.error(f"Sample record: {df.iloc[0].to_dict()}")
 
 try:
     # Request the page content

@@ -1,14 +1,11 @@
-import os
-from supabase import create_client
 from dotenv import load_dotenv
+from src._python_scripts.utils import get_supabase_client
 
 # Load environment variables
 load_dotenv()
 
 # Initialize Supabase client
-supabase_url = os.getenv('VITE_SUPABASE_URL')
-supabase_key = os.getenv('VITE_SUPABASE_ANON_KEY')
-supabase = create_client(supabase_url, supabase_key)
+supabase = get_supabase_client()
 
 def update_record_tracker():
     """Update record_tracker_season table using stored procedure"""

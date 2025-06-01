@@ -1,18 +1,14 @@
 from nba_api.stats.endpoints import leaguedashplayerstats, teamgamelogs
 import pandas as pd
 from datetime import datetime
-import os
-from supabase import create_client
 from dotenv import load_dotenv
+from src._python_scripts.utils import get_supabase_client, load_to_supabase
 
 # Load environment variables
 load_dotenv()
 
 # Initialize Supabase client
-supabase_url = os.getenv('VITE_SUPABASE_URL')
-supabase_key = os.getenv('VITE_SUPABASE_ANON_KEY')
-supabase = create_client(supabase_url, supabase_key)
-
+supabase = get_supabase_client()
 
 def get_timberwolves_stats(last_n_games=0):
     """
@@ -59,7 +55,6 @@ def get_timberwolves_stats(last_n_games=0):
 
     return df
 
-
 def save_to_supabase():
     timeframes = [
         (0, "season", "timberwolves_player_stats_season"),
@@ -72,19 +67,14 @@ def save_to_supabase():
             # Get stats
             stats_df = get_timberwolves_stats(games)
             
-            # Convert DataFrame to list of dictionaries for Supabase
-            records = stats_df.to_dict('records')
-            
             # Convert PLAYER_ID to integer (bigint in Supabase)
-            for record in records:
-                record['PLAYER_ID'] = int(record['PLAYER_ID'])
+            stats_df['PLAYER_ID'] = stats_df['PLAYER_ID'].astype(int)
             
             # Delete existing records with a WHERE clause that matches all records
             supabase.table(table_name).delete().neq('PLAYER_ID', 0).execute()
             
-            # Then insert new records
-            result = supabase.table(table_name).insert(records).execute()
-            
+            # Use utility to insert new records
+            load_to_supabase(stats_df, table_name)
             print(f"Successfully saved stats to {table_name}")
             
             # Print preview of the data
@@ -94,7 +84,6 @@ def save_to_supabase():
 
         except Exception as e:
             print(f"Error saving {timeframe} stats to {table_name}: {str(e)}")
-
 
 if __name__ == "__main__":
     save_to_supabase()

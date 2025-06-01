@@ -6,20 +6,14 @@ import logging
 import time
 from requests.exceptions import ReadTimeout, ConnectionError
 import os
-from supabase import create_client, Client
 from dotenv import load_dotenv
+from src._python_scripts.utils import get_supabase_client, load_to_supabase
 
 # Load environment variables
 load_dotenv()
 
 # Set up Supabase client
-supabase_url = os.environ.get("VITE_SUPABASE_URL")
-supabase_key = os.environ.get("VITE_SUPABASE_ANON_KEY")
-
-if not supabase_url or not supabase_key:
-    raise ValueError("Missing Supabase environment variables")
-
-supabase: Client = create_client(supabase_url, supabase_key)
+supabase = get_supabase_client()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -108,18 +102,15 @@ if all_game_logs:
     combined_logs['BLK'] = combined_logs['BLK'].astype(str)
     combined_logs['GAME_DATE'] = combined_logs['GAME_DATE'].dt.strftime('%Y-%m-%d')
     
-    # Convert DataFrame to list of dictionaries for Supabase
-    records = combined_logs.to_dict('records')
-    
     try:
         # First, delete existing records for the current season to avoid duplicates
         logger.info(f"Deleting existing records for season {nba_season_id}...")
         supabase.table('twolves_player_game_logs').delete().eq('SEASON_ID', nba_season_id).execute()
         
-        # Insert new records
+        # Use utility to upload new records
         logger.info("Uploading new game logs to Supabase...")
-        result = supabase.table('twolves_player_game_logs').insert(records).execute()
-        logger.info(f"Successfully uploaded {len(records)} game logs to Supabase")
+        load_to_supabase(combined_logs, 'twolves_player_game_logs')
+        logger.info(f"Successfully uploaded {len(combined_logs)} game logs to Supabase")
         
     except Exception as e:
         logger.error(f"Error uploading to Supabase: {str(e)}")

@@ -3,10 +3,10 @@ import pandas as pd
 from nba_api.stats.endpoints import LeagueDashPlayerStats, CommonTeamRoster
 import time
 import logging
-from supabase import create_client
 from dotenv import load_dotenv
 import os
 import re
+from src._python_scripts.utils import get_supabase_client, load_to_supabase
 
 # Configure logging to output progress messages
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,9 +19,7 @@ BASE_IMAGE_URL = "https://kuthirbcjtofsdwsfhkj.supabase.co/storage/v1/object/pub
 
 # Load environment variables and initialize Supabase client
 load_dotenv()
-supabase_url = os.getenv('VITE_SUPABASE_URL')
-supabase_key = os.getenv('VITE_SUPABASE_ANON_KEY')
-supabase = create_client(supabase_url, supabase_key)
+supabase = get_supabase_client()
 
 def normalize_player_name(name):
     """
@@ -204,15 +202,9 @@ if __name__ == "__main__":
         for col in percentage_columns:
             df_stats[col] = df_stats[col].apply(lambda x: x/100 if x is not None else None)
         
-        # Convert DataFrame to list of dictionaries for Supabase
-        records = df_stats.to_dict('records')
-        
-        # Delete existing records
+        # Use utility to upload new records
         supabase.table('nba_player_stats').delete().neq('id', 0).execute()
-        
-        # Insert new records
-        result = supabase.table('nba_player_stats').insert(records).execute()
-        
+        load_to_supabase(df_stats, 'nba_player_stats')
         logging.info("Successfully saved stats to Supabase table 'nba_player_stats'")
         
     except Exception as e:

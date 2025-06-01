@@ -1,14 +1,16 @@
 from nba_api.stats.endpoints import leaguedashplayerstats
 import pandas as pd
-from supabase import create_client
 import os
 from typing import List, Dict
 import time
 import random
-from requests.exceptions import RequestException
-from http.client import RemoteDisconnected
 import logging
 from dotenv import load_dotenv
+from src._python_scripts.utils import (
+    api_call_with_retry, 
+    get_player_stats as utils_get_player_stats,
+    load_to_supabase as utils_load_to_supabase
+)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -20,25 +22,6 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger(__name__)
-
-def api_call_with_retry(api_func, max_retries=3):
-    """Make API call with retry logic"""
-    for attempt in range(max_retries):
-        try:
-            # Add randomized delay between attempts
-            if attempt > 0:
-                delay = random.uniform(2, 5)
-                logger.info(f"Retry attempt {attempt + 1}, waiting {delay:.1f} seconds...")
-                time.sleep(delay)
-            
-            return api_func()
-            
-        except (RequestException, RemoteDisconnected) as e:
-            if attempt == max_retries - 1:  # Last attempt
-                logger.error(f"Final attempt failed: {str(e)}")
-                raise  # Re-raise the last exception
-            logger.warning(f"API call failed: {str(e)}, retrying...")
-            continue
 
 def get_player_stats() -> pd.DataFrame:
     """Fetch player stats from NBA API"""
@@ -158,43 +141,8 @@ def get_player_stats() -> pd.DataFrame:
 
 def load_to_supabase(df: pd.DataFrame) -> None:
     """Load data to Supabase"""
-    logger.info("Initializing Supabase connection...")
-    
-    # Initialize Supabase client
-    supabase_url = os.environ.get('SUPABASE_URL')
-    supabase_key = os.environ.get('SUPABASE_KEY')
-    
-    if not supabase_url or not supabase_key:
-        error_msg = "Missing required environment variables:"
-        if not supabase_url:
-            error_msg += " SUPABASE_URL"
-        if not supabase_key:
-            error_msg += " SUPABASE_KEY"
-        logger.error(error_msg)
-        raise ValueError(error_msg)
-
-    try:
-        supabase = create_client(supabase_url, supabase_key)
-    except Exception as e:
-        logger.error(f"Failed to create Supabase client: {str(e)}")
-        raise
-
-    # Convert DataFrame to list of dictionaries
-    records = df.to_dict('records')
-    logger.info(f"Preparing to load {len(records)} records to Supabase")
-
-    try:
-        # Upsert data (update if exists, insert if doesn't)
-        logger.info("Upserting data into distribution_stats table...")
-        supabase.table('distribution_stats').upsert(
-            records,
-            on_conflict='player_id,stat'  # Specify the composite primary key
-        ).execute()
-        logger.info("Data successfully loaded to Supabase")
-        
-    except Exception as e:
-        logger.error(f"Error loading data to Supabase: {str(e)}")
-        raise
+    logger.info("Loading data to Supabase...")
+    utils_load_to_supabase(df, 'distribution_stats', on_conflict='player_id,stat')
 
 def main():
     logger.info("Starting stat distribution data collection")

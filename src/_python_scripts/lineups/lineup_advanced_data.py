@@ -3,11 +3,16 @@ import datetime
 import pandas as pd
 import time
 import re
-from nba_api.stats.endpoints import leaguedashlineups
-from supabase import create_client
-from dotenv import load_dotenv
 import os
 import logging
+from dotenv import load_dotenv
+from src._python_scripts.utils import (
+    get_supabase_client,
+    load_to_supabase,
+    get_current_season,
+    get_lineup_stats,
+    api_call_with_retry
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -15,51 +20,26 @@ logger = logging.getLogger(__name__)
 
 # Load environment variables and initialize Supabase client
 load_dotenv()
-supabase_url = os.getenv('VITE_SUPABASE_URL')
-supabase_key = os.getenv('VITE_SUPABASE_ANON_KEY')
-
-if not supabase_url or not supabase_key:
-    raise ValueError("Missing Supabase environment variables")
-
-supabase = create_client(supabase_url, supabase_key)
-
-def get_current_season():
-    """
-    Returns the NBA season string (e.g., "2024-25") based on the current date.
-    NBA seasons typically start in October.
-    """
-    now = datetime.datetime.now()
-    if now.month >= 10:
-        season_start = now.year
-        season_end = now.year + 1
-    else:
-        season_start = now.year - 1
-        season_end = now.year
-    return f"{season_start}-{str(season_end)[-2:]}"
+supabase = get_supabase_client()
 
 def fetch_advanced_lineup_data_paginated(lineup_size, season_str):
-    all_data = []
-    teams = [1610612750]  # Timberwolves team ID
-
-    for team_id in teams:
-        logger.info(f"Fetching {lineup_size}-man advanced lineup data for team {team_id}")
-        lineup = leaguedashlineups.LeagueDashLineups(
-            group_quantity=lineup_size,
-            season=season_str,
-            season_type_all_star='Regular Season',
-            measure_type_detailed_defense='Advanced',
-            team_id_nullable=team_id
-        )
-
-        df = lineup.get_data_frames()[0]
-        if not df.empty:
-            df['LINEUP_SIZE'] = lineup_size
-            df['season'] = season_str
-            all_data.append(df)
-
-        time.sleep(1)  # Avoid rate-limiting
-
-    return pd.concat(all_data, ignore_index=True) if all_data else None
+    """Fetch advanced lineup data for the specified lineup size."""
+    team_id = 1610612750  # Timberwolves team ID
+    logger.info(f"Fetching {lineup_size}-man advanced lineup data for team {team_id}")
+    
+    # Use the utility function to get lineup stats
+    df = get_lineup_stats(
+        lineup_size=lineup_size,
+        season=season_str,
+        team_id=team_id,
+        measure_type='Advanced'
+    )
+    
+    if df is not None and not df.empty:
+        # Lineup size already added by get_lineup_stats
+        return df
+    
+    return None
 
 def split_players(group_name):
     """
@@ -136,18 +116,46 @@ def main():
         else:
             logger.warning("Column 'group_name' not found in the combined dataframe. Skipping player splitting.")
 
-        try:
-            # Convert DataFrame to records for Supabase
-            records = combined_df.to_dict('records')
+        # --- Ensure all group_ids exist in lineups before uploading to lineups_advanced ---
+        # 1. Fetch all group_ids for the current season from lineups
+        existing_group_ids = set(
+            r['group_id'] for r in supabase.table('lineups').select('group_id').eq('season', season_str).execute().data
+        )
+        # 2. Find which group_ids in combined_df are missing from lineups
+        advanced_group_ids = set(combined_df['group_id'].unique())
+        missing_group_ids = advanced_group_ids - existing_group_ids
+        if missing_group_ids:
+            logger.info(f"Inserting {len(missing_group_ids)} missing group_ids into lineups...")
+            # 3. Insert minimal records for missing group_ids
+            # Get columns for lineups table
+            lineups_columns = [
+                'group_id', 'group_name', 'team_id', 'team_abbreviation', 'gp', 'w', 'l', 'w_pct',
+                'min', 'fgm', 'fga', 'fg_pct', 'fg3m', 'fg3a', 'fg3_pct', 'ftm', 'fta', 'ft_pct',
+                'oreb', 'dreb', 'reb', 'ast', 'tov', 'stl', 'blk', 'blka', 'pf', 'pfd', 'pts',
+                'plus_minus', 'gp_rank', 'w_rank', 'l_rank', 'w_pct_rank', 'min_rank', 'fgm_rank',
+                'fga_rank', 'fg_pct_rank', 'fg3m_rank', 'fg3a_rank', 'fg3_pct_rank', 'ftm_rank',
+                'fta_rank', 'ft_pct_rank', 'oreb_rank', 'dreb_rank', 'reb_rank', 'ast_rank',
+                'tov_rank', 'stl_rank', 'blk_rank', 'blka_rank', 'pf_rank', 'pfd_rank', 'pts_rank',
+                'plus_minus_rank', 'lineup_size', 'player1', 'player2', 'player3', 'player4', 'player5', 'season'
+            ]
+            # Only keep columns that exist in combined_df
+            available_cols = [col for col in lineups_columns if col in combined_df.columns]
+            # Build records for missing group_ids
+            missing_records = combined_df[combined_df['group_id'].isin(missing_group_ids)][available_cols].to_dict('records')
+            # Insert into lineups
+            if missing_records:
+                supabase.table('lineups').insert(missing_records).execute()
+        # --- End ensure group_ids in lineups ---
 
+        try:
             # Delete existing records for the current season
             logger.info(f"Deleting existing records for season {season_str}...")
             supabase.table('lineups_advanced').delete().eq('season', season_str).execute()
 
-            # Insert new records
+            # Insert new records using utility function
             logger.info("Uploading advanced lineup data to Supabase...")
-            result = supabase.table('lineups_advanced').insert(records).execute()
-            logger.info(f"Successfully uploaded {len(records)} advanced lineup records to Supabase")
+            load_to_supabase(combined_df, 'lineups_advanced')
+            logger.info(f"Successfully uploaded {len(combined_df)} advanced lineup records to Supabase")
 
         except Exception as e:
             logger.error(f"Error uploading to Supabase: {e}")
