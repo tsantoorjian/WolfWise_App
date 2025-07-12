@@ -7,27 +7,9 @@
 }
 
 .live-game-stats-container h1 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #fff;
-  font-size: 2.2rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  position: relative;
-  padding-bottom: 15px;
 }
 
 .live-game-stats-container h1:after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(to right, #78BE20, #4ade80);
-  border-radius: 2px;
 }
 
 .player-stats-grid {
@@ -1354,8 +1336,8 @@
   align-items: center;
   justify-content: flex-start;
   width: 100%;
-  max-width: 340px;
-  margin: 0 auto 8px auto;
+  max-width: 500px; /* Increased from 340px */
+  margin: 0 auto 12px auto; /* Slightly more margin */
   padding: 0;
   background: none;
   box-shadow: none;
@@ -1363,17 +1345,17 @@
 }
 
 .compact-game-status {
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 1.2rem; /* Increased from 0.85rem */
+  font-weight: 800;
   color: #fff;
   background: rgba(30,33,41,0.7);
-  border-radius: 6px;
-  padding: 2px 10px;
-  margin-bottom: 6px;
-  letter-spacing: 1px;
+  border-radius: 8px;
+  padding: 6px 18px; /* More padding */
+  margin-bottom: 10px;
+  letter-spacing: 1.5px;
   text-align: center;
-  min-height: 22px;
-  min-width: 60px;
+  min-height: 32px;
+  min-width: 90px;
   display: inline-block;
 }
 
@@ -1381,51 +1363,65 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 0;
   width: 100%;
-  min-height: 40px;
+  min-height: 60px;
   padding: 0;
   background: none;
 }
 
 .compact-team-logo {
-  width: 26px;
-  height: 26px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
-  margin: 0 2px;
-  border-radius: 4px;
+  margin: 0 18px;
+  border-radius: 6px;
   background: none;
   box-shadow: none;
 }
 
 .compact-team-abbr {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.7rem;
+  font-weight: 800;
   color: #fff;
-  margin: 0 2px;
-  letter-spacing: 0.5px;
+  margin: 0 8px;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  width: 50px;
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .compact-score {
-  font-size: 1.8rem;
+  font-size: 3.2rem;
   font-weight: 900;
   color: #fff;
-  margin: 0 2px;
-  min-width: 40px;
+  margin: 0 20px; /* Increased from 8px */
+  min-width: 70px;
   text-align: center;
   letter-spacing: 0;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .compact-vs {
-  font-size: 1.2rem;
+  font-size: 1.7rem;
   color: rgba(255, 255, 255, 0.7);
-  margin: 0 4px;
-  font-weight: 600;
+  margin: 0 8px;
+  font-weight: 700;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Hide old scoreboard styles in compact mode */
@@ -1433,29 +1429,29 @@
   display: none !important;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 600px) {
   .compact-scoreboard-container {
     max-width: 98vw;
   }
   .compact-scoreboard-row {
-    gap: 6px;
+    gap: 10px;
   }
   .compact-team-logo {
-    width: 22px;
-    height: 22px;
+    width: 32px;
+    height: 32px;
   }
   .compact-team-abbr {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     width: 40px;
   }
   .compact-score {
-    font-size: 1.5rem;
-    min-width: 30px;
+    font-size: 2.1rem;
+    min-width: 36px;
   }
   .compact-game-status {
-    font-size: 0.7rem;
-    min-width: 40px;
-    padding: 1px 6px;
+    font-size: 0.9rem;
+    min-width: 50px;
+    padding: 2px 8px;
   }
 }
 
