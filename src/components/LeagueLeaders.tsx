@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trophy, Medal, UserRound, TrendingUp, Info, Crown, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trophy, Medal, UserRound, TrendingUp, Info, Crown, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 
 type LeaderboardEntry = {
   "Stat Category": string;
@@ -51,41 +51,85 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
 
   const formatValue = (category: string, value: number) => {
     const lowerCategory = category.toLowerCase();
-    if (lowerCategory.includes('steal')) {
-      return `${value.toFixed(1)}%`;
-    }
-    if (lowerCategory.includes('percentage') || 
-        lowerCategory.includes('%') ||
-        lowerCategory.includes('pct')) {
+    if (
+      lowerCategory.includes('percentage') ||
+      lowerCategory.includes('%') ||
+      lowerCategory.includes('pct')
+    ) {
+      // Percent stats: show as percentage, rounded to 1 decimal
       return `${(value * 100).toFixed(1)}%`;
     }
-    return value.toFixed(1);
+    if (lowerCategory.includes('per game')) {
+      // Per game stats: rounded to 1 decimal
+      return value.toFixed(1);
+    }
+    // Total stats: whole numbers, comma formatted
+    return value.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  };
+
+  const getRankingBadgeIcon = (ranking: number) => {
+    if (ranking === 1) {
+      return <Trophy className="w-4 h-4 text-[#FFD700] drop-shadow-lg z-20" />;
+    }
+    if (ranking === 2) {
+      return <Medal className="w-4 h-4 text-[#C0C0C0] drop-shadow-lg z-20" />;
+    }
+    if (ranking === 3) {
+      return <Medal className="w-4 h-4 text-[#CD7F32] drop-shadow-lg z-20" />;
+    }
+    return null;
+  };
+
+  const getRankingNumberBadge = (ranking: number) => {
+    let bg = '#10b981';
+    if (ranking === 1) bg = '#FFD700';
+    else if (ranking === 2) bg = '#C0C0C0';
+    else if (ranking === 3) bg = '#CD7F32';
+    else if (ranking >= 4) bg = '#141923'; // 4 and above use dark background
+    return (
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold`} style={{ background: bg, color: ranking >= 4 ? 'white' : 'black' }}>
+        {ranking}
+      </div>
+    );
   };
 
   const getRankingBadge = (ranking: number) => {
     if (ranking === 1) {
       return (
-        <div className="relative">
-          <Trophy className="w-6 h-6 text-[#FFD700] drop-shadow-lg animate-pulse" />
-          <div className="absolute inset-0 bg-[#FFD700] opacity-20 blur-sm rounded-full animate-ping"></div>
+        <div className="relative w-10 h-10 flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#FFD700]/60 to-[#fffbe6]/10 animate-pulse opacity-80 blur-sm z-0"></div>
+          <Trophy className="w-8 h-8 text-[#FFD700] drop-shadow-lg z-10" />
+          <Crown className="absolute -top-3 left-1/2 -translate-x-1/2 w-5 h-5 text-[#FFD700] drop-shadow-md z-20 animate-bounce" />
         </div>
       );
     }
     if (ranking === 2) {
-      return <Medal className="w-6 h-6 text-[#C0C0C0] drop-shadow-lg" />;
+      return (
+        <div className="relative w-9 h-9 flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#C0C0C0]/50 to-[#f8fafc]/10 animate-pulse opacity-70 blur-sm z-0"></div>
+          <Medal className="w-8 h-8 text-[#C0C0C0] drop-shadow-lg z-10" />
+          <div className="absolute inset-0 rounded-full border-2 border-[#C0C0C0] z-20"></div>
+        </div>
+      );
     }
     if (ranking === 3) {
-      return <Medal className="w-6 h-6 text-[#CD7F32] drop-shadow-lg" />;
+      return (
+        <div className="relative w-9 h-9 flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#CD7F32]/50 to-[#f8fafc]/10 animate-pulse opacity-60 blur-sm z-0"></div>
+          <Medal className="w-8 h-8 text-[#CD7F32] drop-shadow-lg z-10" />
+          <div className="absolute inset-0 rounded-full border-2 border-[#CD7F32] z-20"></div>
+        </div>
+      );
     }
     if (ranking <= 10) {
       return (
-        <div className="w-6 h-6 bg-[#10b981] text-white rounded-full flex items-center justify-center text-[10px] font-bold">
+        <div className="w-8 h-8 bg-[#10b981] text-white rounded-full flex items-center justify-center text-[13px] font-bold">
           {ranking}
         </div>
       );
     }
     return (
-      <div className="w-6 h-6 bg-[#141923] text-white rounded-full flex items-center justify-center text-[10px] font-bold">
+      <div className="w-8 h-8 bg-[#141923] text-white rounded-full flex items-center justify-center text-[13px] font-bold">
         {ranking}
       </div>
     );
@@ -138,7 +182,7 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
           <p className="text-sm md:text-base text-gray-400">Timberwolves players ranked in the top 20 league-wide</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
           {Object.values(playerStats).map((playerStat) => (
             <div 
               key={playerStat.player}
@@ -177,31 +221,34 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
                 <div className="space-y-2">
                   {playerStat.stats
                     .slice(0, expandedPlayers[playerStat.player] ? undefined : 3)
-                    .map((stat, index) => (
-                      <div 
-                        key={`${stat["Stat Category"]}-${index}`}
-                        className={`flex items-center justify-between p-2 rounded transition-all duration-300 ${getRowBackgroundColor(stat.Ranking, stat["Stat Category"])}`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="flex-shrink-0">
-                            {getRankingBadge(stat.Ranking)}
-                          </div>
-                          <div className="min-w-0">
-                            <span className="text-sm md:text-base text-white font-medium block truncate">
-                              {stat["Stat Category"]}
-                            </span>
-                            <div className="text-[10px] md:text-xs text-gray-400">
-                              League Rank: #{stat.Ranking}
+                    .map((stat, index) => {
+                      const ranking = getRankingNumber(stat.Ranking);
+                      return (
+                        <div 
+                          key={`${stat["Stat Category"]}-${index}`}
+                          className={`relative flex items-center justify-between p-2 rounded transition-all duration-300 ${getRowBackgroundColor(stat.Ranking, stat["Stat Category"])}`}
+                        >
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className="flex-shrink-0">
+                              {getRankingNumberBadge(ranking)}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-sm md:text-base text-white font-medium block truncate">
+                                {stat["Stat Category"]}
+                              </span>
                             </div>
                           </div>
+                          <div className="text-right flex-shrink-0 ml-2 relative pr-6"> {/* Add pr-6 for badge space */}
+                            <span className="text-sm md:text-base font-bold text-white">
+                              {formatValue(stat["Stat Category"], stat.Value)}
+                            </span>
+                            {ranking <= 3 && (
+                              <span className="absolute right-0 top-1/2 -translate-y-1/2">{getRankingBadgeIcon(ranking)}</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-right flex-shrink-0 ml-2">
-                          <span className="text-sm md:text-base font-bold text-white">
-                            {formatValue(stat["Stat Category"], stat.Value)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   
                   {playerStat.stats.length > 3 && (
                     <button

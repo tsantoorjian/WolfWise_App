@@ -256,7 +256,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
               {
                 name: 'Projected',
                 type: 'line',
-                symbolSize: 8,
+                showSymbol: false,
                 data: [[currentPoint[0], currentPoint[1]], [totalGames, record.projection]],
                 itemStyle: { color: '#FFFFFF' },
                 lineStyle: { 
@@ -270,7 +270,7 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                 name: 'Current Point',
                 type: 'effectScatter',
                 symbolSize: 12,
-                data: [currentPoint],
+                data: [fullProgressionData[fullProgressionData.length - 1]],
                 itemStyle: { color: '#78BE20' },
                 showEffectOn: 'render',
                 rippleEffect: {

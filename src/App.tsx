@@ -6,6 +6,7 @@ import Lineups from './components/Lineups';
 import { RecordTracker } from './components/RecordTracker';
 import { LeagueLeaders } from './components/LeagueLeaders';
 import LiveGameStats from './components/LiveGameStats';
+import { PerformanceGrid } from './components/PerformanceGrid';
 import { 
   Menu, 
   LineChart, 
@@ -20,7 +21,7 @@ import {
 import './index.css';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-type Tab = 'live-stats' | 'stats' | 'lineups' | 'leaders' | 'records' | 'distribution';
+type Tab = 'live-stats' | 'stats' | 'lineups' | 'leaders' | 'records' | 'distribution' | 'performance-grid';
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('live-stats');
@@ -44,6 +45,8 @@ function App() {
         return <Trophy className={baseClasses} />;
       case 'distribution':
         return <LineChart className={baseClasses} />;
+      case 'performance-grid':
+        return <BarChart3 className={baseClasses} />;
     }
   };
 
@@ -61,6 +64,8 @@ function App() {
         return 'Record Tracker';
       case 'distribution':
         return 'Distributions';
+      case 'performance-grid':
+        return 'Performance Grid';
     }
   };
 
@@ -104,7 +109,7 @@ function App() {
             {/* Navigation */}
             <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block mb-6`}>
               <div className="flex flex-col md:flex-row gap-2 md:gap-1 glass-card p-1 rounded-lg">
-                {(['live-stats', 'stats', 'lineups', 'leaders', 'records', 'distribution'] as Tab[]).map((tab) => (
+                {(['live-stats', 'stats', 'lineups', 'leaders', 'records', 'distribution', 'performance-grid'] as Tab[]).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
@@ -149,6 +154,9 @@ function App() {
                   }}
                   selectedStat={selectedStat}
                 />
+              )}
+              {activeTab === 'performance-grid' && (
+                <PerformanceGrid players={players} />
               )}
             </div>
           </div>
