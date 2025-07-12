@@ -152,7 +152,6 @@ const LiveGameStats: React.FC = () => {
   if ((!playerStats || playerStats.length === 0) && !gameInfo) {
     return (
       <div className="empty-container">
-        <h1>Live Game Stats</h1>
         <div className="empty-message">
           <Activity className="w-16 h-16 text-gray-500 opacity-50" />
           <p>No live game stats available at the moment.</p>
@@ -526,7 +525,6 @@ const LiveGameStats: React.FC = () => {
   return (
     <div className="live-game-stats-container">
       <div className="stats-header">
-        <h1>Live Game Stats</h1>
         {gameInfo && (
           <div className="compact-scoreboard-container">
             <div className="compact-game-status">
