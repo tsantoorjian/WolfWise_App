@@ -1443,14 +1443,14 @@
   .compact-team-logo {
     width: 28px;
     height: 28px;
-    margin: 0 2px;
+    margin: 0 4px 0 0; /* Add right margin for spacing */
   }
   .compact-team-abbr {
     font-size: 1rem;
-    width: 32px;
-    min-width: 32px;
-    max-width: 32px;
-    margin: 0 2px;
+    width: 36px; /* Slightly increased from 32px */
+    min-width: 36px;
+    max-width: 36px;
+    margin: 0 4px 0 0; /* Add right margin for spacing */
   }
   .compact-score {
     font-size: 1.5rem;
@@ -1471,12 +1471,14 @@
   .compact-team-logo {
     width: 20px;
     height: 20px;
+    margin: 0 3px 0 0; /* Add right margin for spacing */
   }
   .compact-team-abbr {
-    font-size: 0.8rem;
-    width: 22px;
-    min-width: 22px;
-    max-width: 22px;
+    font-size: 0.85rem;
+    width: 26px; /* Slightly increased from 22px */
+    min-width: 26px;
+    max-width: 26px;
+    margin: 0 3px 0 0; /* Add right margin for spacing */
   }
   .compact-score {
     font-size: 1.1rem;
