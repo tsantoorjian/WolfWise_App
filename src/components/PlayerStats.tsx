@@ -91,54 +91,60 @@ function PlayerStatsView({ player, last5Stats, last10Stats }: PlayerStatsViewPro
         <StatCard
           label="Points"
           value={stats.PTS}
+          rank={player.PTS_RANK}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Rebounds"
           value={stats.REB}
+          rank={player.REB_RANK}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Assists"
           value={stats.AST}
+          rank={player.AST_RANK}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Steals"
           value={stats.STL}
+          rank={player.STL_RANK}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="Blocks"
           value={stats.BLK}
+          rank={player.BLK_RANK}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
         <StatCard
           label="+/-"
           value={stats.PLUS_MINUS}
+          rank={player.PLUS_MINUS_RANK}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />

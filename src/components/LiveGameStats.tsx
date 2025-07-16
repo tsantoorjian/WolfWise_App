@@ -537,11 +537,15 @@ const LiveGameStats: React.FC = () => {
                 className="compact-team-logo" 
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
-              <span className="compact-team-abbr">{gameInfo.home_team}</span>
-              <span className="compact-score">{gameInfo.home_score}</span>
+              <div className="compact-team-block">
+                <span className="compact-team-abbr">{gameInfo.home_team}</span>
+                <span className="compact-score">{gameInfo.home_score}</span>
+              </div>
               <span className="compact-vs">–</span>
-              <span className="compact-score">{gameInfo.away_score}</span>
-              <span className="compact-team-abbr">{gameInfo.away_team}</span>
+              <div className="compact-team-block">
+                <span className="compact-score">{gameInfo.away_score}</span>
+                <span className="compact-team-abbr">{gameInfo.away_team}</span>
+              </div>
               <img 
                 src={getTeamLogoUrl(gameInfo.away_team)} 
                 alt={gameInfo.away_team} 

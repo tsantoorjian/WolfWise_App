@@ -47,6 +47,14 @@ export type TimberwolvesPlayerStats = {
   NBA_FANTASY_PTS: number;
   DD2: number;
   TD3: number;
+  // Add rank fields
+  PTS_RANK?: number;
+  REB_RANK?: number;
+  AST_RANK?: number;
+  STL_RANK?: number;
+  BLK_RANK?: number;
+  PLUS_MINUS_RANK?: number;
+  NBA_FANTASY_PTS_RANK?: number;
 }
 
 export type DistributionStats = {
@@ -112,12 +120,21 @@ export type LineupWithAdvanced = {
 
 export type RecentStats = {
   PTS: number;
-  AST: number;
   REB: number;
+  AST: number;
   STL: number;
   BLK: number;
   PLUS_MINUS: number;
-}
+  NBA_FANTASY_PTS: number;
+  // Add rank fields
+  PTS_RANK?: number;
+  REB_RANK?: number;
+  AST_RANK?: number;
+  STL_RANK?: number;
+  BLK_RANK?: number;
+  PLUS_MINUS_RANK?: number;
+  NBA_FANTASY_PTS_RANK?: number;
+};
 
 export type LeaderboardEntry = {
   "Stat Category": string;

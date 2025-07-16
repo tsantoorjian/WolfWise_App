@@ -5,9 +5,10 @@ import { RecentStats } from '../types/database.types';
 type StatCardProps = {
   label: string;
   value: number | null;
+  rank?: number;
   bgColor: string;
   textColor: string;
-  playerName?: string;
+  playerId?: number; // Use playerId instead of playerName
   last5Stats?: Record<string, RecentStats>;
   last10Stats?: Record<string, RecentStats>;
   accentColor?: string;
@@ -19,11 +20,12 @@ const StatCard: React.FC<StatCardProps> = ({
   value,
   bgColor,
   textColor,
-  playerName,
+  playerId, // Use playerId
   last5Stats,
   last10Stats,
   accentColor = '#78BE20',
-  className
+  className,
+  rank
 }) => {
   const getStatKey = () => {
     switch (label.toUpperCase()) {
@@ -39,8 +41,10 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   const statKey = getStatKey();
-  const last5Value = playerName && last5Stats ? last5Stats[playerName]?.[statKey as keyof RecentStats] : undefined;
-  const last10Value = playerName && last10Stats ? last10Stats[playerName]?.[statKey as keyof RecentStats] : undefined;
+  const last5Value = playerId && last5Stats ? last5Stats[playerId]?.[statKey as keyof RecentStats] : undefined;
+  const last10Value = playerId && last10Stats ? last10Stats[playerId]?.[statKey as keyof RecentStats] : undefined;
+  const last5Rank = playerId && last5Stats ? (last5Stats[playerId] as any)?.[`${statKey}_RANK`] as number | undefined : undefined;
+  const last10Rank = playerId && last10Stats ? (last10Stats[playerId] as any)?.[`${statKey}_RANK`] as number | undefined : undefined;
 
   // Modern card styles
   const getCardStyles = () => {
@@ -87,22 +91,29 @@ const StatCard: React.FC<StatCardProps> = ({
         {/* Content */}
         <div className="flex justify-between items-end mt-1 md:mt-2">
           <div>
-            <p className="text-lg md:text-2xl lg:text-3xl font-bold text-white">
+            <p className="text-lg md:text-3xl lg:text-4xl font-bold text-white">
               {value !== null ? value.toFixed(1) : '0.0'}
+              {typeof rank === 'number' && rank > 0 && (
+                <span className="text-sm md:text-lg text-gray-400 font-normal ml-1">({rank}{getOrdinalSuffix(rank)})</span>
+              )}
             </p>
-            <p className="text-[0.6rem] md:text-[0.65rem] lg:text-[0.7rem] text-gray-400 mt-0.5 md:mt-1 font-medium uppercase tracking-wide">Season Avg</p>
+            <p className="text-[0.6rem] md:text-xs text-gray-400 mt-1 font-medium uppercase tracking-wider">Season Avg</p>
           </div>
           
           {last5Value !== undefined && last10Value !== undefined && (
-            <div className="text-[0.6rem] md:text-[0.65rem] lg:text-[0.7rem] text-gray-300 text-right bg-[#232838] p-1.5 md:p-2 rounded-lg">
-              <div className="flex items-center justify-end gap-1 md:gap-1.5 lg:gap-2 mb-1 md:mb-1.5">
+            <div className="text-[0.6rem] md:text-sm text-gray-300 text-right bg-[#232838] p-1 md:p-2 rounded-lg">
+              <div className="flex items-center justify-end gap-1 md:gap-2 mb-1.5">
                 <span className="text-gray-400 font-medium">L5</span>
-                <span className="font-semibold">{(last5Value as number).toFixed(1)}</span>
+                <span className="font-semibold">{(last5Value as number).toFixed(1)}{typeof last5Rank === 'number' && last5Rank > 0 && (
+                  <span className="text-gray-400 font-normal ml-0.5">({last5Rank}{getOrdinalSuffix(last5Rank)})</span>
+                )}</span>
                 {value && getPerformanceIndicator(last5Value as number, value)}
               </div>
-              <div className="flex items-center justify-end gap-1 md:gap-1.5 lg:gap-2">
+              <div className="flex items-center justify-end gap-1 md:gap-2">
                 <span className="text-gray-400 font-medium">L10</span>
-                <span className="font-semibold">{(last10Value as number).toFixed(1)}</span>
+                <span className="font-semibold">{(last10Value as number).toFixed(1)}{typeof last10Rank === 'number' && last10Rank > 0 && (
+                  <span className="text-gray-400 font-normal ml-0.5">({last10Rank}{getOrdinalSuffix(last10Rank)})</span>
+                )}</span>
                 {value && getPerformanceIndicator(last10Value as number, value)}
               </div>
             </div>
@@ -115,5 +126,16 @@ const StatCard: React.FC<StatCardProps> = ({
     </div>
   );
 };
+
+// Add ordinal suffix helper
+function getOrdinalSuffix(n: number) {
+  if (n >= 11 && n <= 13) return 'th';
+  switch (n % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
+}
 
 export default StatCard;

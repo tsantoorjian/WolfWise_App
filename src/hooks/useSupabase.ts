@@ -15,6 +15,13 @@ export interface RecentStats {
   STL: number;
   BLK: number;
   PLUS_MINUS: number;
+  PTS_RANK?: number;
+  REB_RANK?: number;
+  AST_RANK?: number;
+  STL_RANK?: number;
+  BLK_RANK?: number;
+  PLUS_MINUS_RANK?: number;
+  NBA_FANTASY_PTS_RANK?: number;
 }
 
 export interface PlayerWithStats extends TimberwolvesPlayerStats {
@@ -86,14 +93,28 @@ export function useSupabase() {
 
         if (playerStatsError) throw playerStatsError;
 
+        // Fetch ranks from full_season_base_per_game (per-game stats)
+        const { data: seasonRanks, error: seasonRanksError } = await supabase
+          .from('full_season_base_per_game')
+          .select('PLAYER_ID, PTS_RANK, REB_RANK, AST_RANK, STL_RANK, BLK_RANK, PLUS_MINUS_RANK, NBA_FANTASY_PTS_RANK');
+        if (seasonRanksError) throw seasonRanksError;
+
         // Combine the data
         const combinedPlayerData = playerStats.map(stats => {
           const metadata = playerMetadata.find(p => p.player_name === stats.PLAYER_NAME);
+          const ranks: any = seasonRanks.find(r => r.PLAYER_ID === stats.PLAYER_ID) || {};
           return {
             ...stats,
             position: metadata?.position,
             jersey_number: metadata?.jersey_number,
-            image_url: metadata?.image_url
+            image_url: metadata?.image_url,
+            PTS_RANK: ranks.PTS_RANK,
+            REB_RANK: ranks.REB_RANK,
+            AST_RANK: ranks.AST_RANK,
+            STL_RANK: ranks.STL_RANK,
+            BLK_RANK: ranks.BLK_RANK,
+            PLUS_MINUS_RANK: ranks.PLUS_MINUS_RANK,
+            NBA_FANTASY_PTS_RANK: ranks.NBA_FANTASY_PTS_RANK,
           };
         });
 
@@ -130,14 +151,58 @@ export function useSupabase() {
         console.log('Raw Last 5 Data:', last5Data);
         console.log('Raw Last 10 Data:', last10Data);
 
+        // Fetch ranks for last 5 and last 10 games (per-game)
+        const { data: last5Ranks, error: last5RanksError } = await supabase
+          .from('last_5_base_per_game')
+          .select('PLAYER_ID, PTS_RANK, REB_RANK, AST_RANK, STL_RANK, BLK_RANK, PLUS_MINUS_RANK, NBA_FANTASY_PTS_RANK');
+        if (last5RanksError) throw last5RanksError;
+
+        const { data: last10Ranks, error: last10RanksError } = await supabase
+          .from('last_10_base_per_game')
+          .select('PLAYER_ID, PTS_RANK, REB_RANK, AST_RANK, STL_RANK, BLK_RANK, PLUS_MINUS_RANK, NBA_FANTASY_PTS_RANK');
+        if (last10RanksError) throw last10RanksError;
+
         const processed5 = processRecentStats(last5Data || []);
         const processed10 = processRecentStats(last10Data || []);
+
+        // Merge ranks into the processed stats objects
+        const last5StatsWithRanks: Record<string, RecentStats> = {};
+        Object.keys(processed5).forEach(playerId => {
+          const stats = processed5[playerId];
+          const ranks: any = last5Ranks.find(r => r.PLAYER_ID === Number(playerId)) || {};
+          last5StatsWithRanks[playerId] = {
+            ...stats,
+            PTS_RANK: ranks.PTS_RANK,
+            REB_RANK: ranks.REB_RANK,
+            AST_RANK: ranks.AST_RANK,
+            STL_RANK: ranks.STL_RANK,
+            BLK_RANK: ranks.BLK_RANK,
+            PLUS_MINUS_RANK: ranks.PLUS_MINUS_RANK,
+            NBA_FANTASY_PTS_RANK: ranks.NBA_FANTASY_PTS_RANK,
+          };
+        });
+
+        const last10StatsWithRanks: Record<string, RecentStats> = {};
+        Object.keys(processed10).forEach(playerId => {
+          const stats = processed10[playerId];
+          const ranks: any = last10Ranks.find(r => r.PLAYER_ID === Number(playerId)) || {};
+          last10StatsWithRanks[playerId] = {
+            ...stats,
+            PTS_RANK: ranks.PTS_RANK,
+            REB_RANK: ranks.REB_RANK,
+            AST_RANK: ranks.AST_RANK,
+            STL_RANK: ranks.STL_RANK,
+            BLK_RANK: ranks.BLK_RANK,
+            PLUS_MINUS_RANK: ranks.PLUS_MINUS_RANK,
+            NBA_FANTASY_PTS_RANK: ranks.NBA_FANTASY_PTS_RANK,
+          };
+        });
 
         console.log('Processed Last 5 Stats:', processed5);
         console.log('Processed Last 10 Stats:', processed10);
 
-        setLast5Stats(processed5);
-        setLast10Stats(processed10);
+        setLast5Stats(last5StatsWithRanks);
+        setLast10Stats(last10StatsWithRanks);
 
         // Fetch record tracker data
         const { data: recordTrackerData, error: recordTrackerError } = await supabase
@@ -256,7 +321,7 @@ function processLineup(lineup: any): LineupWithAdvanced {
 
 function processRecentStats(data: any[]): Record<string, RecentStats> {
   return data.reduce((acc, curr) => {
-    acc[curr.PLAYER_NAME] = {
+    acc[curr.PLAYER_ID] = { // Key by PLAYER_ID
       PTS: curr.PTS || 0,
       AST: curr.AST || 0,
       REB: curr.REB || 0,

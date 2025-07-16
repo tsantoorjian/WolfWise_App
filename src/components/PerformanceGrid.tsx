@@ -15,6 +15,8 @@ const STAT_LIST = [
   'EFG %'
 ];
 
+const NEGATIVE_STATS = ['Turnovers per game'];
+
 const PERCENTAGE_STATS = ['3pt percentage', 'Fg %', 'EFG %'];
 
 function getStatLabel(stat: string) {
@@ -38,26 +40,22 @@ function formatStatValue(stat: string, value: number) {
   return value.toFixed(1);
 }
 
-// New: Custom color scale based on provided palette
+// Updated color function: solid purple (low) to green (high) without transparency
 function getHeatColor(percentile: number) {
-  // Palette: 0 = #ED2938, 0.25 = #B25F4A, 0.5 = #77945C, 0.75 = #3BCA6D, 1 = #00FF7F
-  const palette = [
-    { pct: 0.0, color: [237, 41, 56] },    // #ED2938
-    { pct: 0.25, color: [178, 95, 74] },  // #B25F4A
-    { pct: 0.5, color: [119, 148, 92] },  // #77945C
-    { pct: 0.75, color: [59, 202, 109] }, // #3BCA6D
-    { pct: 1.0, color: [0, 255, 127] }    // #00FF7F
-  ];
-  let i = 1;
-  for (; i < palette.length - 1; i++) {
-    if (percentile < palette[i].pct) break;
-  }
-  const lower = palette[i - 1];
-  const upper = palette[i];
-  const range = upper.pct - lower.pct;
-  const rangePct = (percentile - lower.pct) / range;
-  const color = lower.color.map((c, idx) => Math.round(c + rangePct * (upper.color[idx] - c)));
+  const purple = [109, 40, 217]; // #6D28D9
+  const green = [34, 197, 94]; // #22C55E
+  const t = percentile;
+  const color = purple.map((c, i) => Math.round(c + t * (green[i] - c)));
   return `rgb(${color[0]},${color[1]},${color[2]})`;
+}
+
+// New: Function to determine text color based on background luminance
+function getTextColor(bgColor: string) {
+  const rgb = bgColor.match(/\d+/g);
+  if (!rgb || rgb.length < 3) return '#ffffff';
+  const [r, g, b] = rgb.map(Number);
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+  return luminance > 140 ? '#1f2937' : '#ffffff';
 }
 
 export function PerformanceGrid({ players }: { players: PlayerWithStats[] }) {
@@ -120,10 +118,13 @@ export function PerformanceGrid({ players }: { players: PlayerWithStats[] }) {
   // For each stat, get league-wide sorted values and compute percentile for each Wolves player
   function getPercentile(stat: string, value: number) {
     const data = statData[stat] || [];
-    const sorted = [...data].sort((a, b) => a.value - b.value);
-    const idx = sorted.findIndex(d => d.value === value);
-    if (idx === -1) return 0;
-    return idx / (sorted.length - 1);
+    if (data.length === 0) return 0;
+    const values = data.map(d => d.value).sort((a, b) => a - b);
+    let lower = 0;
+    while (lower < values.length && values[lower] < value) lower++;
+    let rawPercentile = lower / (values.length - 1);
+    const isNegative = NEGATIVE_STATS.includes(stat);
+    return isNegative ? 1 - rawPercentile : rawPercentile;
   }
 
   if (loading) {
@@ -176,14 +177,15 @@ export function PerformanceGrid({ players }: { players: PlayerWithStats[] }) {
                   const playerStat = (statData[stat] || []).find(d => d.player_name === player.PLAYER_NAME);
                   if (!playerStat) return <td key={player.PLAYER_NAME} className="px-1 md:px-2 py-2 md:py-3 text-gray-500 bg-[#141923] w-16 md:w-24 min-w-[3.5rem] md:min-w-[6rem] max-w-[4.5rem] md:max-w-[6rem] text-xs md:text-base">–</td>;
                   const percentile = getPercentile(stat, playerStat.value);
-                  const color = getHeatColor(percentile);
+                  const bgColor = getHeatColor(percentile);
+                  const textColor = getTextColor(bgColor);
                   // Only show hover effect on non-touch devices
                   const isHovered = hovered && (hovered.row === rowIdx || hovered.col === colIdx);
                   return (
                     <td
                       key={player.PLAYER_NAME}
-                      className={`px-1 md:px-2 py-2 md:py-3 font-bold text-center transition-all duration-200 rounded-xl shadow-md cursor-pointer w-16 md:w-24 min-w-[3.5rem] md:min-w-[6rem] max-w-[4.5rem] md:max-w-[6rem] text-xs md:text-base text-[#23263a] ${isHovered ? 'ring-2 ring-[#78BE20] ring-offset-2 ring-offset-[#1e2129] z-10' : ''}`}
-                      style={{ background: color, boxShadow: '0 2px 12px 0 rgba(120,190,32,0.10)' }}
+                      className={`px-1 md:px-2 py-2 md:py-3 font-bold text-center transition-all duration-200 rounded-xl shadow-md cursor-pointer w-16 md:w-24 min-w-[3.5rem] md:min-w-[6rem] max-w-[4.5rem] md:max-w-[6rem] text-xs md:text-base ${isHovered ? 'ring-2 ring-[#78BE20] ring-offset-2 ring-offset-[#1e2129] z-10' : ''}`}
+                      style={{ background: bgColor, color: textColor, boxShadow: '0 2px 12px 0 rgba(120,190,32,0.10)' }}
                       onMouseEnter={e => {
                         if ('ontouchstart' in window) return; // skip hover on touch
                         const cell = e.currentTarget as HTMLElement;
