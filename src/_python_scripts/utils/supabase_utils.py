@@ -79,19 +79,18 @@ def load_to_supabase(df, table_name, on_conflict=None):
         traceback.print_exc()
         return False
 
-def execute_sql(sql_query, params=None):
+def execute_sql(sql_query):
     """Execute raw SQL query on Supabase.
     
     Args:
         sql_query (str): SQL query to execute
-        params (dict, optional): Parameters for the query
     
     Returns:
         dict: Query results
     """
     try:
         supabase = get_supabase_client()
-        result = supabase.rpc("exec_sql", {"sql": sql_query, "params": params or {}}).execute()
+        result = supabase.rpc("exec_sql", {"sql": sql_query}).execute()
         return result
     except Exception as e:
         logger.error(f"Error executing SQL: {str(e)}")
