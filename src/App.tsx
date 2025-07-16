@@ -16,7 +16,8 @@ import {
   BarChart3,
   Activity,
   Home,
-  Mail
+  Mail,
+  Table
 } from 'lucide-react';
 import './index.css';
 import { BrowserRouter as Router } from 'react-router-dom';
@@ -46,7 +47,7 @@ function App() {
       case 'distribution':
         return <LineChart className={baseClasses} />;
       case 'performance-grid':
-        return <BarChart3 className={baseClasses} />;
+        return <Table className={baseClasses} />;
     }
   };
 
