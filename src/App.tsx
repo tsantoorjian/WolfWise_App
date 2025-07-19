@@ -72,7 +72,7 @@ function App() {
       case 'performance-grid':
         return 'Performance Grid';
       case 'heatshot-tool':
-        return 'HeatShot Tool';
+        return 'Headshot Tool';
     }
   };
 

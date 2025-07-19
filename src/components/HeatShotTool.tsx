@@ -380,13 +380,21 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
           name: 'Timberwolves',
           type: 'scatter',
           data: timberwolvesData,
-          symbolSize: 12,
+          symbolSize: 36,
+          symbol: (value: any, params: any) => {
+            const player = timberwolvesData[params.dataIndex];
+            if (player && player.imageUrl) {
+              return `image://${player.imageUrl}`;
+            }
+            return 'circle';
+          },
           itemStyle: {
             color: '#78BE20',
             borderColor: '#fff',
             borderWidth: 2,
           },
           emphasis: {
+            symbolSize: 48,
             itemStyle: {
               color: '#4ade80',
               borderColor: '#fff',
@@ -403,29 +411,29 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
   }
 
   return (
-    <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 p-4 md:p-8">
-      <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-8 flex items-center gap-2 drop-shadow-glow">
-        HeatShot Tool
+    <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 p-4 md:p-6">
+      <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-6 flex items-center gap-2 drop-shadow-glow">
+        Headshot Tool
       </h2>
       
       {/* Instructions */}
-      <div className="mb-6 p-4 bg-[#23263a]/60 rounded-lg border border-gray-600/30">
+      <div className="mb-4 p-3 bg-[#23263a]/60 rounded-lg border border-gray-600/30">
         {/* Desktop Instructions */}
         <p className="text-gray-300 text-sm hidden md:block">
           Drag and drop stats from below onto the X and Y axes to create a scatter plot. 
-          Timberwolves players appear as green dots, while other NBA players appear as gray dots.
+          Timberwolves players appear as headshots, while other NBA players appear as gray dots.
           Position is based on league percentile rankings.
         </p>
         {/* Mobile Instructions */}
         <p className="text-gray-300 text-sm md:hidden">
           Click on the X and Y axis boxes to select stats and create a scatter plot. 
-          Timberwolves players appear as green dots, while other NBA players appear as gray dots.
+          Timberwolves players appear as headshots, while other NBA players appear as gray dots.
           Position is based on league percentile rankings.
         </p>
       </div>
 
       {/* Available Stats - Desktop Only */}
-      <div className="mb-6 hidden md:block">
+      <div className="mb-4 hidden md:block">
         <h3 className="text-lg font-bold text-white mb-3">Available Stats</h3>
         <div className="flex flex-wrap gap-2">
           {STAT_LIST.map(stat => (
@@ -441,7 +449,7 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
       </div>
 
       {/* Chart Area with Positioned Drop Zones */}
-      <div className="bg-[#141923]/60 rounded-lg p-4">
+      <div className="bg-[#141923]/60 rounded-lg p-3">
         {/* Mobile Layout - Drop zones above chart */}
         <div className="md:hidden">
           <div className="grid grid-cols-2 gap-4 mb-4">
@@ -464,16 +472,16 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
           </div>
           
           {/* Chart */}
-          <div className="min-h-[400px]">
+          <div className="aspect-square max-w-[400px] mx-auto">
             {xAxisStat && yAxisStat ? (
               <ReactEChartsCore
                 echarts={echarts}
                 option={getChartOptions()}
-                style={{ height: '400px', width: '100%' }}
+                style={{ height: '100%', width: '100%' }}
                 opts={{ renderer: 'canvas' }}
               />
             ) : (
-              <div className="flex items-center justify-center h-[400px] text-gray-500">
+              <div className="flex items-center justify-center h-full text-gray-500">
                 <div className="text-center">
                   <div className="text-6xl mb-4">📊</div>
                   <div className="text-lg">Select stats for both axes to see the scatter plot</div>
@@ -484,7 +492,7 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
         </div>
 
         {/* Desktop Layout - Drop zones positioned around chart */}
-        <div className="hidden md:flex gap-4">
+        <div className="hidden md:flex gap-0">
           {/* Y-Axis Drop Zone - Vertical on the left */}
           <div className="flex flex-col justify-center">
             <DragDropZone
@@ -497,18 +505,18 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
           </div>
           
           {/* Chart and X-Axis Drop Zone Container */}
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col ml-0">
             {/* Chart */}
-            <div className="min-h-[500px] mb-4">
+            <div className="aspect-square mb-3 max-h-[60vh] -ml-16">
               {xAxisStat && yAxisStat ? (
                 <ReactEChartsCore
                   echarts={echarts}
                   option={getChartOptions()}
-                  style={{ height: '500px', width: '100%' }}
+                  style={{ height: '100%', width: '100%' }}
                   opts={{ renderer: 'canvas' }}
                 />
               ) : (
-                <div className="flex items-center justify-center h-[500px] text-gray-500">
+                <div className="flex items-center justify-center h-full text-gray-500">
                   <div className="text-center">
                     <div className="text-6xl mb-4">📊</div>
                     <div className="text-lg">Select stats for both axes to see the scatter plot</div>
@@ -531,7 +539,7 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
 
       {/* Legend */}
       {xAxisStat && yAxisStat && (
-        <div className="mt-4 text-xs text-gray-400 bg-[#141923]/60 rounded-lg p-3 shadow-inner">
+        <div className="mt-3 text-xs text-gray-400 bg-[#141923]/60 rounded-lg p-2 shadow-inner">
           <div className="flex items-center gap-4 justify-center">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gray-600"></div>
@@ -539,7 +547,7 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-[#78BE20] border border-white"></div>
-              <span>Timberwolves ({timberwolvesData.length})</span>
+              <span>Timberwolves Headshots ({timberwolvesData.length})</span>
             </div>
           </div>
           <div className="text-center mt-2">
