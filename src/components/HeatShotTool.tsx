@@ -548,14 +548,14 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
   };
 
   if (loading) {
-    return <div className="text-gray-400">Loading HeatShot Tool...</div>;
+    return <div className="text-gray-400">Loading Headshot Tool...</div>;
   }
 
   return (
     <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl md:text-3xl font-extrabold text-white flex items-center gap-2 drop-shadow-glow">
-          HeatShot Tool
+          Headshot Tool
         </h2>
         <div className="flex items-center gap-2">
           <button

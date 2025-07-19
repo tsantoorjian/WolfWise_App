@@ -1,37 +1,56 @@
 import { useEffect, useState, useRef } from 'react';
 import { PlayerWithStats } from '../hooks/useSupabase';
 import { supabase } from '../lib/supabase';
-import { ThreePointData, DistributionStats } from '../types/database.types';
+import { FullSeasonBasePerGame, FullSeasonAdvancedPerGame } from '../types/database.types';
+import { Settings } from 'lucide-react';
 
-// List of stats to show (from stat_distributions.py and ThreePointDistribution)
-const STAT_LIST = [
-  '3pt percentage',
-  'Fg %',
-  'Steals per game',
-  'Assists per game',
-  'Turnovers per game',
-  'Blocks per game',
-  'Points Per Game',
-  'EFG %'
+// Basic stats from HeatShotTool
+const BASE_STATS = [
+  { key: 'PTS', label: 'Points', table: 'base' },
+  { key: 'REB', label: 'Rebounds', table: 'base' },
+  { key: 'AST', label: 'Assists', table: 'base' },
+  { key: 'STL', label: 'Steals', table: 'base' },
+  { key: 'BLK', label: 'Blocks', table: 'base' },
+  { key: 'FG_PCT', label: 'FG %', table: 'base' },
+  { key: 'FG3_PCT', label: '3PT %', table: 'base' },
+  { key: 'FT_PCT', label: 'FT %', table: 'base' },
+  { key: 'TOV', label: 'Turnovers', table: 'base' },
+  { key: 'FGM', label: 'FGM', table: 'base' },
+  { key: 'FGA', label: 'FGA', table: 'base' },
+  { key: 'FG3M', label: '3PM', table: 'base' },
+  { key: 'FG3A', label: '3PA', table: 'base' },
+  { key: 'FTM', label: 'FTM', table: 'base' },
+  { key: 'FTA', label: 'FTA', table: 'base' },
+  { key: 'OREB', label: 'OREB', table: 'base' },
+  { key: 'DREB', label: 'DREB', table: 'base' },
+  { key: 'PF', label: 'Fouls', table: 'base' },
+  { key: 'PLUS_MINUS', label: '+/-', table: 'base' },
+  { key: 'MIN', label: 'Minutes', table: 'base' },
 ];
 
-const NEGATIVE_STATS = ['Turnovers per game'];
+// Advanced stats from HeatShotTool
+const ADVANCED_STATS = [
+  { key: 'TS_PCT', label: 'TS %', table: 'advanced' },
+  { key: 'EFG_PCT', label: 'eFG %', table: 'advanced' },
+  { key: 'USG_PCT', label: 'Usage %', table: 'advanced' },
+  { key: 'AST_PCT', label: 'AST %', table: 'advanced' },
+  { key: 'REB_PCT', label: 'REB %', table: 'advanced' },
+  { key: 'STL_PCT', label: 'STL %', table: 'advanced' },
+  { key: 'BLK_PCT', label: 'BLK %', table: 'advanced' },
+  { key: 'TM_TOV_PCT', label: 'TOV %', table: 'advanced' },
+  { key: 'OFF_RATING', label: 'ORTG', table: 'advanced' },
+  { key: 'DEF_RATING', label: 'DRTG', table: 'advanced' },
+  { key: 'NET_RATING', label: 'NetRTG', table: 'advanced' },
+  { key: 'PIE', label: 'PIE', table: 'advanced' },
+  { key: 'AST_TO', label: 'AST/TO', table: 'advanced' },
+  { key: 'AST_RATIO', label: 'AST Ratio', table: 'advanced' },
+  { key: 'OREB_PCT', label: 'OREB %', table: 'advanced' },
+  { key: 'DREB_PCT', label: 'DREB %', table: 'advanced' },
+  { key: 'PACE', label: 'Pace', table: 'advanced' },
+];
 
-const PERCENTAGE_STATS = ['3pt percentage', 'Fg %', 'EFG %'];
-
-function getStatLabel(stat: string) {
-  const map: Record<string, string> = {
-    '3pt percentage': '3PT %',
-    'Fg %': 'FG %',
-    'Steals per game': 'Steals',
-    'Assists per game': 'Assists',
-    'Turnovers per game': 'Turnovers',
-    'Blocks per game': 'Blocks',
-    'Points Per Game': 'Points',
-    'EFG %': 'eFG %',
-  };
-  return map[stat] || stat;
-}
+const NEGATIVE_STATS = ['TOV', 'TM_TOV_PCT', 'DEF_RATING', 'PF'];
+const PERCENTAGE_STATS = ['FG_PCT', 'FG3_PCT', 'FT_PCT', 'TS_PCT', 'EFG_PCT', 'USG_PCT', 'AST_PCT', 'REB_PCT', 'STL_PCT', 'BLK_PCT', 'TM_TOV_PCT', 'OREB_PCT', 'DREB_PCT', 'W_PCT'];
 
 function formatStatValue(stat: string, value: number) {
   if (PERCENTAGE_STATS.includes(stat)) {
@@ -58,37 +77,92 @@ function getTextColor(bgColor: string) {
   return luminance > 140 ? '#1f2937' : '#ffffff';
 }
 
+interface StatData {
+  player_name: string;
+  value: number;
+  team_abbreviation: string;
+  minutes: number;
+}
+
 export function PerformanceGrid({ players }: { players: PlayerWithStats[] }) {
-  const [statData, setStatData] = useState<Record<string, ThreePointData[]>>({});
+  const [baseData, setBaseData] = useState<FullSeasonBasePerGame[]>([]);
+  const [advancedData, setAdvancedData] = useState<FullSeasonAdvancedPerGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [hovered, setHovered] = useState<{ row: number; col: number; x: number; y: number; value: number } | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const tableRef = useRef<HTMLTableElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchAllStats() {
       setLoading(true);
-      const allStats: Record<string, ThreePointData[]> = {};
-      for (const stat of STAT_LIST) {
-        const { data, error } = await supabase
-          .from('distribution_stats')
-          .select('*')
-          .eq('stat', stat)
-          .gte('minutes_played', 600);
-        if (!error && data) {
-          allStats[stat] = data.map((row: DistributionStats) => ({
-            player_name: row.player_name,
-            value: PERCENTAGE_STATS.includes(stat) && row.value > 1 ? row.value / 100 : row.value,
-            team_abbreviation: row.team_abbreviation,
-            minutes_played: row.minutes_played,
-          }));
-        }
+      try {
+        const [{ data: baseStats, error: baseError }, { data: advancedStats, error: advancedError }] = await Promise.all([
+          supabase.from('full_season_base_per_game').select('*'),
+          supabase.from('full_season_advanced_per_game').select('*')
+        ]);
+
+        if (baseError) throw baseError;
+        if (advancedError) throw advancedError;
+
+        setBaseData(baseStats || []);
+        setAdvancedData(advancedStats || []);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
       }
-      setStatData(allStats);
       setLoading(false);
     }
     fetchAllStats();
   }, []);
+
+  // Get stat data for a specific stat
+  function getStatData(statKey: string): StatData[] {
+    const statInfo = [...BASE_STATS, ...ADVANCED_STATS].find(s => s.key === statKey);
+    if (!statInfo) return [];
+
+    const data = statInfo.table === 'base' ? baseData : advancedData;
+    
+    const filteredData = data
+      .filter(player => {
+        // For per-game tables, filter by minutes per game (MIN field) * games played (GP field)
+        const mpg = parseFloat(player.MIN as any) || 0;
+        const gp = player.GP || 0;
+        return (mpg * gp) >= 600; // 600 total minutes minimum
+      })
+      .map((player, index) => {
+        const statValue = (player as any)[statKey];
+        
+        // Parse numeric values from strings for both base and advanced stats
+        let parsedValue = statValue;
+        if (typeof statValue === 'string') {
+          parsedValue = parseFloat(statValue) || 0;
+        }
+        
+        return {
+          player_name: player.PLAYER_NAME,
+          value: parsedValue || 0,
+          team_abbreviation: player.TEAM_ABBREVIATION,
+          minutes: (parseFloat(player.MIN as any) || 0) * (player.GP || 0),
+        };
+      });
+
+    return filteredData;
+  }
+
+  // Calculate percentile for a player in a specific stat
+  function getPercentile(statKey: string, value: number) {
+    const data = getStatData(statKey);
+    if (data.length === 0) return 0;
+    
+    const values = data.map(d => d.value).sort((a, b) => a - b);
+    let lower = 0;
+    while (lower < values.length && values[lower] < value) lower++;
+    let rawPercentile = lower / (values.length - 1);
+    
+    const isNegative = NEGATIVE_STATS.includes(statKey);
+    return isNegative ? 1 - rawPercentile : rawPercentile;
+  }
 
   // Debug: log incoming players
   console.log('PerformanceGrid players', players);
@@ -115,17 +189,8 @@ export function PerformanceGrid({ players }: { players: PlayerWithStats[] }) {
     );
   }
 
-  // For each stat, get league-wide sorted values and compute percentile for each Wolves player
-  function getPercentile(stat: string, value: number) {
-    const data = statData[stat] || [];
-    if (data.length === 0) return 0;
-    const values = data.map(d => d.value).sort((a, b) => a - b);
-    let lower = 0;
-    while (lower < values.length && values[lower] < value) lower++;
-    let rawPercentile = lower / (values.length - 1);
-    const isNegative = NEGATIVE_STATS.includes(stat);
-    return isNegative ? 1 - rawPercentile : rawPercentile;
-  }
+  // Get current stat list based on toggle
+  const currentStats = showAdvanced ? ADVANCED_STATS : BASE_STATS;
 
   if (loading) {
     return <div className="text-gray-400">Loading Performance Grid...</div>;
@@ -133,9 +198,53 @@ export function PerformanceGrid({ players }: { players: PlayerWithStats[] }) {
 
   return (
     <div ref={scrollContainerRef} className="overflow-x-auto bg-[#1e2129]/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 p-4 md:p-8 relative">
-      <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-8 flex items-center gap-2 drop-shadow-glow">
-        Performance Grid
-      </h2>
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl md:text-3xl font-extrabold text-white flex items-center gap-2 drop-shadow-glow">
+          Performance Grid
+        </h2>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="p-2 bg-[#23263a] border border-gray-600 rounded-lg hover:border-[#78BE20] transition-colors"
+          >
+            <Settings className="w-5 h-5 text-white" />
+          </button>
+        </div>
+      </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className="mb-6 p-4 bg-[#23263a]/60 rounded-lg border border-gray-600/30">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Stats Type
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowAdvanced(false)}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  !showAdvanced
+                    ? 'bg-[#78BE20] text-black font-semibold'
+                    : 'bg-[#1e2129] text-white border border-gray-600 hover:border-[#78BE20]'
+                }`}
+              >
+                Basic Stats
+              </button>
+              <button
+                onClick={() => setShowAdvanced(true)}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  showAdvanced
+                    ? 'bg-[#78BE20] text-black font-semibold'
+                    : 'bg-[#1e2129] text-white border border-gray-600 hover:border-[#78BE20]'
+                }`}
+              >
+                Advanced Stats
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile scroll hint */}
       <div className="block md:hidden text-xs text-gray-400 mb-2 text-center select-none">
         <span className="inline-block bg-[#23263a]/80 px-2 py-1 rounded">Swipe left/right to see more players →</span>
@@ -168,15 +277,15 @@ export function PerformanceGrid({ players }: { players: PlayerWithStats[] }) {
             </tr>
           </thead>
           <tbody>
-            {STAT_LIST.map((stat, rowIdx) => (
-              <tr key={stat}>
+            {currentStats.map((stat, rowIdx) => (
+              <tr key={stat.key}>
                 <td className="sticky left-0 z-10 bg-gradient-to-br from-[#23263a]/80 to-[#1e2129]/90 backdrop-blur-lg px-2 md:px-4 py-2 md:py-3 text-white font-bold border-r border-gray-700/50 shadow-glass rounded-l-2xl text-xs md:text-base w-24 md:w-32 min-w-[5.5rem] md:min-w-[8rem] max-w-[7rem] md:max-w-[8rem]">
-                  {getStatLabel(stat)}
+                  {stat.label}
                 </td>
                 {wolvesPlayers.map((player, colIdx) => {
-                  const playerStat = (statData[stat] || []).find(d => d.player_name === player.PLAYER_NAME);
+                  const playerStat = getStatData(stat.key).find(d => d.player_name === player.PLAYER_NAME);
                   if (!playerStat) return <td key={player.PLAYER_NAME} className="px-1 md:px-2 py-2 md:py-3 text-gray-500 bg-[#141923] w-16 md:w-24 min-w-[3.5rem] md:min-w-[6rem] max-w-[4.5rem] md:max-w-[6rem] text-xs md:text-base">–</td>;
-                  const percentile = getPercentile(stat, playerStat.value);
+                  const percentile = getPercentile(stat.key, playerStat.value);
                   const bgColor = getHeatColor(percentile);
                   const textColor = getTextColor(bgColor);
                   // Only show hover effect on non-touch devices
@@ -204,7 +313,7 @@ export function PerformanceGrid({ players }: { players: PlayerWithStats[] }) {
                       }}
                       onMouseLeave={() => setHovered(null)}
                     >
-                      {formatStatValue(stat, playerStat.value)}
+                      {formatStatValue(stat.key, playerStat.value)}
                     </td>
                   );
                 })}
@@ -226,7 +335,7 @@ export function PerformanceGrid({ players }: { players: PlayerWithStats[] }) {
             <div className="relative animate-fade-in">
               <div className="bg-[#23263a] text-white text-sm font-bold px-4 py-3 rounded-xl shadow-2xl border-2 border-[#78BE20] max-w-xs break-words flex flex-col items-center gap-1 drop-shadow-glow">
                 <span className="text-xs text-gray-300 font-semibold">{wolvesPlayers[hovered.col]?.PLAYER_NAME}</span>
-                <span className="text-xs text-gray-400 font-medium">{getStatLabel(STAT_LIST[hovered.row])}</span>
+                <span className="text-xs text-gray-400 font-medium">{currentStats[hovered.row]?.label}</span>
                 <span className="mt-1">Percentile: <span className="text-[#78BE20] font-extrabold">{(hovered.value * 100).toFixed(1)}%</span></span>
               </div>
               {/* Arrow */}
@@ -240,8 +349,8 @@ export function PerformanceGrid({ players }: { players: PlayerWithStats[] }) {
         )}
       </div>
       <div className="mt-6 text-xs text-gray-400 bg-[#141923]/60 rounded-lg p-3 shadow-inner">
-        Cell color = league percentile (red = low, green = high). Only players with 600+ total minutes shown.<br />
-        <span className="text-[#78BE20]">Tip:</span> Hover a cell to see the percentile.
+        Cell color = league percentile (purple = low, green = high). Only players with 600+ total minutes shown.<br />
+        <span className="text-[#78BE20]">Tip:</span> Hover a cell to see the percentile. Currently showing {showAdvanced ? 'advanced' : 'basic'} stats (per game).
       </div>
     </div>
   );
