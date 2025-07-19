@@ -66,23 +66,23 @@ const StatCard: React.FC<StatCardProps> = ({
     const roundedSeason = Number(seasonValue.toFixed(1));
     
     if (roundedRecent > roundedSeason) {
-      return <TrendingUp className="w-3 h-3 text-emerald-400" />;
+      return <TrendingUp className="w-2.5 h-2.5 md:w-3 md:h-3 text-emerald-400" />;
     } else if (roundedRecent < roundedSeason) {
-      return <TrendingDown className="w-3 h-3 text-rose-400" />;
+      return <TrendingDown className="w-2.5 h-2.5 md:w-3 md:h-3 text-rose-400" />;
     }
-    return <Minus className="w-3 h-3 text-gray-400" />;
+    return <Minus className="w-2.5 h-2.5 md:w-3 md:h-3 text-gray-400" />;
   };
 
   return (
     <div 
-      className={`${cardStyles.bg} rounded-xl p-3 md:p-4 relative overflow-hidden transition-all hover:translate-y-[-4px] duration-300 border ${cardStyles.border} ${className || ''}`}
+      className={`${cardStyles.bg} rounded-xl p-2 md:p-4 relative overflow-hidden transition-all hover:translate-y-[-4px] duration-300 border ${cardStyles.border} ${className || ''}`}
     >
       <div className="relative z-10">
         {/* Header with accent line */}
-        <div className="flex items-center justify-between mb-2 md:mb-3">
-          <div className="flex items-center space-x-2">
-            <div className="w-1 h-4 md:h-5 bg-gradient-to-b from-emerald-400 to-cyan-400 rounded-full"></div>
-            <p className="text-xs md:text-sm font-medium text-white">
+        <div className="flex items-center justify-between mb-1.5 md:mb-3">
+          <div className="flex items-center space-x-1.5 md:space-x-2">
+            <div className="w-0.5 md:w-1 h-3 md:h-5 bg-gradient-to-b from-emerald-400 to-cyan-400 rounded-full"></div>
+            <p className="text-[10px] md:text-sm font-medium text-white">
               {label}
             </p>
           </div>
@@ -91,25 +91,25 @@ const StatCard: React.FC<StatCardProps> = ({
         {/* Content */}
         <div className="flex justify-between items-end mt-1 md:mt-2">
           <div>
-            <p className="text-lg md:text-3xl lg:text-4xl font-bold text-white">
+            <p className="text-base md:text-3xl lg:text-4xl font-bold text-white">
               {value !== null ? value.toFixed(1) : '0.0'}
               {typeof rank === 'number' && rank > 0 && (
-                <span className="text-sm md:text-lg text-gray-400 font-normal ml-1">({rank}{getOrdinalSuffix(rank)})</span>
+                <span className="text-[10px] md:text-lg text-gray-400 font-normal ml-0.5 md:ml-1">({rank}{getOrdinalSuffix(rank)})</span>
               )}
             </p>
-            <p className="text-[0.6rem] md:text-xs text-gray-400 mt-1 font-medium uppercase tracking-wider">Season Avg</p>
+            <p className="text-[8px] md:text-xs text-gray-400 mt-0.5 md:mt-1 font-medium uppercase tracking-wider">Season Avg</p>
           </div>
           
           {last5Value !== undefined && last10Value !== undefined && (
-            <div className="text-[0.6rem] md:text-sm text-gray-300 text-right bg-[#232838] p-1 md:p-2 rounded-lg">
-              <div className="flex items-center justify-end gap-1 md:gap-2 mb-1.5">
+            <div className="text-[8px] md:text-sm text-gray-300 text-right bg-[#232838] p-1 md:p-2 rounded-lg">
+              <div className="flex items-center justify-end gap-0.5 md:gap-2 mb-1 md:mb-1.5">
                 <span className="text-gray-400 font-medium">L5</span>
                 <span className="font-semibold">{(last5Value as number).toFixed(1)}{typeof last5Rank === 'number' && last5Rank > 0 && (
                   <span className="text-gray-400 font-normal ml-0.5">({last5Rank}{getOrdinalSuffix(last5Rank)})</span>
                 )}</span>
                 {value && getPerformanceIndicator(last5Value as number, value)}
               </div>
-              <div className="flex items-center justify-end gap-1 md:gap-2">
+              <div className="flex items-center justify-end gap-0.5 md:gap-2">
                 <span className="text-gray-400 font-medium">L10</span>
                 <span className="font-semibold">{(last10Value as number).toFixed(1)}{typeof last10Rank === 'number' && last10Rank > 0 && (
                   <span className="text-gray-400 font-normal ml-0.5">({last10Rank}{getOrdinalSuffix(last10Rank)})</span>
