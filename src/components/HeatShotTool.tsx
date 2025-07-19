@@ -7,6 +7,7 @@ import * as echarts from 'echarts/core';
 import { ScatterChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
+import { ScatterChart as ScatterChartIcon } from 'lucide-react';
 
 // Mobile detection hook
 function useIsMobile() {
@@ -483,7 +484,7 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
                 <div className="text-center">
-                  <div className="text-6xl mb-4">📊</div>
+                  <ScatterChartIcon className="w-16 h-16 mb-4 mx-auto text-gray-500" />
                   <div className="text-lg">Select stats for both axes to see the scatter plot</div>
                 </div>
               </div>
@@ -518,7 +519,7 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-500">
                   <div className="text-center">
-                    <div className="text-6xl mb-4">📊</div>
+                    <ScatterChartIcon className="w-16 h-16 mb-4 mx-auto text-gray-500" />
                     <div className="text-lg">Select stats for both axes to see the scatter plot</div>
                   </div>
                 </div>
