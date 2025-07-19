@@ -8,6 +8,24 @@ import { ScatterChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 
+// Mobile detection hook
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
+  return isMobile;
+}
+
 // Register required components
 echarts.use([ScatterChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
@@ -52,9 +70,11 @@ interface DragDropZoneProps {
   currentStat: string | null;
   label: string;
   axis: 'x' | 'y';
+  isMobile?: boolean;
+  onMobileSelect?: () => void;
 }
 
-function DragDropZone({ onDrop, currentStat, label, axis }: DragDropZoneProps) {
+function DragDropZone({ onDrop, currentStat, label, axis, isMobile = false, onMobileSelect }: DragDropZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -73,6 +93,12 @@ function DragDropZone({ onDrop, currentStat, label, axis }: DragDropZoneProps) {
     onDrop(stat);
   };
 
+  const handleMobileClick = () => {
+    if (isMobile && onMobileSelect) {
+      onMobileSelect();
+    }
+  };
+
   // Different styles for x and y axis zones
   const isYAxis = axis === 'y';
   const baseClasses = `border-2 border-dashed rounded-xl transition-all duration-300 flex items-center justify-center relative`;
@@ -89,17 +115,18 @@ function DragDropZone({ onDrop, currentStat, label, axis }: DragDropZoneProps) {
 
   return (
     <div
-      className={`${baseClasses} ${sizeClasses} ${colorClasses}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      className={`${baseClasses} ${sizeClasses} ${colorClasses} ${isMobile ? 'cursor-pointer' : ''}`}
+      onDragOver={!isMobile ? handleDragOver : undefined}
+      onDragLeave={!isMobile ? handleDragLeave : undefined}
+      onDrop={!isMobile ? handleDrop : undefined}
+      onClick={isMobile ? handleMobileClick : undefined}
     >
       <div className={`text-center ${isYAxis ? 'transform -rotate-90' : ''}`}>
         <div className="text-xs text-gray-400 font-semibold mb-1">{label}</div>
         {currentStat ? (
           <div className="text-white font-bold text-sm">{getStatLabel(currentStat)}</div>
         ) : (
-          <div className="text-gray-500 text-sm">Drop stat here</div>
+          <div className="text-gray-500 text-sm">{isMobile ? 'Click here to select stat' : 'Drop stat here'}</div>
         )}
       </div>
     </div>
@@ -109,19 +136,32 @@ function DragDropZone({ onDrop, currentStat, label, axis }: DragDropZoneProps) {
 interface StatChipProps {
   stat: string;
   onDragStart: (stat: string) => void;
+  onMobileClick?: (stat: string) => void;
+  isMobile?: boolean;
 }
 
-function StatChip({ stat, onDragStart }: StatChipProps) {
+function StatChip({ stat, onDragStart, onMobileClick, isMobile = false }: StatChipProps) {
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('text/plain', stat);
     onDragStart(stat);
   };
 
+  const handleMobileClick = () => {
+    if (isMobile && onMobileClick) {
+      onMobileClick(stat);
+    }
+  };
+
   return (
     <div
-      draggable
-      onDragStart={handleDragStart}
-      className="px-3 py-2 bg-gradient-to-r from-[#23263a] to-[#1e2129] border border-gray-600 rounded-lg text-white text-sm font-medium cursor-grab active:cursor-grabbing hover:border-[#78BE20] hover:shadow-lg hover:shadow-[#78BE20]/20 transition-all duration-200 select-none"
+      draggable={!isMobile}
+      onDragStart={!isMobile ? handleDragStart : undefined}
+      onClick={isMobile ? handleMobileClick : undefined}
+      className={`px-3 py-2 bg-gradient-to-r from-[#23263a] to-[#1e2129] border border-gray-600 rounded-lg text-white text-sm font-medium transition-all duration-200 select-none ${
+        isMobile 
+          ? 'cursor-pointer hover:border-[#78BE20] hover:shadow-lg hover:shadow-[#78BE20]/20 active:scale-95' 
+          : 'cursor-grab active:cursor-grabbing hover:border-[#78BE20] hover:shadow-lg hover:shadow-[#78BE20]/20'
+      }`}
     >
       {getStatLabel(stat)}
     </div>
@@ -134,6 +174,9 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
   const [xAxisStat, setXAxisStat] = useState<string | null>(null);
   const [yAxisStat, setYAxisStat] = useState<string | null>(null);
   const [draggedStat, setDraggedStat] = useState<string | null>(null);
+  const [showMobileStatSelector, setShowMobileStatSelector] = useState(false);
+  const [mobileSelectingFor, setMobileSelectingFor] = useState<'x' | 'y' | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     async function fetchAllStats() {
@@ -219,6 +262,28 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
   };
 
   const { timberwolvesData, leagueData } = getScatterData();
+
+  // Mobile selection handlers
+  const handleMobileAxisSelect = (axis: 'x' | 'y') => {
+    setMobileSelectingFor(axis);
+    setShowMobileStatSelector(true);
+  };
+
+  const handleMobileStatSelect = (stat: string) => {
+    if (mobileSelectingFor === 'x') {
+      setXAxisStat(stat);
+    } else if (mobileSelectingFor === 'y') {
+      setYAxisStat(stat);
+    }
+    setShowMobileStatSelector(false);
+    setMobileSelectingFor(null);
+  };
+
+  const handleMobileStatChipClick = (stat: string) => {
+    if (mobileSelectingFor) {
+      handleMobileStatSelect(stat);
+    }
+  };
 
   // ECharts configuration
   const getChartOptions = () => {
@@ -345,15 +410,22 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
       
       {/* Instructions */}
       <div className="mb-6 p-4 bg-[#23263a]/60 rounded-lg border border-gray-600/30">
-        <p className="text-gray-300 text-sm">
+        {/* Desktop Instructions */}
+        <p className="text-gray-300 text-sm hidden md:block">
           Drag and drop stats from below onto the X and Y axes to create a scatter plot. 
+          Timberwolves players appear as green dots, while other NBA players appear as gray dots.
+          Position is based on league percentile rankings.
+        </p>
+        {/* Mobile Instructions */}
+        <p className="text-gray-300 text-sm md:hidden">
+          Click on the X and Y axis boxes to select stats and create a scatter plot. 
           Timberwolves players appear as green dots, while other NBA players appear as gray dots.
           Position is based on league percentile rankings.
         </p>
       </div>
 
-      {/* Available Stats */}
-      <div className="mb-6">
+      {/* Available Stats - Desktop Only */}
+      <div className="mb-6 hidden md:block">
         <h3 className="text-lg font-bold text-white mb-3">Available Stats</h3>
         <div className="flex flex-wrap gap-2">
           {STAT_LIST.map(stat => (
@@ -361,6 +433,8 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
               key={stat}
               stat={stat}
               onDragStart={setDraggedStat}
+              onMobileClick={handleMobileStatChipClick}
+              isMobile={isMobile}
             />
           ))}
         </div>
@@ -376,12 +450,16 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
               currentStat={yAxisStat}
               label="Y-Axis"
               axis="x"
+              isMobile={isMobile}
+              onMobileSelect={() => handleMobileAxisSelect('y')}
             />
             <DragDropZone
               onDrop={setXAxisStat}
               currentStat={xAxisStat}
               label="X-Axis"
               axis="x"
+              isMobile={isMobile}
+              onMobileSelect={() => handleMobileAxisSelect('x')}
             />
           </div>
           
@@ -414,6 +492,7 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
               currentStat={yAxisStat}
               label="Y-Axis"
               axis="y"
+              isMobile={isMobile}
             />
           </div>
           
@@ -444,6 +523,7 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
               currentStat={xAxisStat}
               label="X-Axis"
               axis="x"
+              isMobile={isMobile}
             />
           </div>
         </div>
@@ -464,6 +544,37 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
           </div>
           <div className="text-center mt-2">
             Only players with 600+ total minutes shown. Position based on league percentile ranking.
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Stat Selector Modal */}
+      {showMobileStatSelector && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 md:hidden">
+          <div className="bg-[#23263a] rounded-lg p-6 m-4 max-w-sm w-full">
+            <h3 className="text-white font-bold text-lg mb-4">
+              Select {mobileSelectingFor === 'x' ? 'X-Axis' : 'Y-Axis'} Stat
+            </h3>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {STAT_LIST.map(stat => (
+                <button
+                  key={stat}
+                  onClick={() => handleMobileStatSelect(stat)}
+                  className="px-3 py-2 bg-gradient-to-r from-[#1e2129] to-[#23263a] border border-gray-600 rounded-lg text-white text-sm font-medium hover:border-[#78BE20] hover:shadow-lg hover:shadow-[#78BE20]/20 transition-all duration-200 active:scale-95"
+                >
+                  {getStatLabel(stat)}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                setShowMobileStatSelector(false);
+                setMobileSelectingFor(null);
+              }}
+              className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
