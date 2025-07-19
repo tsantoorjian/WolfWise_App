@@ -420,10 +420,10 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
     return {
       backgroundColor: 'transparent',
       grid: {
-        left: '10%',
-        right: '10%',
-        top: '15%',
-        bottom: '15%',
+        left: '8%',
+        right: '5%',
+        top: '8%',
+        bottom: '12%',
         containLabel: true,
       },
       xAxis: {
@@ -437,7 +437,16 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
         axisTick: { lineStyle: { color: '#666' } },
         axisLabel: { 
           color: '#ccc',
-          formatter: (value: number) => viewMode === 'percentile' ? `${value}%` : value.toFixed(1)
+          formatter: (value: number) => {
+            if (viewMode === 'percentile') {
+              return `${value}%`;
+            }
+            // Check if this is a percentage stat
+            if (xAxisStat && PERCENTAGE_STATS.includes(xAxisStat)) {
+              return `${(value * 100).toFixed(1)}%`;
+            }
+            return value.toFixed(1);
+          }
         },
         splitLine: { 
           lineStyle: { color: '#333', type: 'dashed' } 
@@ -454,7 +463,16 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
         axisTick: { lineStyle: { color: '#666' } },
         axisLabel: { 
           color: '#ccc',
-          formatter: (value: number) => viewMode === 'percentile' ? `${value}%` : value.toFixed(1)
+          formatter: (value: number) => {
+            if (viewMode === 'percentile') {
+              return `${value}%`;
+            }
+            // Check if this is a percentage stat
+            if (yAxisStat && PERCENTAGE_STATS.includes(yAxisStat)) {
+              return `${(value * 100).toFixed(1)}%`;
+            }
+            return value.toFixed(1);
+          }
         },
         splitLine: { 
           lineStyle: { color: '#333', type: 'dashed' } 
@@ -668,7 +686,7 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
       </div>
 
       {/* Chart Area */}
-      <div className="bg-[#141923]/60 rounded-lg p-3">
+      <div className="bg-[#141923]/60 rounded-lg p-2">
         {/* Mobile Layout */}
         <div className="md:hidden">
           <div className="grid grid-cols-2 gap-4 mb-4">
@@ -690,7 +708,7 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
             />
           </div>
           
-          <div className="aspect-square max-w-[400px] mx-auto">
+          <div className="aspect-square max-w-[500px] mx-auto min-h-[350px]">
             {xAxisStat && yAxisStat ? (
               <ReactEChartsCore
                 echarts={echarts}
@@ -722,15 +740,15 @@ export function HeatShotTool({ players }: { players: PlayerWithStats[] }) {
           </div>
           
           <div className="flex-1 flex flex-col">
-            <div className="aspect-square mb-3 max-h-[60vh]">
-              {xAxisStat && yAxisStat ? (
-                <ReactEChartsCore
-                  echarts={echarts}
-                  option={getChartOptions()}
-                  style={{ height: '100%', width: '100%' }}
-                  opts={{ renderer: 'canvas' }}
-                />
-              ) : (
+                      <div className="aspect-square mb-3 max-h-[70vh] min-h-[400px]">
+            {xAxisStat && yAxisStat ? (
+              <ReactEChartsCore
+                echarts={echarts}
+                option={getChartOptions()}
+                style={{ height: '100%', width: '100%' }}
+                opts={{ renderer: 'canvas' }}
+              />
+            ) : (
                 <div className="flex items-center justify-center h-full text-gray-500">
                   <div className="text-center">
                     <ScatterChartIcon className="w-16 h-16 mb-4 mx-auto text-gray-500" />
