@@ -4,7 +4,6 @@ import { PlayerStats } from './components/PlayerStats';
 import { ThreePointDistribution } from './components/ThreePointDistribution';
 import Lineups from './components/Lineups';
 import { RecordTracker } from './components/RecordTracker';
-import { LeagueLeaders } from './components/LeagueLeaders';
 import LiveGameStats from './components/LiveGameStats';
 import { PerformanceGrid } from './components/PerformanceGrid';
 import { HeatShotTool } from './components/HeatShotTool';
@@ -13,7 +12,6 @@ import {
   LineChart, 
   Users2, 
   Trophy, 
-  Crown,
   BarChart3,
   Activity,
   Home,
@@ -24,13 +22,13 @@ import {
 import './index.css';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-type Tab = 'live-stats' | 'stats' | 'lineups' | 'leaders' | 'records' | 'distribution' | 'performance-grid' | 'heatshot-tool';
+type Tab = 'live-stats' | 'stats' | 'lineups' | 'records' | 'distribution' | 'performance-grid' | 'heatshot-tool';
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('live-stats');
   const [selectedStat, setSelectedStat] = useState<string>('3pt percentage');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { players, distributionData, leaderboardData, playerImageUrl, fetchDistributionData } = useSupabase();
+  const { players, distributionData, playerImageUrl, fetchDistributionData } = useSupabase();
 
   const getTabIcon = (tab: Tab, isActive: boolean) => {
     const baseClasses = `w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'}`;
@@ -42,8 +40,6 @@ function App() {
         return <BarChart3 className={baseClasses} />;
       case 'lineups':
         return <Users2 className={baseClasses} />;
-      case 'leaders':
-        return <Crown className={baseClasses} />;
       case 'records':
         return <Trophy className={baseClasses} />;
       case 'distribution':
@@ -63,8 +59,6 @@ function App() {
         return 'Player Stats';
       case 'lineups':
         return 'Lineups';
-      case 'leaders':
-        return 'League Leaders';
       case 'records':
         return 'Record Tracker';
       case 'distribution':
@@ -116,7 +110,7 @@ function App() {
             {/* Navigation */}
             <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block mb-6`}>
               <div className="flex flex-col md:flex-row gap-2 md:gap-1 glass-card p-1 rounded-lg">
-                {(['live-stats', 'stats', 'lineups', 'leaders', 'records', 'distribution', 'performance-grid', 'heatshot-tool'] as Tab[]).map((tab) => (
+                {(['live-stats', 'stats', 'lineups', 'records', 'distribution', 'performance-grid', 'heatshot-tool'] as Tab[]).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
@@ -147,7 +141,6 @@ function App() {
               {activeTab === 'live-stats' && <LiveGameStats />}
               {activeTab === 'stats' && <PlayerStats />}
               {activeTab === 'lineups' && <Lineups />}
-              {activeTab === 'leaders' && <LeagueLeaders leaderboardData={leaderboardData} />}
               {activeTab === 'records' && (
                 <RecordTracker playerImageUrl={playerImageUrl || undefined} />
               )}

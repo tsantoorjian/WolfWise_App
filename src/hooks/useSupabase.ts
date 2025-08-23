@@ -15,6 +15,7 @@ export interface RecentStats {
   STL: number;
   BLK: number;
   PLUS_MINUS: number;
+  NBA_FANTASY_PTS: number;
   PTS_RANK?: number;
   REB_RANK?: number;
   AST_RANK?: number;
@@ -327,7 +328,8 @@ function processRecentStats(data: any[]): Record<string, RecentStats> {
       REB: curr.REB || 0,
       STL: curr.STL || 0,
       BLK: curr.BLK || 0,
-      PLUS_MINUS: curr.PLUS_MINUS || 0
+      PLUS_MINUS: curr.PLUS_MINUS || 0,
+      NBA_FANTASY_PTS: curr.NBA_FANTASY_PTS || 0
     };
     return acc;
   }, {} as Record<string, RecentStats>);

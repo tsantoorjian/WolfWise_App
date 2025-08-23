@@ -23,6 +23,8 @@ export function useRecordData() {
   const [recordData, setRecordData] = useState<RecordTrackerSeason[]>([]);
   const [gameLogs, setGameLogs] = useState<GameLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPlayer, setSelectedPlayer] = useState<string>('');
+  const [availablePlayers, setAvailablePlayers] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -34,17 +36,16 @@ export function useRecordData() {
 
         if (recordError) throw recordError;
 
-        // Fetch Ant's game logs
-        const { data: gameLogsData, error: logsError } = await supabase
-          .from('twolves_player_game_logs')
-          .select('*')
-          .eq('PLAYER_NAME', 'Anthony Edwards')
-          .order('GAME_DATE', { ascending: true });
-
-        if (logsError) throw logsError;
+        // Extract unique player names from record data
+        const players = [...new Set(recordTrackerData?.map(record => record.name) || [])];
+        setAvailablePlayers(players);
+        
+        // Set default selected player to first available player
+        if (players.length > 0 && !selectedPlayer) {
+          setSelectedPlayer(players[0]);
+        }
 
         setRecordData(recordTrackerData || []);
-        setGameLogs(gameLogsData || []);
       } catch (error) {
         console.error('Error fetching record data:', error);
       } finally {
@@ -54,6 +55,29 @@ export function useRecordData() {
 
     fetchData();
   }, []);
+
+  // Fetch game logs when selected player changes
+  useEffect(() => {
+    async function fetchGameLogs() {
+      if (!selectedPlayer) return;
+      
+      try {
+        const { data: gameLogsData, error: logsError } = await supabase
+          .from('twolves_player_game_logs')
+          .select('*')
+          .eq('PLAYER_NAME', selectedPlayer)
+          .order('GAME_DATE', { ascending: true });
+
+        if (logsError) throw logsError;
+        setGameLogs(gameLogsData || []);
+      } catch (error) {
+        console.error('Error fetching game logs:', error);
+        setGameLogs([]);
+      }
+    }
+
+    fetchGameLogs();
+  }, [selectedPlayer]);
 
   const getProgressionData = (stat: string) => {
     if (!gameLogs.length) return [];
@@ -69,5 +93,18 @@ export function useRecordData() {
     });
   };
 
-  return { recordData, gameLogs, loading, getProgressionData };
+  const getPlayerRecordData = (playerName: string) => {
+    return recordData.filter(record => record.name === playerName);
+  };
+
+  return { 
+    recordData, 
+    gameLogs, 
+    loading, 
+    selectedPlayer, 
+    setSelectedPlayer, 
+    availablePlayers,
+    getProgressionData, 
+    getPlayerRecordData 
+  };
 }

@@ -1,5 +1,11 @@
 from dotenv import load_dotenv
-from src._python_scripts.utils import get_supabase_client
+import sys
+import os
+
+# Add the parent directory to the path so we can import from utils
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from utils import get_supabase_client
 
 # Load environment variables
 load_dotenv()

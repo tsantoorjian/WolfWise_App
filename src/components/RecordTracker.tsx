@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
-import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal, BarChart2 } from 'lucide-react';
+import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal, BarChart2, Users, Edit3 } from 'lucide-react';
 import RecordProgressBar from './RecordProgressBar';
 import { useRecordData } from '../hooks/useRecordData';
 
@@ -11,8 +11,17 @@ type RecordTrackerProps = {
 export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
   const [selectedStat, setSelectedStat] = useState<string>('pts');
   const [showStatSelect, setShowStatSelect] = useState(false);
+  const [showPlayerSelect, setShowPlayerSelect] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const { recordData, loading, getProgressionData } = useRecordData();
+  const { 
+    recordData, 
+    loading, 
+    selectedPlayer, 
+    setSelectedPlayer, 
+    availablePlayers,
+    getProgressionData, 
+    getPlayerRecordData 
+  } = useRecordData();
 
   useEffect(() => {
     const handleResize = () => {
@@ -22,6 +31,104 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Handle clicking outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (showPlayerSelect && !target.closest('.player-image-container')) {
+        setShowPlayerSelect(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPlayerSelect]);
+
+  // Function to get player image URL based on selected player
+  const getPlayerImageUrl = (playerName: string) => {
+    // You can customize this mapping based on your image naming convention
+    const playerImageMap: Record<string, string> = {
+      'Anthony Edwards': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png',
+      'Karl-Anthony Towns': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1626157.png',
+      'Rudy Gobert': 'https://cdn.nba.com/headshots/nba/latest/1040x760/203497.png',
+      'Mike Conley': 'https://cdn.nba.com/headshots/nba/latest/1040x760/201144.png',
+      'Jaden McDaniels': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1630183.png',
+      'Kyle Anderson': 'https://cdn.nba.com/headshots/nba/latest/1040x760/203937.png',
+      'Nickeil Alexander-Walker': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1629638.png',
+      'Naz Reid': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1629673.png',
+      'Jordan McLaughlin': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1629162.png',
+      'Shake Milton': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1629003.png',
+      'Troy Brown Jr.': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1628972.png',
+      'Josh Minott': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1631169.png',
+      'Wendell Moore Jr.': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1631111.png',
+      'Luka Garza': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1630568.png',
+      'Daishen Nix': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1630227.png',
+      'Leonard Miller': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641757.png',
+      'Jaylen Clark': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1631648.png',
+      'Donte DiVincenzo': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1628978.png',
+      'Monte Morris': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1628420.png',
+      'Austin Rivers': 'https://cdn.nba.com/headshots/nba/latest/1040x760/203085.png',
+      'Taurean Prince': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1627752.png',
+      'Matt Ryan': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1630346.png',
+      'Garrison Mathews': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1629726.png',
+      'Ty Jerome': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1628980.png',
+      'Peyton Watson': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1631212.png',
+      'Christian Braun': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1631128.png',
+      'Reggie Jackson': 'https://cdn.nba.com/headshots/nba/latest/1040x760/202704.png',
+      'Kentavious Caldwell-Pope': 'https://cdn.nba.com/headshots/nba/latest/1040x760/203484.png',
+      'Bruce Brown': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1629151.png',
+      'Jeff Green': 'https://cdn.nba.com/headshots/nba/latest/1040x760/201145.png',
+      'DeAndre Jordan': 'https://cdn.nba.com/headshots/nba/latest/1040x760/201599.png',
+      'Zeke Nnaji': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1630192.png',
+      'Vlatko Cancar': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1628427.png',
+      'Julian Strawther': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641731.png',
+      'Hunter Tyson': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641732.png',
+      'Braxton Key': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1629663.png',
+      'Jalen Pickett': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641759.png',
+      'Andre Jackson Jr.': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641760.png',
+      'Toumani Camara': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641761.png',
+      'Kris Murray': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641762.png',
+      'Rayan Rupert': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641763.png',
+      'Mouhamed Gueye': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641764.png',
+      'Trayce Jackson-Davis': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641765.png',
+      'Ben Sheppard': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641766.png',
+      'Noah Clowney': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641767.png',
+      'Dereck Lively II': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641768.png',
+      'Olivier-Maxence Prosper': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641769.png',
+      'Marcus Sasser': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641770.png',
+      'Colby Jones': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641771.png',
+      'Nick Smith Jr.': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641772.png',
+      'Cason Wallace': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641773.png',
+      'Keyonte George': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641774.png',
+      'Gradey Dick': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641775.png',
+      'Jett Howard': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641776.png',
+      'Kobe Bufkin': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641777.png',
+      'Bilal Coulibaly': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641778.png',
+      'Jordan Hawkins': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641779.png',
+      'Jalen Hood-Schifino': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641780.png',
+      'Brandon Miller': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641781.png',
+      'Amen Thompson': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641782.png',
+      'Ausar Thompson': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641783.png',
+      'Anthony Black': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641784.png',
+      'Taylor Hendricks': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641785.png',
+      'Dariq Whitehead': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641786.png',
+      'Brice Sensabaugh': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641787.png',
+      'Sidy Cissoko': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641788.png',
+      'GG Jackson': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641789.png',
+      'Seth Lundy': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641790.png',
+      'Ricky Council IV': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641791.png',
+      'Mojave King': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641792.png',
+      'Jordan Walsh': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641793.png',
+      'Emoni Bates': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641794.png',
+      'Maxwell Lewis': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641795.png',
+      'James Nnaji': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641796.png',
+      'Jalen Wilson': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641797.png',
+      'Colin Castleton': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1641798.png'
+    };
+    
+    return playerImageMap[playerName] || 'https://via.placeholder.com/96';
+  };
 
   const getStatDisplayName = (stat: string) => {
     const statMap: Record<string, string> = {
@@ -44,14 +151,20 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
 
   const statOrder = ['pts', 'ast', 'reb', 'stl', 'blk', 'tov', 'fgm', 'fga', 'fg3m', 'fg3a', 'ftm', 'fta', 'pf'];
   
-  const sortedStats = Array.from(new Set(recordData.map(d => d.stat)))
+  // Get record data for the selected player
+  const playerRecordData = getPlayerRecordData(selectedPlayer);
+  const sortedStats = Array.from(new Set(playerRecordData.map(d => d.stat)))
     .sort((a, b) => statOrder.indexOf(a) - statOrder.indexOf(b));
 
-  if (loading || !recordData.length) {
+  if (loading || !playerRecordData.length) {
     return <div className="text-gray-400">Loading...</div>;
   }
 
-  const currentRecord = recordData.find(d => d.stat === selectedStat);
+  const currentRecord = playerRecordData.find(d => d.stat === selectedStat);
+  if (!currentRecord) {
+    return <div className="text-gray-400">No data available for selected stat</div>;
+  }
+
   const progressionData = getProgressionData(selectedStat);
   const currentPoint = [currentRecord?.GP || 0, currentRecord?.current || 0];
   
@@ -79,86 +192,152 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
       <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="relative group">
-              <img
-                src={playerImageUrl || 'https://via.placeholder.com/80'}
-                alt="Anthony Edwards"
-                className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-[#78BE20]/60 group-hover:border-[#78BE20] transition-colors duration-300"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = 'https://via.placeholder.com/96';
-                  target.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
-                  target.classList.add('hidden');
-                }}
-              />
-              <div className="fallback-icon hidden">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#141923] flex items-center justify-center">
-                  <UserRound className="w-10 h-10 md:w-12 md:h-12 text-[#78BE20]" />
+            {/* Player Image with Integrated Player Selection */}
+            <div className="relative group player-image-container">
+              <div className="relative">
+                <img
+                  src={getPlayerImageUrl(selectedPlayer)}
+                  alt={selectedPlayer || 'Player'}
+                  className={`w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 transition-colors duration-300 cursor-pointer ${
+                    showPlayerSelect 
+                      ? 'border-[#78BE20] ring-2 ring-[#78BE20]/30' 
+                      : 'border-[#78BE20]/60 group-hover:border-[#78BE20]'
+                  }`}
+                  onClick={() => {
+                    console.log('Image clicked! Current state:', showPlayerSelect);
+                    setShowPlayerSelect(!showPlayerSelect);
+                  }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://via.placeholder.com/96';
+                    target.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
+                    target.classList.add('hidden');
+                  }}
+                />
+                <div className="fallback-icon hidden">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#141923] flex items-center justify-center">
+                    <UserRound className="w-10 h-10 md:w-12 md:h-12 text-[#78BE20]" />
+                  </div>
                 </div>
+                
+                {/* Edit Icon Overlay */}
+                <div className="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <Edit3 className="w-6 h-6 text-white" />
+                </div>
+                
+                {/* Dropdown Status Indicator */}
+                {showPlayerSelect && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#78BE20] rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                )}
+                
+                {/* Player Selection Dropdown */}
+                {showPlayerSelect && (
+                  <div className="absolute z-50 mt-2 left-0 w-64 bg-[#141923] rounded-lg shadow-xl border border-gray-700/50 py-2 max-h-96 overflow-y-auto">
+                    <div className="px-4 py-3 text-sm text-[#78BE20]/80 border-b border-gray-700/50 font-medium">
+                      Select a player to track
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {availablePlayers.map(player => (
+                        <button
+                          key={player}
+                          onClick={() => {
+                            console.log('Player selected:', player);
+                            setSelectedPlayer(player);
+                            setShowPlayerSelect(false);
+                          }}
+                          className={`w-full px-4 py-3 text-left hover:bg-[#1e2129] flex items-center gap-3 ${
+                            selectedPlayer === player 
+                              ? 'text-white bg-[#78BE20]/20 font-medium border-l-4 border-[#78BE20]' 
+                              : 'text-white'
+                          }`}
+                        >
+                          <img
+                            src={getPlayerImageUrl(player)}
+                            alt={player}
+                            className="w-8 h-8 rounded-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = 'https://via.placeholder.com/32';
+                            }}
+                          />
+                          <span className="flex-1">{player}</span>
+                          {selectedPlayer === player && <Award className="w-4 h-4 text-[#78BE20]" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#78BE20]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#78BE20]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
             </div>
+            
             <div>
               <h2 className="text-xl md:text-2xl font-bold text-white">Record Tracker</h2>
               <p className="text-gray-400 text-sm">Track progress towards NBA milestones</p>
+              <p className="text-[#78BE20] text-sm font-medium mt-1">Click image to change player</p>
             </div>
           </div>
         </div>
         
-        {/* Prominent Stat Selector Card */}
-        <div className="mt-6 mb-8 bg-[#141923] rounded-lg p-4 border border-gray-700/50 shadow-lg">
-          <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
-            <div className="flex items-center gap-3">
-              <BarChart2 className="w-5 h-5 text-[#78BE20]" />
-              <span className="text-white font-medium">Currently Tracking:</span>
-              <span className="text-[#78BE20] font-bold text-xl">{getStatDisplayName(selectedStat)}</span>
-            </div>
-            
-            <div className="relative">
-              <button
-                onClick={() => setShowStatSelect(!showStatSelect)}
-                className="px-5 py-2.5 bg-[#78BE20] text-white rounded-lg flex items-center gap-2 hover:bg-[#8CD43A] transition-colors shadow-md font-medium"
-                aria-label="Choose a different stat to track"
-              >
-                <Target className="w-5 h-5" />
-                <span>Change Stat</span>
-                <ChevronDown className={`w-5 h-5 transform transition-transform duration-200 ${showStatSelect ? 'rotate-180' : ''}`} />
-              </button>
+        {/* Stat Selector Card - Simplified */}
+        <div className="mt-6 mb-8">
+          <div className="bg-[#141923] rounded-lg p-4 border border-gray-700/50 shadow-lg">
+            <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
+              <div className="flex items-center gap-3">
+                <BarChart2 className="w-5 h-5 text-[#78BE20]" />
+                <span className="text-white font-medium">Currently Tracking:</span>
+                <span className="text-[#78BE20] font-bold text-xl">{getStatDisplayName(selectedStat)}</span>
+              </div>
               
-              {showStatSelect && (
-                <div className="absolute z-10 mt-8 w-56 bg-[#141923] rounded-lg shadow-lg border border-gray-700/50 py-1 max-h-80 overflow-y-auto">
-                  <div className="px-3 py-2 text-xs text-[#78BE20]/80 border-b border-gray-700/50 font-medium">
-                    Select a stat to track progress
+              <div className="relative">
+                <button
+                  onClick={() => setShowStatSelect(!showStatSelect)}
+                  className="px-5 py-2.5 bg-[#78BE20] text-white rounded-lg flex items-center gap-2 hover:bg-[#8CD43A] transition-colors shadow-md font-medium"
+                  aria-label="Choose a different stat to track"
+                >
+                  <Target className="w-5 h-5" />
+                  <span>Change Stat</span>
+                  <ChevronDown className={`w-5 h-5 transform transition-transform duration-200 ${showStatSelect ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {showStatSelect && (
+                  <div className="absolute z-10 mt-8 w-56 bg-[#141923] rounded-lg shadow-lg border border-gray-700/50 py-1 max-h-80 overflow-y-auto">
+                    <div className="px-3 py-2 text-xs text-[#78BE20]/80 border-b border-gray-700/50 font-medium">
+                      Select a stat to track progress
+                    </div>
+                    {sortedStats.map(stat => (
+                      <button
+                        key={stat}
+                        onClick={() => {
+                          setSelectedStat(stat);
+                          setShowStatSelect(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-[#1e2129] flex items-center gap-2 ${
+                          selectedStat === stat 
+                            ? 'text-white bg-[#78BE20]/20 font-medium border-l-4 border-[#78BE20]' 
+                            : 'text-white'
+                        }`}
+                      >
+                        {selectedStat === stat && <Award className="w-4 h-4" />}
+                        {getStatDisplayName(stat)}
+                      </button>
+                    ))}
                   </div>
-                  {sortedStats.map(stat => (
-                    <button
-                      key={stat}
-                      onClick={() => {
-                        setSelectedStat(stat);
-                        setShowStatSelect(false);
-                      }}
-                      className={`w-full px-4 py-3 text-left hover:bg-[#1e2129] flex items-center gap-2 ${
-                        selectedStat === stat 
-                          ? 'text-white bg-[#78BE20]/20 font-medium border-l-4 border-[#78BE20]' 
-                          : 'text-white'
-                      }`}
-                    >
-                      {selectedStat === stat && <Award className="w-4 h-4" />}
-                      {getStatDisplayName(stat)}
-                    </button>
-                  ))}
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {recordData.filter(d => d.stat === selectedStat).map((record, index) => {
+        {playerRecordData.filter(d => d.stat === selectedStat).map((record, index) => {
           const totalGames = record.GP + record.GAMES_REMAINING;
           const chartOption = {
             backgroundColor: '#1e2129',
             title: {
-              text: `${getStatDisplayName(record.stat)} Progress`,
+              text: `${selectedPlayer} - ${getStatDisplayName(record.stat)} Progress`,
               left: 'center',
               top: 10,
               textStyle: {

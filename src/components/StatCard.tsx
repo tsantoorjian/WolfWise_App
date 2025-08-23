@@ -75,14 +75,14 @@ const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div 
-      className={`${cardStyles.bg} rounded-xl p-2 md:p-4 relative overflow-hidden transition-all hover:translate-y-[-4px] duration-300 border ${cardStyles.border} ${className || ''}`}
+      className={`bg-gradient-to-br from-[#1a1f2b] to-[#141923] rounded-xl p-3 md:p-4 relative overflow-hidden transition-all hover:translate-y-[-2px] hover:shadow-lg duration-300 border border-gray-700/50 hover:border-[#78BE20]/30 ${className || ''}`}
     >
       <div className="relative z-10">
         {/* Header with accent line */}
-        <div className="flex items-center justify-between mb-1.5 md:mb-3">
-          <div className="flex items-center space-x-1.5 md:space-x-2">
-            <div className="w-0.5 md:w-1 h-3 md:h-5 bg-gradient-to-b from-emerald-400 to-cyan-400 rounded-full"></div>
-            <p className="text-[10px] md:text-sm font-medium text-white">
+        <div className="flex items-center justify-between mb-2 md:mb-3">
+          <div className="flex items-center space-x-2">
+            <div className="w-1 h-4 md:h-5 bg-gradient-to-b from-[#78BE20] to-[#4ade80] rounded-full"></div>
+            <p className="text-xs md:text-sm font-semibold text-white uppercase tracking-wider">
               {label}
             </p>
           </div>

@@ -48,7 +48,7 @@ const PlayerDetail: React.FC<PlayerDetailProps> = ({ player, last5Stats, last10S
           value={player.PTS}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
@@ -57,7 +57,7 @@ const PlayerDetail: React.FC<PlayerDetailProps> = ({ player, last5Stats, last10S
           value={player.REB}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
@@ -66,7 +66,7 @@ const PlayerDetail: React.FC<PlayerDetailProps> = ({ player, last5Stats, last10S
           value={player.AST}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
@@ -75,7 +75,7 @@ const PlayerDetail: React.FC<PlayerDetailProps> = ({ player, last5Stats, last10S
           value={player.STL}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
@@ -84,7 +84,7 @@ const PlayerDetail: React.FC<PlayerDetailProps> = ({ player, last5Stats, last10S
           value={player.BLK}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />
@@ -93,7 +93,7 @@ const PlayerDetail: React.FC<PlayerDetailProps> = ({ player, last5Stats, last10S
           value={player.PLUS_MINUS}
           bgColor=""
           textColor="text-white"
-          playerName={player.PLAYER_NAME}
+          playerId={player.PLAYER_ID}
           last5Stats={last5Stats}
           last10Stats={last10Stats}
         />

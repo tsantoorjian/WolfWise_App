@@ -151,12 +151,19 @@ class TimberwolvesRecords:
         )
         current_game = game_log.iloc[0][stat] if not game_log.empty else 0
         
-        # Get current season and career totals with retry
-        career_stats = self.api_call_with_retry(
-            lambda: PlayerCareerStats(player_id=player_id).get_data_frames()[0]
-        )
-        current_season = career_stats.iloc[-1][stat] if not career_stats.empty else 0
-        career_total = career_stats[stat].sum() if not career_stats.empty else 0
+        # Get current season and career totals with retry - handle API inconsistencies
+        try:
+            career_stats = self.api_call_with_retry(
+                lambda: PlayerCareerStats(player_id=player_id).get_data_frames()[0]
+            )
+            current_season = career_stats.iloc[-1][stat] if not career_stats.empty else 0
+            career_total = career_stats[stat].sum() if not career_stats.empty else 0
+        except (KeyError, IndexError) as e:
+            print(f"Warning: PlayerCareerStats API issue for player {player_id}: {str(e)}")
+            print("Falling back to game log data for current season calculations...")
+            # Fallback: use current game data and set career total to 0
+            current_season = current_game
+            career_total = 0
         
         return {
             'game': current_game,
@@ -172,12 +179,19 @@ class TimberwolvesRecords:
         )
         game_high = game_log[stat].max() if not game_log.empty else 0
         
-        # Season high and career total with retry
-        career_stats = self.api_call_with_retry(
-            lambda: PlayerCareerStats(player_id=player_id).get_data_frames()[0]
-        )
-        season_high = career_stats[stat].max() if not career_stats.empty else 0
-        career_total = career_stats[stat].sum() if not career_stats.empty else 0
+        # Season high and career total with retry - handle API inconsistencies
+        try:
+            career_stats = self.api_call_with_retry(
+                lambda: PlayerCareerStats(player_id=player_id).get_data_frames()[0]
+            )
+            season_high = career_stats[stat].max() if not career_stats.empty else 0
+            career_total = career_stats[stat].sum() if not career_stats.empty else 0
+        except (KeyError, IndexError) as e:
+            print(f"Warning: PlayerCareerStats API issue for player {player_id}: {str(e)}")
+            print("Falling back to game log data for career calculations...")
+            # Fallback: use game log for season high, skip career total
+            season_high = game_high  # Use game high as fallback
+            career_total = 0  # Set to 0 since we can't get career data
         
         return {
             'game': game_high,
