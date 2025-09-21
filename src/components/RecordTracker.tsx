@@ -1,27 +1,22 @@
 import { useState, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
-import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal, BarChart2, Users, Edit3 } from 'lucide-react';
+import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal, BarChart2 } from 'lucide-react';
 import RecordProgressBar from './RecordProgressBar';
 import { useRecordData } from '../hooks/useRecordData';
 
 type RecordTrackerProps = {
-  playerImageUrl?: string;
+  selectedPlayer: string;
 };
 
-export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
+export function RecordTracker({ selectedPlayer }: RecordTrackerProps) {
   const [selectedStat, setSelectedStat] = useState<string>('pts');
   const [showStatSelect, setShowStatSelect] = useState(false);
-  const [showPlayerSelect, setShowPlayerSelect] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { 
-    recordData, 
     loading, 
-    selectedPlayer, 
-    setSelectedPlayer, 
-    availablePlayers,
     getProgressionData, 
     getPlayerRecordData 
-  } = useRecordData();
+  } = useRecordData(selectedPlayer);
 
   useEffect(() => {
     const handleResize = () => {
@@ -32,18 +27,6 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Handle clicking outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (showPlayerSelect && !target.closest('.player-image-container')) {
-        setShowPlayerSelect(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showPlayerSelect]);
 
   // Function to get player image URL based on selected player
   const getPlayerImageUrl = (playerName: string) => {
@@ -192,21 +175,13 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
       <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            {/* Player Image with Integrated Player Selection */}
-            <div className="relative group player-image-container">
+            {/* Player Image - Display Only */}
+            <div className="relative group">
               <div className="relative">
                 <img
                   src={getPlayerImageUrl(selectedPlayer)}
                   alt={selectedPlayer || 'Player'}
-                  className={`w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 transition-colors duration-300 cursor-pointer ${
-                    showPlayerSelect 
-                      ? 'border-[#78BE20] ring-2 ring-[#78BE20]/30' 
-                      : 'border-[#78BE20]/60 group-hover:border-[#78BE20]'
-                  }`}
-                  onClick={() => {
-                    console.log('Image clicked! Current state:', showPlayerSelect);
-                    setShowPlayerSelect(!showPlayerSelect);
-                  }}
+                  className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-[#78BE20]/60"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = 'https://via.placeholder.com/96';
@@ -219,65 +194,13 @@ export function RecordTracker({ playerImageUrl }: RecordTrackerProps) {
                     <UserRound className="w-10 h-10 md:w-12 md:h-12 text-[#78BE20]" />
                   </div>
                 </div>
-                
-                {/* Edit Icon Overlay */}
-                <div className="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                  <Edit3 className="w-6 h-6 text-white" />
-                </div>
-                
-                {/* Dropdown Status Indicator */}
-                {showPlayerSelect && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#78BE20] rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                )}
-                
-                {/* Player Selection Dropdown */}
-                {showPlayerSelect && (
-                  <div className="absolute z-50 mt-2 left-0 w-64 bg-[#141923] rounded-lg shadow-xl border border-gray-700/50 py-2 max-h-96 overflow-y-auto">
-                    <div className="px-4 py-3 text-sm text-[#78BE20]/80 border-b border-gray-700/50 font-medium">
-                      Select a player to track
-                    </div>
-                    <div className="max-h-80 overflow-y-auto">
-                      {availablePlayers.map(player => (
-                        <button
-                          key={player}
-                          onClick={() => {
-                            console.log('Player selected:', player);
-                            setSelectedPlayer(player);
-                            setShowPlayerSelect(false);
-                          }}
-                          className={`w-full px-4 py-3 text-left hover:bg-[#1e2129] flex items-center gap-3 ${
-                            selectedPlayer === player 
-                              ? 'text-white bg-[#78BE20]/20 font-medium border-l-4 border-[#78BE20]' 
-                              : 'text-white'
-                          }`}
-                        >
-                          <img
-                            src={getPlayerImageUrl(player)}
-                            alt={player}
-                            className="w-8 h-8 rounded-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = 'https://via.placeholder.com/32';
-                            }}
-                          />
-                          <span className="flex-1">{player}</span>
-                          {selectedPlayer === player && <Award className="w-4 h-4 text-[#78BE20]" />}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
-              
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#78BE20]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
             </div>
             
             <div>
               <h2 className="text-xl md:text-2xl font-bold text-white">Record Tracker</h2>
               <p className="text-gray-400 text-sm">Track progress towards NBA milestones</p>
-              <p className="text-[#78BE20] text-sm font-medium mt-1">Click image to change player</p>
+              <p className="text-[#78BE20] text-sm font-medium mt-1">Player selected from stats above</p>
             </div>
           </div>
         </div>

@@ -19,12 +19,15 @@ export type GameLog = {
   PF: number;
 };
 
-export function useRecordData() {
+export function useRecordData(selectedPlayerProp?: string) {
   const [recordData, setRecordData] = useState<RecordTrackerSeason[]>([]);
   const [gameLogs, setGameLogs] = useState<GameLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState<string>('');
   const [availablePlayers, setAvailablePlayers] = useState<string[]>([]);
+  
+  // Use prop if provided, otherwise use internal state
+  const currentSelectedPlayer = selectedPlayerProp || selectedPlayer;
 
   useEffect(() => {
     async function fetchData() {
@@ -59,13 +62,13 @@ export function useRecordData() {
   // Fetch game logs when selected player changes
   useEffect(() => {
     async function fetchGameLogs() {
-      if (!selectedPlayer) return;
+      if (!currentSelectedPlayer) return;
       
       try {
         const { data: gameLogsData, error: logsError } = await supabase
           .from('twolves_player_game_logs')
           .select('*')
-          .eq('PLAYER_NAME', selectedPlayer)
+          .eq('PLAYER_NAME', currentSelectedPlayer)
           .order('GAME_DATE', { ascending: true });
 
         if (logsError) throw logsError;
@@ -77,7 +80,7 @@ export function useRecordData() {
     }
 
     fetchGameLogs();
-  }, [selectedPlayer]);
+  }, [currentSelectedPlayer]);
 
   const getProgressionData = (stat: string) => {
     if (!gameLogs.length) return [];
@@ -101,7 +104,7 @@ export function useRecordData() {
     recordData, 
     gameLogs, 
     loading, 
-    selectedPlayer, 
+    selectedPlayer: currentSelectedPlayer, 
     setSelectedPlayer, 
     availablePlayers,
     getProgressionData, 

@@ -1,34 +1,26 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSupabase } from './hooks/useSupabase';
 import { PlayerStats } from './components/PlayerStats';
-import { ThreePointDistribution } from './components/ThreePointDistribution';
 import Lineups from './components/Lineups';
-import { RecordTracker } from './components/RecordTracker';
 import LiveGameStats from './components/LiveGameStats';
-import { PerformanceGrid } from './components/PerformanceGrid';
 import { HeatShotTool } from './components/HeatShotTool';
 import { 
   Menu, 
-  LineChart, 
   Users2, 
-  Trophy, 
   BarChart3,
   Activity,
-  Home,
   Mail,
-  Table,
   ScatterChart
 } from 'lucide-react';
 import './index.css';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-type Tab = 'live-stats' | 'stats' | 'lineups' | 'records' | 'distribution' | 'performance-grid' | 'heatshot-tool';
+type Tab = 'live-stats' | 'stats' | 'lineups' | 'heatshot-tool';
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('live-stats');
-  const [selectedStat, setSelectedStat] = useState<string>('3pt percentage');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { players, distributionData, playerImageUrl, fetchDistributionData } = useSupabase();
+  const { players } = useSupabase();
 
   const getTabIcon = (tab: Tab, isActive: boolean) => {
     const baseClasses = `w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'}`;
@@ -40,12 +32,6 @@ function App() {
         return <BarChart3 className={baseClasses} />;
       case 'lineups':
         return <Users2 className={baseClasses} />;
-      case 'records':
-        return <Trophy className={baseClasses} />;
-      case 'distribution':
-        return <LineChart className={baseClasses} />;
-      case 'performance-grid':
-        return <Table className={baseClasses} />;
       case 'heatshot-tool':
         return <ScatterChart className={baseClasses} />;
     }
@@ -59,12 +45,6 @@ function App() {
         return 'Player Stats';
       case 'lineups':
         return 'Lineups';
-      case 'records':
-        return 'Record Tracker';
-      case 'distribution':
-        return 'Distributions';
-      case 'performance-grid':
-        return 'Performance Grid';
       case 'heatshot-tool':
         return 'Headshot Tool';
     }
@@ -110,7 +90,7 @@ function App() {
             {/* Navigation */}
             <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block mb-6`}>
               <div className="flex flex-col md:flex-row gap-2 md:gap-1 glass-card p-1 rounded-lg">
-                {(['live-stats', 'stats', 'lineups', 'records', 'distribution', 'performance-grid', 'heatshot-tool'] as Tab[]).map((tab) => (
+                {(['live-stats', 'stats', 'lineups', 'heatshot-tool'] as Tab[]).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
@@ -141,23 +121,6 @@ function App() {
               {activeTab === 'live-stats' && <LiveGameStats />}
               {activeTab === 'stats' && <PlayerStats />}
               {activeTab === 'lineups' && <Lineups />}
-              {activeTab === 'records' && (
-                <RecordTracker playerImageUrl={playerImageUrl || undefined} />
-              )}
-              {activeTab === 'distribution' && (
-                <ThreePointDistribution 
-                  distributionData={distributionData} 
-                  players={players} 
-                  onStatChange={(stat) => {
-                    setSelectedStat(stat);
-                    fetchDistributionData(stat);
-                  }}
-                  selectedStat={selectedStat}
-                />
-              )}
-              {activeTab === 'performance-grid' && (
-                <PerformanceGrid players={players} />
-              )}
               {activeTab === 'heatshot-tool' && (
                 <HeatShotTool players={players} />
               )}
