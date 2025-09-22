@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal, BarChart2 } from 'lucide-react';
 import RecordProgressBar from './RecordProgressBar';
@@ -11,21 +11,11 @@ type RecordTrackerProps = {
 export function RecordTracker({ selectedPlayer }: RecordTrackerProps) {
   const [selectedStat, setSelectedStat] = useState<string>('pts');
   const [showStatSelect, setShowStatSelect] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { 
     loading, 
     getProgressionData, 
     getPlayerRecordData 
   } = useRecordData(selectedPlayer);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
 
   // Function to get player image URL based on selected player
@@ -435,82 +425,210 @@ export function RecordTracker({ selectedPlayer }: RecordTrackerProps) {
 
           return (
             <div key={index} className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-[#141923] to-[#0f1119] rounded-lg p-6 text-white border border-gray-700/50">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-semibold">Current Pace</h4>
-                      <Trophy className="w-5 h-5 text-[#78BE20]" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-1">
-                        <p className="text-white/70 text-sm">Games Played</p>
-                        <p className="text-2xl font-bold">{record.GP}</p>
-                        <div className="h-1 bg-white/20 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-[#78BE20]"
-                            style={{ width: `${(record.GP / totalGames) * 100}%` }}
-                          ></div>
+              {/* Mobile Layout - Exact desktop layout but scaled down */}
+              <div className="block md:hidden">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  <div className="space-y-3">
+                    <div className="bg-gradient-to-br from-[#141923] to-[#0f1119] rounded-lg p-3 text-white border border-gray-700/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-semibold">Current Pace</h4>
+                        <Trophy className="w-3 h-3 text-[#78BE20]" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <p className="text-white/70 text-xs">Games Played</p>
+                          <p className="text-lg font-bold">{record.GP}</p>
+                          <div className="h-0.5 bg-white/20 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-[#78BE20]"
+                              style={{ width: `${(record.GP / totalGames) * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-white/70 text-xs">Games Left</p>
+                          <p className="text-lg font-bold">{record.GAMES_REMAINING}</p>
+                          <div className="h-0.5 bg-white/20 rounded-full"></div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-white/70 text-xs">Current Total</p>
+                          <p className="text-lg font-bold">{record.current.toFixed(1)}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-white/70 text-xs">Per Game</p>
+                          <p className="text-lg font-bold">{record.per_game.toFixed(1)}</p>
                         </div>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-white/70 text-sm">Games Left</p>
-                        <p className="text-2xl font-bold">{record.GAMES_REMAINING}</p>
-                        <div className="h-1 bg-white/20 rounded-full"></div>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-white/70 text-sm">Current Total</p>
-                        <p className="text-2xl font-bold">{record.current.toFixed(1)}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-white/70 text-sm">Per Game</p>
-                        <p className="text-2xl font-bold">{record.per_game.toFixed(1)}</p>
+                      <div className="mt-3 pt-2 border-t border-white/10">
+                        <p className="text-white/70 text-xs mb-1">Season Projection</p>
+                        <div className="flex items-baseline gap-1">
+                          <p className="text-xl font-bold text-[#78BE20]">
+                            {record.projection.toFixed(1)}
+                          </p>
+                          <p className="text-white/50 text-xs">projected</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="mt-6 pt-4 border-t border-white/10">
-                      <p className="text-white/70 text-sm mb-1">Season Projection</p>
-                      <div className="flex items-baseline gap-2">
-                        <p className="text-3xl font-bold text-[#78BE20]">
-                          {record.projection.toFixed(1)}
-                        </p>
-                        <p className="text-white/50 text-sm">projected</p>
+
+                    <div className="bg-[#141923] rounded-lg p-3 shadow-md space-y-2 border border-gray-700/50">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Medal className="w-3 h-3 text-gray-400" />
+                        <h4 className="text-sm font-semibold text-white">Record Progress</h4>
                       </div>
+                      <RecordProgressBar
+                        current={record.current}
+                        max={record.personal_record}
+                        label="Personal Record"
+                        player="Previous Best"
+                      />
+                      <RecordProgressBar
+                        current={record.current}
+                        max={record.franchise_record}
+                        label="Franchise Record"
+                        player={record.franchise_player}
+                      />
+                      <RecordProgressBar
+                        current={record.current}
+                        max={record.nba_record}
+                        label="NBA Record"
+                        player={record.nba_player.replace('*', '')}
+                      />
                     </div>
                   </div>
 
-                  <div className="bg-[#141923] rounded-lg p-6 shadow-md space-y-4 border border-gray-700/50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Medal className="w-5 h-5 text-gray-400" />
-                      <h4 className="text-lg font-semibold text-white">Record Progress</h4>
-                    </div>
-                    <RecordProgressBar
-                      current={record.current}
-                      max={record.personal_record}
-                      label="Personal Record"
-                      player="Previous Best"
-                    />
-                    <RecordProgressBar
-                      current={record.current}
-                      max={record.franchise_record}
-                      label="Franchise Record"
-                      player={record.franchise_player}
-                    />
-                    <RecordProgressBar
-                      current={record.current}
-                      max={record.nba_record}
-                      label="NBA Record"
-                      player={record.nba_player.replace('*', '')}
+                  <div className="bg-[#141923] rounded-lg shadow-md p-2 h-[300px] border border-gray-700/50">
+                    <ReactECharts
+                      option={{
+                        ...chartOption,
+                        title: {
+                          ...chartOption.title,
+                          textStyle: {
+                            ...chartOption.title.textStyle,
+                            fontSize: 10
+                          }
+                        },
+                        grid: {
+                          ...chartOption.grid,
+                          top: 25,
+                          right: 25,
+                          bottom: 35,
+                          left: 35,
+                          containLabel: true
+                        },
+                        xAxis: {
+                          ...chartOption.xAxis,
+                          nameTextStyle: { 
+                            ...chartOption.xAxis.nameTextStyle,
+                            fontSize: 8
+                          },
+                          axisLabel: {
+                            ...chartOption.xAxis.axisLabel,
+                            fontSize: 8,
+                            margin: 5
+                          }
+                        },
+                        yAxis: {
+                          ...chartOption.yAxis,
+                          nameTextStyle: { 
+                            ...chartOption.yAxis.nameTextStyle,
+                            fontSize: 8
+                          },
+                          axisLabel: { 
+                            ...chartOption.yAxis.axisLabel,
+                            fontSize: 8,
+                            margin: 5,
+                            align: 'right',
+                            padding: [0, 10, 0, 0]
+                          }
+                        }
+                      }}
+                      style={{ height: '100%', width: '100%' }}
+                      notMerge={true}
+                      lazyUpdate={true}
                     />
                   </div>
                 </div>
+              </div>
 
-                <div className={`bg-[#141923] rounded-lg shadow-md p-4 ${isMobile ? 'h-[400px]' : 'h-[600px]'} border border-gray-700/50`}>
-                  <ReactECharts
-                    option={chartOption}
-                    style={{ height: '100%', width: '100%' }}
-                    notMerge={true}
-                    lazyUpdate={true}
-                  />
+              {/* Desktop Layout - Original */}
+              <div className="hidden md:block">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-br from-[#141923] to-[#0f1119] rounded-lg p-6 text-white border border-gray-700/50">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-lg font-semibold">Current Pace</h4>
+                        <Trophy className="w-5 h-5 text-[#78BE20]" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-1">
+                          <p className="text-white/70 text-sm">Games Played</p>
+                          <p className="text-2xl font-bold">{record.GP}</p>
+                          <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-[#78BE20]"
+                              style={{ width: `${(record.GP / totalGames) * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-white/70 text-sm">Games Left</p>
+                          <p className="text-2xl font-bold">{record.GAMES_REMAINING}</p>
+                          <div className="h-1 bg-white/20 rounded-full"></div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-white/70 text-sm">Current Total</p>
+                          <p className="text-2xl font-bold">{record.current.toFixed(1)}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-white/70 text-sm">Per Game</p>
+                          <p className="text-2xl font-bold">{record.per_game.toFixed(1)}</p>
+                        </div>
+                      </div>
+                      <div className="mt-6 pt-4 border-t border-white/10">
+                        <p className="text-white/70 text-sm mb-1">Season Projection</p>
+                        <div className="flex items-baseline gap-2">
+                          <p className="text-3xl font-bold text-[#78BE20]">
+                            {record.projection.toFixed(1)}
+                          </p>
+                          <p className="text-white/50 text-sm">projected</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#141923] rounded-lg p-6 shadow-md space-y-4 border border-gray-700/50">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Medal className="w-5 h-5 text-gray-400" />
+                        <h4 className="text-lg font-semibold text-white">Record Progress</h4>
+                      </div>
+                      <RecordProgressBar
+                        current={record.current}
+                        max={record.personal_record}
+                        label="Personal Record"
+                        player="Previous Best"
+                      />
+                      <RecordProgressBar
+                        current={record.current}
+                        max={record.franchise_record}
+                        label="Franchise Record"
+                        player={record.franchise_player}
+                      />
+                      <RecordProgressBar
+                        current={record.current}
+                        max={record.nba_record}
+                        label="NBA Record"
+                        player={record.nba_player.replace('*', '')}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-[#141923] rounded-lg shadow-md p-4 h-[600px] border border-gray-700/50">
+                    <ReactECharts
+                      option={chartOption}
+                      style={{ height: '100%', width: '100%' }}
+                      notMerge={true}
+                      lazyUpdate={true}
+                    />
+                  </div>
                 </div>
               </div>
 
