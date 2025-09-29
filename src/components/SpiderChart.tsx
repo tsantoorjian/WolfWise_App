@@ -37,9 +37,11 @@ const NEGATIVE_STATS: string[] = []; // None of our spider stats are negative
 
 export function SpiderChart({ player }: SpiderChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const [baseData, setBaseData] = useState<FullSeasonBasePerGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [percentiles, setPercentiles] = useState<Record<string, number>>({});
+  const [hoveredStat, setHoveredStat] = useState<{ key: string; label: string; value: number; canvasX: number; canvasY: number } | null>(null);
 
   useEffect(() => {
     async function fetchBaseStats() {
@@ -66,7 +68,7 @@ export function SpiderChart({ player }: SpiderChartProps) {
         const gp = player.GP || 0;
         return (mpg * gp) >= 600; // 600 total minutes minimum
       })
-      .map((player, index) => {
+      .map((player) => {
         const statValue = (player as any)[statKey];
         
         let parsedValue = statValue;
@@ -147,8 +149,7 @@ export function SpiderChart({ player }: SpiderChartProps) {
     // Scale the drawing context so everything draws at the correct size
     ctx.scale(devicePixelRatio, devicePixelRatio);
     
-    // Improve text rendering quality
-    ctx.textRenderingOptimization = 'optimizeQuality';
+    // Improve rendering quality
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
@@ -273,6 +274,85 @@ export function SpiderChart({ player }: SpiderChartProps) {
 
   }, [loading, percentiles]);
 
+  // Handle mouse movement for hover detection
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || loading || Object.keys(percentiles).length === 0) return;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+
+      // Use the actual rendered canvas size
+      const size = canvas.clientWidth;
+      const centerX = size / 2;
+      const centerY = size / 2;
+      const radius = size * 0.35;
+      const numStats = SPIDER_STATS.length;
+      const angleStep = (2 * Math.PI) / numStats;
+
+      let foundHover = false;
+
+      // Check each data point
+      SPIDER_STATS.forEach((stat, index) => {
+        const percentile = percentiles[stat.key] || 0;
+        const angle = index * angleStep - Math.PI / 2;
+        const distance = radius * percentile;
+        const x = centerX + distance * Math.cos(angle);
+        const y = centerY + distance * Math.sin(angle);
+
+        // Check if mouse is within dot radius (6px dot + 4px tolerance = 10px)
+        const distanceToMouse = Math.sqrt((mouseX - x) ** 2 + (mouseY - y) ** 2);
+        
+        if (distanceToMouse <= 10) {
+          let playerValue = (player as any)[stat.key];
+          
+          // Handle percentage values that come as strings with % symbol
+          if (typeof playerValue === 'string' && playerValue.includes('%')) {
+            playerValue = parseFloat(playerValue.replace('%', '')) / 100;
+          } else if (typeof playerValue === 'string') {
+            playerValue = parseFloat(playerValue) || 0;
+          }
+
+          // Format the value for display
+          let displayValue: number;
+          if (stat.key.includes('PCT')) {
+            // Convert to percentage for display
+            displayValue = Math.round(playerValue * 1000) / 10; // Show as percentage with 1 decimal
+          } else {
+            displayValue = Math.round(playerValue * 10) / 10; // 1 decimal place
+          }
+
+          setHoveredStat({
+            key: stat.key,
+            label: stat.label,
+            value: displayValue,
+            canvasX: x,
+            canvasY: y
+          });
+          foundHover = true;
+        }
+      });
+
+      if (!foundHover) {
+        setHoveredStat(null);
+      }
+    };
+
+    const handleMouseLeave = () => {
+      setHoveredStat(null);
+    };
+
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [loading, percentiles, player]);
+
   if (loading) {
     return (
       <div className="h-full flex flex-col">
@@ -304,17 +384,35 @@ export function SpiderChart({ player }: SpiderChartProps) {
         <p className="text-sm text-gray-300 mb-4">League percentile ranking (0-100%)</p>
       </div>
       
-      <div className="flex-1 flex items-center justify-center px-6">
-        <canvas
-          ref={canvasRef}
-          className="max-w-full h-auto"
-          style={{ 
-            maxWidth: '350px', 
-            maxHeight: '350px',
-            imageRendering: 'crisp-edges',
-            imageRendering: '-webkit-optimize-contrast'
-          }}
-        />
+      <div className="flex-1 flex items-center justify-center px-6 relative">
+        <div className="relative inline-block">
+          <canvas
+            ref={canvasRef}
+            className="max-w-full h-auto cursor-pointer"
+            style={{ 
+              maxWidth: '350px', 
+              maxHeight: '350px',
+              imageRendering: '-webkit-optimize-contrast'
+            }}
+          />
+          
+          {/* Tooltip positioned relative to canvas */}
+          {hoveredStat && (
+            <div
+              ref={tooltipRef}
+              className="absolute pointer-events-none z-50 px-3 py-2 bg-gray-900/95 border border-[#78BE20]/30 rounded-lg shadow-lg backdrop-blur-sm whitespace-nowrap"
+              style={{
+                left: `${hoveredStat.canvasX + 10}px`,
+                top: `${hoveredStat.canvasY - 40}px`,
+              }}
+            >
+              <div className="text-xs font-semibold text-white">{hoveredStat.label}</div>
+              <div className="text-lg font-bold text-[#78BE20]">
+                {hoveredStat.key.includes('PCT') ? `${hoveredStat.value}%` : hoveredStat.value}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="px-6 py-4 border-t border-gray-700/30 bg-gradient-to-r from-[#0f1119] to-[#141923]">
