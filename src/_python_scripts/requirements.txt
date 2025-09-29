@@ -83,4 +83,8 @@ websocket-client==1.8.0
 websockets==14.2
 wsproto==1.2.0
 yarl==1.18.3
-Pillow==10.2.0 
+Pillow==10.2.0
+cloudscraper==1.2.71
+fake-useragent==1.5.1
+undetected-chromedriver==3.6.1
+playwright==1.49.1
