@@ -146,7 +146,7 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
         </div>
         <p className="text-sm text-gray-300 mb-4">
           {isSinglePlayer 
-            ? 'Stats where this player is ranked in the top 20 league-wide'
+            ? 'Current season stats where this player is ranked in the top 20 league-wide'
             : 'Timberwolves players ranked in the top 20 league-wide'
           }
         </p>
@@ -194,7 +194,6 @@ export function LeagueLeaders({ leaderboardData = [] }: LeagueLeadersProps) {
                   <div className="flex items-center justify-between text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     <div className="flex items-center gap-3">
                       <span className="w-6 text-center">Rank</span>
-                      <span>Stat Category</span>
                     </div>
                     <span className="text-right pr-6">Value</span>
                   </div>
