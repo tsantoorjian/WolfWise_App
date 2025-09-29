@@ -1,23 +1,49 @@
-import requests
-from bs4 import BeautifulSoup
 import pandas as pd
 import time
 import os
+import random
 from supabase import create_client
-from dotenv import load_dotenv
 import uuid
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from bs4 import BeautifulSoup
 
-# Load environment variables
-load_dotenv()
+# Environment variables
+supabase_url = os.getenv("VITE_SUPABASE_URL")
+supabase_key = os.getenv("VITE_SUPABASE_ANON_KEY")
 
 # Initialize Supabase client
-supabase_url = 'https://kuthirbcjtofsdwsfhkj.supabase.co'
-supabase_key = os.getenv('SUPABASE_KEY')
 supabase = create_client(supabase_url, supabase_key)
+
+def setup_driver():
+    """Setup Chrome driver with options to avoid detection"""
+    chrome_options = Options()
+    
+    # Add options to avoid detection
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option('useAutomationExtension', False)
+    chrome_options.add_argument("--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+    
+    # Run in headless mode (comment out to see browser)
+    chrome_options.add_argument("--headless")
+    
+    driver = webdriver.Chrome(options=chrome_options)
+    
+    # Execute script to remove webdriver property
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    
+    return driver
 
 def load_urls():
     """Load URLs from the CSV file"""
-    df = pd.read_csv('basketball_reference_links.csv')
+    df = pd.read_csv('basketball_reference_links_selenium.csv')
     # Print debug info
     print(f"Found {len(df)} URLs in CSV file")
     
@@ -48,19 +74,55 @@ def clean_value(value):
         return False
 
 def scrape_stat_page(url, record_type):
-    """Scrape a single stat page"""
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
-    
+    """Scrape a single stat page using Selenium"""
+    driver = None
     try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
+        print(f"Setting up Chrome driver for {url}...")
+        driver = setup_driver()
         
-        # Ensure proper encoding of the response
-        response.encoding = 'utf-8'
+        print("Navigating to basketball-reference.com...")
+        driver.get("https://www.basketball-reference.com/")
         
-        soup = BeautifulSoup(response.text, "html.parser", from_encoding='utf-8')
+        # Wait a bit for any potential CloudFlare checks
+        time.sleep(3)
+        
+        print(f"Navigating to {url}...")
+        driver.get(url)
+        
+        # Wait for the page to load completely
+        print("Waiting for page to load...")
+        try:
+            # Try to wait for a table element
+            WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located((By.TAG_NAME, "table"))
+            )
+        except TimeoutException:
+            print("Timeout waiting for table, trying to continue...")
+        
+        # Additional wait to ensure all content is loaded
+        time.sleep(2)
+        
+        print("Page loaded successfully! Parsing data...")
+        
+        # Get page source and parse with BeautifulSoup
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+        
+        return parse_stat_page(soup, url, record_type)
+        
+    except TimeoutException:
+        print(f"Timeout waiting for page to load: {url}")
+        return None
+    except Exception as e:
+        print(f"An error occurred scraping {url}: {str(e)}")
+        return None
+    finally:
+        if driver:
+            driver.quit()
+
+def parse_stat_page(soup, url, record_type):
+    """Parse the BeautifulSoup object and extract data"""
+    try:
         data = []
         stat_type = get_stat_type(url)
         
@@ -132,12 +194,8 @@ def scrape_stat_page(url, record_type):
         
         return df
         
-    except requests.exceptions.RequestException as e:
-        print(f"Request error for {url}: {str(e)}")
-        return None
     except Exception as e:
-        print(f"Error scraping {url}: {str(e)}")
-        print(f"Error type: {type(e)}")
+        print(f"Error parsing response for {url}: {str(e)}")
         return None
 
 def append_to_csv(df, filename):
@@ -173,6 +231,10 @@ def save_to_supabase(df):
         print(f"Error saving to Supabase: {str(e)}")
 
 def main():
+    print("Starting Selenium-based scraper for NBA records...")
+    print(f"Supabase URL: {supabase_url}")
+    print(f"Supabase Key: {supabase_key[:20] if supabase_key else 'Not set'}...")
+    
     # Load URLs from CSV
     url_pairs = load_urls()
     
@@ -195,7 +257,12 @@ def main():
         else:
             print(f"Failed to scrape data from {url}")
             failure_count += 1
-        time.sleep(2)  # Increased delay to be more conservative
+        
+        # Add delay between requests to be respectful
+        if i < total_urls:  # Don't delay after the last request
+            delay = random.uniform(3, 6)  # Random delay between 3-6 seconds
+            print(f"Waiting {delay:.1f} seconds before next request...")
+            time.sleep(delay)
     
     # Combine all DataFrames
     if all_data:
@@ -205,7 +272,7 @@ def main():
         save_to_supabase(final_df)
         
         # Also save to CSV as backup
-        final_df.to_csv('basketball_reference_records.csv', index=False)
+        final_df.to_csv('basketball_reference_records_selenium.csv', index=False)
     
     print(f"\nScraping complete:")
     print(f"Successfully scraped: {success_count} pages")
