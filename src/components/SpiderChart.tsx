@@ -34,10 +34,14 @@ const SPIDER_STATS = [
 ];
 
 const NEGATIVE_STATS: string[] = []; // None of our spider stats are negative
+const RADIUS_FACTOR = 0.38; // keep draw/hover in sync
+const BASE_SIZE = 340; // baseline we scale fonts/points from
+const MAX_SIZE = 480; // allow larger chart while aligning with left components
 
 export function SpiderChart({ player }: SpiderChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [baseData, setBaseData] = useState<FullSeasonBasePerGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [percentiles, setPercentiles] = useState<Record<string, number>>({});
@@ -134,28 +138,30 @@ export function SpiderChart({ player }: SpiderChartProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size with proper device pixel ratio for crisp rendering
-    const size = Math.min(400, window.innerWidth * 0.8);
-    const devicePixelRatio = window.devicePixelRatio || 1;
-    
-    // Set the actual canvas size in memory (scaled for device pixel ratio)
-    canvas.width = size * devicePixelRatio;
-    canvas.height = size * devicePixelRatio;
-    
-    // Scale the canvas back down using CSS
-    canvas.style.width = size + 'px';
-    canvas.style.height = size + 'px';
-    
-    // Scale the drawing context so everything draws at the correct size
-    ctx.scale(devicePixelRatio, devicePixelRatio);
-    
+    // Measure container, use explicit square CSS size to avoid stretching
+    const container = containerRef.current;
+    const containerWidth = container?.clientWidth || canvas.clientWidth || 0;
+    const containerHeight = container?.clientHeight || canvas.clientHeight || undefined;
+    const size = Math.min(containerWidth, containerHeight ?? Infinity, MAX_SIZE);
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+
+    // High-DPI backing store with reset transform
+    const dpr = window.devicePixelRatio || 1;
+    const scale = Math.max(dpr, 2);
+    canvas.width = Math.floor(size * scale);
+    canvas.height = Math.floor(size * scale);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(scale, scale);
+
     // Improve rendering quality
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
     const centerX = size / 2;
     const centerY = size / 2;
-    const radius = size * 0.35;
+    const radius = size * RADIUS_FACTOR; // single source of truth
+    const uiScale = Math.max(size / BASE_SIZE, 0.85); // proportionally scale text/points
     const numStats = SPIDER_STATS.length;
     const angleStep = (2 * Math.PI) / numStats;
 
@@ -189,7 +195,7 @@ export function SpiderChart({ player }: SpiderChartProps) {
     // Draw data area
     ctx.fillStyle = 'rgba(120, 190, 32, 0.15)';
     ctx.strokeStyle = 'rgba(120, 190, 32, 0.8)';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * uiScale;
     ctx.beginPath();
 
     SPIDER_STATS.forEach((stat, index) => {
@@ -213,7 +219,7 @@ export function SpiderChart({ player }: SpiderChartProps) {
     // Draw data points
     ctx.fillStyle = '#78BE20';
     ctx.strokeStyle = '#4ade80';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3 * uiScale;
     
     SPIDER_STATS.forEach((stat, index) => {
       const percentile = percentiles[stat.key] || 0;
@@ -223,28 +229,28 @@ export function SpiderChart({ player }: SpiderChartProps) {
       const y = centerY + distance * Math.sin(angle);
 
       ctx.beginPath();
-      ctx.arc(x, y, 6, 0, 2 * Math.PI);
+      ctx.arc(x, y, 6 * uiScale, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
     });
 
     // Draw labels
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px Inter, sans-serif';
+    ctx.font = `bold ${Math.round(12 * uiScale)}px Inter, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
     SPIDER_STATS.forEach((stat, index) => {
       const angle = index * angleStep - Math.PI / 2;
-      const labelRadius = radius + 30;
+      const labelRadius = radius + 20 * uiScale;
       const x = centerX + labelRadius * Math.cos(angle);
       const y = centerY + labelRadius * Math.sin(angle);
 
       // Add background for better readability
       const textWidth = ctx.measureText(stat.label).width;
-      const padding = 8;
+      const padding = 8 * uiScale;
       ctx.fillStyle = 'rgba(30, 33, 41, 0.9)';
-      ctx.fillRect(x - textWidth/2 - padding, y - 10, textWidth + padding * 2, 20);
+      ctx.fillRect(x - textWidth/2 - padding, y - 10 * uiScale, textWidth + padding * 2, 20 * uiScale);
       
       ctx.fillStyle = '#ffffff';
       ctx.fillText(stat.label, x, y);
@@ -252,21 +258,25 @@ export function SpiderChart({ player }: SpiderChartProps) {
 
     // Draw percentile labels
     ctx.fillStyle = '#78BE20';
-    ctx.font = 'bold 10px Inter, sans-serif';
+    ctx.font = `bold ${Math.round(10 * uiScale)}px Inter, sans-serif`;
     
     SPIDER_STATS.forEach((stat, index) => {
       const percentile = percentiles[stat.key] || 0;
       const angle = index * angleStep - Math.PI / 2;
       const distance = radius * percentile;
-      const x = centerX + distance * Math.cos(angle);
-      const y = centerY + distance * Math.sin(angle) - 15;
+      // Place percentile label slightly INSIDE the data point along the radial line
+      const inwardOffset = 16 * uiScale; // px toward center to avoid overlapping stat labels outside
+      const labelDistance = Math.max(distance - inwardOffset, 0);
+      const x = centerX + labelDistance * Math.cos(angle);
+      const y = centerY + labelDistance * Math.sin(angle);
 
       const percentileText = `${(percentile * 100).toFixed(0)}%`;
       const textWidth = ctx.measureText(percentileText).width;
       
       // Add background for better readability
       ctx.fillStyle = 'rgba(30, 33, 41, 0.9)';
-      ctx.fillRect(x - textWidth/2 - 4, y - 8, textWidth + 8, 16);
+      const bgPad = 4 * uiScale;
+      ctx.fillRect(x - textWidth/2 - bgPad, y - 8 * uiScale, textWidth + bgPad * 2, 16 * uiScale);
       
       ctx.fillStyle = '#78BE20';
       ctx.fillText(percentileText, x, y);
@@ -284,11 +294,15 @@ export function SpiderChart({ player }: SpiderChartProps) {
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
 
-      // Use the actual rendered canvas size
-      const size = canvas.clientWidth;
+      // Use the exact size used for drawing/labels
+      const container = containerRef.current;
+      const cWidth = container?.clientWidth || canvas.clientWidth || 0;
+      const cHeight = container?.clientHeight || canvas.clientHeight || 0;
+      const size = Math.min(cWidth, cHeight, MAX_SIZE);
+      const uiScale = Math.max(size / BASE_SIZE, 0.85);
       const centerX = size / 2;
       const centerY = size / 2;
-      const radius = size * 0.35;
+      const radius = size * RADIUS_FACTOR;
       const numStats = SPIDER_STATS.length;
       const angleStep = (2 * Math.PI) / numStats;
 
@@ -302,10 +316,11 @@ export function SpiderChart({ player }: SpiderChartProps) {
         const x = centerX + distance * Math.cos(angle);
         const y = centerY + distance * Math.sin(angle);
 
-        // Check if mouse is within dot radius (6px dot + 4px tolerance = 10px)
+        // Check if mouse is within dot radius (adjusted for scale)
+        const dotRadius = 10 * uiScale; // in CSS pixels
         const distanceToMouse = Math.sqrt((mouseX - x) ** 2 + (mouseY - y) ** 2);
         
-        if (distanceToMouse <= 10) {
+        if (distanceToMouse <= dotRadius) {
           let playerValue = (player as any)[stat.key];
           
           // Handle percentage values that come as strings with % symbol
@@ -384,14 +399,13 @@ export function SpiderChart({ player }: SpiderChartProps) {
         <p className="text-sm text-gray-300 mb-4">League percentile ranking (0-100%)</p>
       </div>
       
-      <div className="flex-1 flex items-center justify-center px-6 relative">
-        <div className="relative inline-block">
+      <div className="flex-1 flex items-center justify-center px-4 relative">
+        <div ref={containerRef} className="relative inline-block w-full h-full max-w-[480px]">
           <canvas
             ref={canvasRef}
-            className="max-w-full h-auto cursor-pointer"
+            className="w-full h-auto max-w-none cursor-pointer"
             style={{ 
-              maxWidth: '350px', 
-              maxHeight: '350px',
+              maxWidth: '100%',
               imageRendering: '-webkit-optimize-contrast'
             }}
           />
@@ -402,12 +416,16 @@ export function SpiderChart({ player }: SpiderChartProps) {
               ref={tooltipRef}
               className="absolute pointer-events-none z-50 px-3 py-2 bg-gray-900/95 border border-[#78BE20]/30 rounded-lg shadow-lg backdrop-blur-sm whitespace-nowrap"
               style={{
-                left: `${hoveredStat.canvasX + 10}px`,
-                top: `${hoveredStat.canvasY - 40}px`,
+                left: `${hoveredStat.canvasX}px`,
+                top: `${hoveredStat.canvasY}px`,
+                transform: 'translate(-50%, -100%)',
+                textRendering: 'optimizeLegibility',
+                WebkitFontSmoothing: 'antialiased',
+                MozOsxFontSmoothing: 'grayscale'
               }}
             >
-              <div className="text-xs font-semibold text-white">{hoveredStat.label}</div>
-              <div className="text-lg font-bold text-[#78BE20]">
+              <div className="text-xs font-semibold text-white" style={{ textRendering: 'optimizeLegibility' }}>{hoveredStat.label}</div>
+              <div className="text-lg font-bold text-[#78BE20]" style={{ textRendering: 'optimizeLegibility' }}>
                 {hoveredStat.key.includes('PCT') ? `${hoveredStat.value}%` : hoveredStat.value}
               </div>
             </div>
