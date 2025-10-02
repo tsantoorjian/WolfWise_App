@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  'https://kuthirbcjtofsdwsfhkj.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1dGhpcmJjanRvZnNkd3NmaGtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkxMTAyOTQsImV4cCI6MjA1NDY4NjI5NH0.Mpt8HEXNEspVRnVs4i6bUNxGpLZxfMvTL8OcdY1x_e8'
-);
+import { supabase } from '../lib/supabase';
 
 export interface CareerProgressionData {
   year: number;
