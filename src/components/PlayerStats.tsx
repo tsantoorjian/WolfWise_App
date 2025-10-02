@@ -6,6 +6,7 @@ import { PlayerWithStats, RecentStats } from '../hooks/useSupabase';
 import { LeagueLeaders } from './LeagueLeaders';
 import { SpiderChart } from './SpiderChart';
 import { RecordTracker } from './RecordTracker';
+import { CareerProgressionChart } from './CareerProgressionChart';
 
 type PlayerStatsViewProps = {
   player: PlayerWithStats | null;
@@ -262,15 +263,29 @@ function PlayerStatsView({ player, last5Stats, last10Stats, availablePlayers, on
         </div>
       </div>
 
+      {/* Career Progression Chart */}
+      {player?.PLAYER_NAME && (
+        <div className="mt-8 pt-8 relative">
+          {/* Subtle separator with gradient */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-600/50 to-transparent"></div>
+          
+          <CareerProgressionChart 
+            playerName={player.PLAYER_NAME} 
+          />
+        </div>
+      )}
+
       {/* Record Tracker */}
-      <div className="mt-8 pt-8 relative">
-        {/* Subtle separator with gradient */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-600/50 to-transparent"></div>
-        
-        <RecordTracker 
-          selectedPlayer={player?.PLAYER_NAME || ''} 
-        />
-      </div>
+      {player?.PLAYER_NAME && (
+        <div className="mt-8 pt-8 relative">
+          {/* Subtle separator with gradient */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-600/50 to-transparent"></div>
+          
+          <RecordTracker 
+            selectedPlayer={player.PLAYER_NAME} 
+          />
+        </div>
+      )}
     </div>
   );
 }
