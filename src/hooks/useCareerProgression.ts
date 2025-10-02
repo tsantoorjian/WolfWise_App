@@ -146,6 +146,9 @@ export function useCareerProgression(playerName: string, selectedStat: string) {
   useEffect(() => {
     if (!playerName || !selectedStat) {
       setData([]);
+      setLeagueAverages({});
+      setLoading(false);
+      setError(null);
       return;
     }
 
