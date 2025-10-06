@@ -4,18 +4,20 @@ import { PlayerStats } from './components/PlayerStats';
 import Lineups from './components/Lineups';
 import LiveGameStats from './components/LiveGameStats';
 import { HeatShotTool } from './components/HeatShotTool';
+import HustleStats from './components/HustleStats';
 import { 
   Menu, 
   Users2, 
   BarChart3,
   Activity,
   Mail,
-  ScatterChart
+  ScatterChart,
+  Zap
 } from 'lucide-react';
 import './index.css';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-type Tab = 'live-stats' | 'stats' | 'lineups' | 'heatshot-tool';
+type Tab = 'live-stats' | 'stats' | 'lineups' | 'heatshot-tool' | 'hustle-stats';
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('live-stats');
@@ -34,6 +36,8 @@ function App() {
         return <Users2 className={baseClasses} />;
       case 'heatshot-tool':
         return <ScatterChart className={baseClasses} />;
+      case 'hustle-stats':
+        return <Zap className={baseClasses} />;
     }
   };
 
@@ -47,6 +51,8 @@ function App() {
         return 'Lineups';
       case 'heatshot-tool':
         return 'Headshot Tool';
+      case 'hustle-stats':
+        return 'Hustle Stats';
     }
   };
 
@@ -90,7 +96,7 @@ function App() {
             {/* Navigation */}
             <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block mb-6`}>
               <div className="flex flex-col md:flex-row gap-2 md:gap-1 glass-card p-1 rounded-lg">
-                {(['live-stats', 'stats', 'lineups', 'heatshot-tool'] as Tab[]).map((tab) => (
+                {(['live-stats', 'stats', 'lineups', 'heatshot-tool', 'hustle-stats'] as Tab[]).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
@@ -124,6 +130,7 @@ function App() {
               {activeTab === 'heatshot-tool' && (
                 <HeatShotTool players={players} />
               )}
+              {activeTab === 'hustle-stats' && <HustleStats />}
             </div>
           </div>
 

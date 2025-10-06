@@ -56,5 +56,6 @@ Thumbs.db
 *.swp
 *.swo
 .cursor/
+.cursorrules
 venv/
 .env

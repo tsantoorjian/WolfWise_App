@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import ReactECharts from 'echarts-for-react';
-import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal, BarChart2 } from 'lucide-react';
+import { Trophy, UserRound, ChevronDown, Info, Target, Award, Medal, BarChart2, Calendar, Clock } from 'lucide-react';
 import RecordProgressBar from './RecordProgressBar';
 import { useRecordData } from '../hooks/useRecordData';
+import { AgeTracker } from './AgeTracker';
 
 type RecordTrackerProps = {
   selectedPlayer: string;
@@ -11,11 +12,35 @@ type RecordTrackerProps = {
 export function RecordTracker({ selectedPlayer }: RecordTrackerProps) {
   const [selectedStat, setSelectedStat] = useState<string>('pts');
   const [showStatSelect, setShowStatSelect] = useState(false);
+  const [activeTab, setActiveTab] = useState<'records' | 'age-based'>('records');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { 
     loading, 
     getProgressionData, 
     getPlayerRecordData 
   } = useRecordData(selectedPlayer);
+
+  // Handle tab switching with smooth transition
+  const handleTabSwitch = (newTab: 'records' | 'age-based') => {
+    if (newTab === activeTab) return;
+    
+    // Preserve scroll position relative to the container
+    const currentScrollY = window.scrollY;
+    const containerTop = containerRef.current?.offsetTop || 0;
+    const relativeScroll = currentScrollY - containerTop;
+    
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setActiveTab(newTab);
+      // Restore scroll position after content loads
+      setTimeout(() => {
+        const newContainerTop = containerRef.current?.offsetTop || 0;
+        window.scrollTo(0, newContainerTop + relativeScroll);
+        setIsTransitioning(false);
+      }, 100);
+    }, 150);
+  };
 
 
   // Function to get player image URL based on selected player
@@ -160,8 +185,102 @@ export function RecordTracker({ selectedPlayer }: RecordTrackerProps) {
     fullProgressionData.push(currentPoint);
   }
 
+  // Show age tracker for Anthony Edwards when age-based tab is selected
+  if (selectedPlayer === 'Anthony Edwards' && activeTab === 'age-based') {
+    return (
+      <div ref={containerRef} className="space-y-6">
+        <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              {/* Player Image */}
+              <div className="relative group">
+                <div className="relative">
+                  <img
+                    src={getPlayerImageUrl(selectedPlayer)}
+                    alt={selectedPlayer || 'Player'}
+                    className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-[#78BE20]/60"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://via.placeholder.com/96';
+                      target.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
+                      target.classList.add('hidden');
+                    }}
+                  />
+                  <div className="fallback-icon hidden">
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#141923] flex items-center justify-center">
+                      <UserRound className="w-10 h-10 md:w-12 md:h-12 text-[#78BE20]" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-white">
+                  {activeTab === 'age-based' ? 'Age-Based Achievements' : 'Record Tracker'}
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  {activeTab === 'age-based' ? 'Track progress towards under 25 records' : 'Track progress towards NBA milestones'}
+                </p>
+                <p className="text-[#78BE20] text-sm font-medium mt-1">Player selected from stats above</p>
+                
+                {/* Age info for Age-Based Records */}
+                {activeTab === 'age-based' && (
+                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-300">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>Age: 24</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      <span>Games Left: 82</span>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Tab Navigation for Anthony Edwards */}
+                <div className="mt-4 flex gap-2">
+                  <button
+                    onClick={() => handleTabSwitch('records')}
+                    disabled={isTransitioning}
+                    className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-[#141923] text-gray-400 hover:text-white"
+                  >
+                    <Trophy className="w-4 h-4 inline mr-2" />
+                    Season Records
+                  </button>
+                  <button
+                    onClick={() => handleTabSwitch('age-based')}
+                    disabled={isTransitioning}
+                    className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-[#78BE20] text-white"
+                  >
+                    <Calendar className="w-4 h-4 inline mr-2" />
+                    Age-Based Records
+                  </button>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="relative min-h-[800px]">
+          {isTransitioning && (
+            <div className="absolute inset-0 bg-[#1e2129]/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+              <div className="flex items-center gap-2 text-white">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#78BE20]"></div>
+                <span>Loading...</span>
+              </div>
+            </div>
+          )}
+          <div className={`transition-opacity duration-200 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+            <AgeTracker selectedPlayer={selectedPlayer} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className="space-y-6">
       <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -188,9 +307,58 @@ export function RecordTracker({ selectedPlayer }: RecordTrackerProps) {
             </div>
             
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-white">Record Tracker</h2>
-              <p className="text-gray-400 text-sm">Track progress towards NBA milestones</p>
+              <h2 className="text-xl md:text-2xl font-bold text-white">
+                {activeTab === 'age-based' ? 'Age-Based Achievements' : 'Record Tracker'}
+              </h2>
+              <p className="text-gray-400 text-sm">
+                {activeTab === 'age-based' ? 'Track progress towards under 25 records' : 'Track progress towards NBA milestones'}
+              </p>
               <p className="text-[#78BE20] text-sm font-medium mt-1">Player selected from stats above</p>
+              
+              {/* Age info for Age-Based Records */}
+              {activeTab === 'age-based' && (
+                <div className="flex items-center gap-4 mt-2 text-sm text-gray-300">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>Age: 24</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    <span>Games Left: 82</span>
+                  </div>
+                </div>
+              )}
+              
+              {/* Tab Navigation for Anthony Edwards */}
+              {selectedPlayer === 'Anthony Edwards' && (
+                <div className="mt-4 flex gap-2">
+                  <button
+                    onClick={() => handleTabSwitch('records')}
+                    disabled={isTransitioning}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      activeTab === 'records'
+                        ? 'bg-[#78BE20] text-white'
+                        : 'bg-[#141923] text-gray-400 hover:text-white'
+                    } ${isTransitioning ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <Trophy className="w-4 h-4 inline mr-2" />
+                    Season Records
+                  </button>
+                  <button
+                    onClick={() => handleTabSwitch('age-based')}
+                    disabled={isTransitioning}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      activeTab === 'age-based'
+                        ? 'bg-[#78BE20] text-white'
+                        : 'bg-[#141923] text-gray-400 hover:text-white'
+                    } ${isTransitioning ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <Calendar className="w-4 h-4 inline mr-2" />
+                    Age-Based Records
+                  </button>
+                </div>
+              )}
+              
             </div>
           </div>
         </div>
@@ -245,7 +413,17 @@ export function RecordTracker({ selectedPlayer }: RecordTrackerProps) {
           </div>
         </div>
 
-        {playerRecordData.filter(d => d.stat === selectedStat).map((record, index) => {
+        <div className="relative min-h-[800px]">
+          {isTransitioning && (
+            <div className="absolute inset-0 bg-[#1e2129]/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+              <div className="flex items-center gap-2 text-white">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#78BE20]"></div>
+                <span>Loading...</span>
+              </div>
+            </div>
+          )}
+          <div className={`transition-opacity duration-200 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
+            {playerRecordData.filter(d => d.stat === selectedStat).map((record, index) => {
           const totalGames = record.GP + record.GAMES_REMAINING;
           const chartOption = {
             backgroundColor: '#1e2129',
@@ -639,6 +817,8 @@ export function RecordTracker({ selectedPlayer }: RecordTrackerProps) {
             </div>
           );
         })}
+          </div>
+        </div>
       </div>
     </div>
   );

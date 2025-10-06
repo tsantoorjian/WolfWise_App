@@ -143,6 +143,56 @@ export type LeaderboardEntry = {
   Ranking: number;
 }
 
+export type HustleStats = {
+  id: number;
+  player_id: number;
+  player_name: string;
+  team_id: number | null;
+  team_abbreviation: string | null;
+  age: number | null;
+  games_played: number;
+  minutes_played: number | null;
+  contested_shots: number;
+  contested_shots_2pt: number;
+  contested_shots_3pt: number;
+  deflections: number;
+  charges_drawn: number;
+  screen_assists: number;
+  screen_ast_pts: number;
+  off_loose_balls_recovered: number;
+  def_loose_balls_recovered: number;
+  loose_balls_recovered: number;
+  pct_loose_balls_recovered_off: number;
+  pct_loose_balls_recovered_def: number;
+  off_boxouts: number;
+  def_boxouts: number;
+  box_out_player_team_rebs: number;
+  box_out_player_rebs: number;
+  box_outs: number;
+  pct_box_outs_off: number;
+  pct_box_outs_def: number;
+  pct_box_outs_team_reb: number;
+  pct_box_outs_reb: number;
+  season: string;
+  season_type: string;
+  per_mode: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AgeBasedAchievement = {
+  id: number;
+  player_id: number;
+  player_name: string;
+  stat_category: string;
+  stat_value: number;
+  rank_position: number;
+  age_at_achievement: number;
+  season_type: string;
+  achievement_date: string;
+  games_played: number;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -167,6 +217,16 @@ export type Database = {
       };
       players_on_league_leaderboard: {
         Row: LeaderboardEntry;
+      };
+      hustle_stats: {
+        Row: HustleStats;
+        Insert: Omit<HustleStats, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<HustleStats, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      age_based_achievements: {
+        Row: AgeBasedAchievement;
+        Insert: Omit<AgeBasedAchievement, 'id'>;
+        Update: Partial<Omit<AgeBasedAchievement, 'id'>>;
       };
     };
   };
