@@ -172,7 +172,7 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
               </div>
               
               {/* Main content */}
-              <div className="text-center mb-10 md:mb-8">
+              <div className="text-center mb-10 md:mb-8 px-8 md:px-0">
                 {/* Icon */}
                 <div className="text-5xl md:text-6xl mb-4">
                   {currentHighlight.icon}
@@ -207,18 +207,18 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
             {/* Navigation buttons */}
             <button
               onClick={handlePrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-3 transition-all"
+              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-30 bg-white/15 hover:bg-white/25 backdrop-blur-md rounded-full p-2 md:p-3 transition-all ring-1 ring-white/20 shadow-lg"
               aria-label="Previous story"
             >
-              <ChevronLeft className="w-6 h-6 text-white" />
+              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </button>
             
             <button
               onClick={handleNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-3 transition-all"
+              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-30 bg-white/15 hover:bg-white/25 backdrop-blur-md rounded-full p-2 md:p-3 transition-all ring-1 ring-white/20 shadow-lg"
               aria-label="Next story"
             >
-              <ChevronRight className="w-6 h-6 text-white" />
+              <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </button>
           </div>
         </div>
