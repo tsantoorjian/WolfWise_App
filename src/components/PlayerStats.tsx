@@ -7,6 +7,8 @@ import { LeagueLeaders } from './LeagueLeaders';
 import { SpiderChart } from './SpiderChart';
 import { RecordTracker } from './RecordTracker';
 import { CareerProgressionChart } from './CareerProgressionChart';
+import { PlayerStories } from './PlayerStories';
+import { usePlayerHighlights } from '../hooks/usePlayerHighlights';
 
 type PlayerStatsViewProps = {
   player: PlayerWithStats | null;
@@ -17,8 +19,18 @@ type PlayerStatsViewProps = {
 };
 
 function PlayerStatsView({ player, last5Stats, last10Stats, availablePlayers, onSelectPlayer }: PlayerStatsViewProps) {
-  const { leaderboardData } = useSupabase();
+  const { leaderboardData, recordData } = useSupabase();
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
+  
+  // Get player highlights for stories
+  const { highlights } = usePlayerHighlights({
+    player,
+    last5Stats,
+    last10Stats,
+    leaderboardData,
+    recordData,
+    ageBasedData: []
+  });
 
   // Handle clicking outside to close dropdown
   useEffect(() => {
@@ -66,6 +78,15 @@ function PlayerStatsView({ player, last5Stats, last10Stats, availablePlayers, on
 
   return (
     <div className="bg-gradient-to-br from-[#1e2129] via-[#1e2129]/95 to-[#1a1d24] backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-3 md:p-6">
+      {/* Player Stories Section */}
+      {highlights.length > 0 && (
+        <PlayerStories 
+          highlights={highlights}
+          playerName={player.PLAYER_NAME}
+          playerImage={player.image_url}
+        />
+      )}
+      
       <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6 mb-6 md:mb-8">
         <div className="relative group player-image-container mx-auto md:mx-0">
           {player.image_url ? (
