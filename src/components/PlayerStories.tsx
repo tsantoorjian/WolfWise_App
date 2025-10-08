@@ -134,7 +134,7 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
           style={{ transform: `translateX(${translateX}px)` }}
         >
           <div 
-            className={`relative h-[400px] md:h-[500px] bg-gradient-to-br ${currentHighlight.gradient} p-8 flex flex-col justify-between`}
+            className={`relative h-[460px] md:h-[500px] bg-gradient-to-br ${currentHighlight.gradient} p-6 md:p-8 pb-20 md:pb-8 flex flex-col justify-between`}
           >
             {/* Background pattern */}
             <div className="absolute inset-0 opacity-10">
@@ -172,25 +172,25 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
               </div>
               
               {/* Main content */}
-              <div className="text-center mb-8">
+              <div className="text-center mb-10 md:mb-8">
                 {/* Icon */}
-                <div className="text-6xl mb-4">
+                <div className="text-5xl md:text-6xl mb-4">
                   {currentHighlight.icon}
                 </div>
                 
                 {/* Title */}
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-3 drop-shadow-lg">
+                <h2 className="text-3xl md:text-5xl font-black text-white mb-3 drop-shadow-lg">
                   {currentHighlight.title}
                 </h2>
                 
                 {/* Description */}
-                <p className="text-xl md:text-2xl text-white/90 font-semibold mb-4">
+                <p className="text-lg md:text-2xl text-white/90 font-semibold mb-4">
                   {currentHighlight.description}
                 </p>
                 
                 {/* Value */}
                 <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 inline-block">
-                  <p className="text-5xl md:text-6xl font-black text-white drop-shadow-lg">
+                  <p className="text-4xl md:text-6xl font-black text-white drop-shadow-lg">
                     {currentHighlight.value}
                   </p>
                 </div>
@@ -224,8 +224,8 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
         </div>
         
         {/* Counter */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full">
-          <p className="text-white text-sm font-medium">
+        <div className="absolute right-3 top-3 md:bottom-4 md:left-1/2 md:-translate-x-1/2 md:right-auto md:top-auto z-20 bg-black/50 backdrop-blur-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full">
+          <p className="text-white text-xs md:text-sm font-medium">
             {currentIndex + 1} / {highlights.length}
           </p>
         </div>
