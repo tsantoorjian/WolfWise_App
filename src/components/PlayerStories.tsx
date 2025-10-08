@@ -206,6 +206,7 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
             
             {/* Navigation buttons */}
             <button
+              key={`left-${currentIndex}`}
               onClick={handlePrevious}
               className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-30 bg-white/15 hover:bg-white/25 backdrop-blur-md rounded-full p-2 md:p-3 transition-all ring-1 ring-white/20 shadow-lg"
               aria-label="Previous story"
@@ -214,6 +215,7 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
             </button>
             
             <button
+              key={`right-${currentIndex}`}
               onClick={handleNext}
               className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-30 bg-white/15 hover:bg-white/25 backdrop-blur-md rounded-full p-2 md:p-3 transition-all ring-1 ring-white/20 shadow-lg"
               aria-label="Next story"
