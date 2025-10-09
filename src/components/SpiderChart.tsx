@@ -134,6 +134,11 @@ export function SpiderChart({ player }: SpiderChartProps) {
     const container = containerRef.current;
     if (!container) return;
 
+    // Set initial size immediately
+    const { width, height } = container.getBoundingClientRect();
+    const initialSize = Math.min(width, height, MAX_SIZE);
+    setContainerSize(initialSize);
+
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
@@ -148,7 +153,7 @@ export function SpiderChart({ player }: SpiderChartProps) {
 
   // Draw the spider chart
   useEffect(() => {
-    if (loading || Object.keys(percentiles).length === 0 || containerSize === 0) return;
+    if (loading || Object.keys(percentiles).length === 0) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -156,8 +161,11 @@ export function SpiderChart({ player }: SpiderChartProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Use the size from ResizeObserver
-    const size = containerSize;
+    // Use the size from ResizeObserver, fallback to container measurement
+    const container = containerRef.current;
+    const containerWidth = container?.clientWidth || canvas.clientWidth || 0;
+    const containerHeight = container?.clientHeight || canvas.clientHeight || containerWidth;
+    const size = containerSize || Math.min(containerWidth, containerHeight, MAX_SIZE);
     
     // Set CSS dimensions to maintain aspect ratio
     canvas.style.width = `${size}px`;
@@ -303,15 +311,18 @@ export function SpiderChart({ player }: SpiderChartProps) {
   // Handle mouse movement for hover detection
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || loading || Object.keys(percentiles).length === 0 || containerSize === 0) return;
+    if (!canvas || loading || Object.keys(percentiles).length === 0) return;
 
     const handleMouseMove = (event: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
 
-      // Use the size from state
-      const size = containerSize;
+      // Use the size from state, fallback to container measurement
+      const container = containerRef.current;
+      const containerWidth = container?.clientWidth || canvas.clientWidth || 0;
+      const containerHeight = container?.clientHeight || canvas.clientHeight || containerWidth;
+      const size = containerSize || Math.min(containerWidth, containerHeight, MAX_SIZE);
       const uiScale = Math.max(size / BASE_SIZE, 0.85);
       const centerX = size / 2;
       const centerY = size / 2;
