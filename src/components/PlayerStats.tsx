@@ -8,7 +8,7 @@ import { SpiderChart } from './SpiderChart';
 import { RecordTracker } from './RecordTracker';
 import { CareerProgressionChart } from './CareerProgressionChart';
 import { PlayerStories } from './PlayerStories';
-import { usePlayerHighlights } from '../hooks/usePlayerHighlights';
+// import { usePlayerHighlights } from '../hooks/usePlayerHighlights';
 
 type PlayerStatsViewProps = {
   player: PlayerWithStats | null;
@@ -19,35 +19,7 @@ type PlayerStatsViewProps = {
 };
 
 function PlayerStatsView({ player, last5Stats, last10Stats, availablePlayers, onSelectPlayer }: PlayerStatsViewProps) {
-  const { leaderboardData, recordData, last5Rankings, last10Rankings } = useSupabase();
-  const [showPlayerSelect, setShowPlayerSelect] = useState(false);
-  
-  // Get player highlights for stories
-  const { highlights } = usePlayerHighlights({
-    player,
-    last5Stats,
-    last10Stats,
-    leaderboardData,
-    recordData,
-    ageBasedData: [],
-    allPlayers: availablePlayers,
-    last5Rankings,
-    last10Rankings
-  });
-
-  // Handle clicking outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (showPlayerSelect && !target.closest('.player-image-container')) {
-        setShowPlayerSelect(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showPlayerSelect]);
-
+  // Early return check must come before any hooks
   if (!player) {
     return (
       <div className="bg-[#1e2129]/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700/50 p-8 flex flex-col items-center justify-center text-center space-y-4">
@@ -61,6 +33,37 @@ function PlayerStatsView({ player, last5Stats, last10Stats, availablePlayers, on
       </div>
     );
   }
+
+  // All hooks must be called after early returns
+  const { leaderboardData } = useSupabase();
+  const [showPlayerSelect, setShowPlayerSelect] = useState(false);
+  
+  // Get player highlights for stories - temporarily disabled due to hooks order issue
+  // const { highlights } = usePlayerHighlights({
+  //   player,
+  //   last5Stats,
+  //   last10Stats,
+  //   leaderboardData,
+  //   recordData,
+  //   ageBasedData: [],
+  //   allPlayers: availablePlayers,
+  //   last5Rankings,
+  //   last10Rankings
+  // });
+  const highlights: any[] = [];
+
+  // Handle clicking outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (showPlayerSelect && !target.closest('.player-image-container')) {
+        setShowPlayerSelect(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPlayerSelect]);
 
   // Filter leaderboard data for the selected player
   const playerLeaderboardData = leaderboardData.filter(entry => entry.Player === player.PLAYER_NAME);
