@@ -8,7 +8,7 @@ import { SpiderChart } from './SpiderChart';
 import { RecordTracker } from './RecordTracker';
 import { CareerProgressionChart } from './CareerProgressionChart';
 import { PlayerStories } from './PlayerStories';
-// import { usePlayerHighlights } from '../hooks/usePlayerHighlights';
+import { usePlayerHighlights } from '../hooks/usePlayerHighlights';
 
 type PlayerStatsViewProps = {
   player: PlayerWithStats | null;
@@ -35,22 +35,21 @@ function PlayerStatsView({ player, last5Stats, last10Stats, availablePlayers, on
   }
 
   // All hooks must be called after early returns
-  const { leaderboardData } = useSupabase();
+  const { leaderboardData, recordData, last5Rankings, last10Rankings } = useSupabase();
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
   
-  // Get player highlights for stories - temporarily disabled due to hooks order issue
-  // const { highlights } = usePlayerHighlights({
-  //   player,
-  //   last5Stats,
-  //   last10Stats,
-  //   leaderboardData,
-  //   recordData,
-  //   ageBasedData: [],
-  //   allPlayers: availablePlayers,
-  //   last5Rankings,
-  //   last10Rankings
-  // });
-  const highlights: any[] = [];
+  // Get player highlights for stories
+  const { highlights } = usePlayerHighlights({
+    player,
+    last5Stats,
+    last10Stats,
+    leaderboardData,
+    recordData,
+    ageBasedData: [],
+    allPlayers: availablePlayers,
+    last5Rankings,
+    last10Rankings
+  });
 
   // Handle clicking outside to close dropdown
   useEffect(() => {
