@@ -59,7 +59,7 @@ function App() {
   return (
     <Router>
       <div className="App min-h-screen grid-pattern">
-        <div className="w-full max-w-[98%] md:max-w-[95%] xl:max-w-[90%] 2xl:max-w-[85%] mx-auto px-2 md:px-4 py-8 flex flex-col min-h-screen">
+        <div className="w-full max-w-[98%] md:max-w-[95%] lg:max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-2 md:px-4 py-8 flex flex-col min-h-screen">
           <div className="flex-grow">
             <div className="flex items-center justify-between mb-8">
               <div className="flex flex-col">

@@ -48,6 +48,8 @@ export function useSupabase() {
   });
   const [last5Stats, setLast5Stats] = useState<Record<string, RecentStats>>({});
   const [last10Stats, setLast10Stats] = useState<Record<string, RecentStats>>({});
+  const [last5Rankings, setLast5Rankings] = useState<any[]>([]);
+  const [last10Rankings, setLast10Rankings] = useState<any[]>([]);
   const [recordData, setRecordData] = useState<RecordTrackerSeason[]>([]);
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [playerImageUrl, setPlayerImageUrl] = useState<string | null>(null);
@@ -163,6 +165,19 @@ export function useSupabase() {
           .select('PLAYER_ID, PTS_RANK, REB_RANK, AST_RANK, STL_RANK, BLK_RANK, PLUS_MINUS_RANK, NBA_FANTASY_PTS_RANK');
         if (last10RanksError) throw last10RanksError;
 
+        // Fetch full last 5 and last 10 games data for rankings
+        const { data: last5FullData, error: last5FullError } = await supabase
+          .from('last_5_base_per_game')
+          .select('PLAYER_ID, PLAYER_NAME, PTS, REB, AST, STL, BLK, PLUS_MINUS')
+          .order('PTS', { ascending: false });
+        if (last5FullError) throw last5FullError;
+
+        const { data: last10FullData, error: last10FullError } = await supabase
+          .from('last_10_base_per_game')
+          .select('PLAYER_ID, PLAYER_NAME, PTS, REB, AST, STL, BLK, PLUS_MINUS')
+          .order('PTS', { ascending: false });
+        if (last10FullError) throw last10FullError;
+
         const processed5 = processRecentStats(last5Data || []);
         const processed10 = processRecentStats(last10Data || []);
 
@@ -204,6 +219,8 @@ export function useSupabase() {
 
         setLast5Stats(last5StatsWithRanks);
         setLast10Stats(last10StatsWithRanks);
+        setLast5Rankings(last5FullData || []);
+        setLast10Rankings(last10FullData || []);
 
         // Fetch record tracker data
         const { data: recordTrackerData, error: recordTrackerError } = await supabase
@@ -253,6 +270,8 @@ export function useSupabase() {
     lineups,
     last5Stats,
     last10Stats,
+    last5Rankings,
+    last10Rankings,
     recordData,
     leaderboardData,
     playerImageUrl,

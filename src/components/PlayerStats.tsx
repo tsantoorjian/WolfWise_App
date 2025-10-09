@@ -19,7 +19,7 @@ type PlayerStatsViewProps = {
 };
 
 function PlayerStatsView({ player, last5Stats, last10Stats, availablePlayers, onSelectPlayer }: PlayerStatsViewProps) {
-  const { leaderboardData, recordData } = useSupabase();
+  const { leaderboardData, recordData, last5Rankings, last10Rankings } = useSupabase();
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
   
   // Get player highlights for stories
@@ -29,7 +29,10 @@ function PlayerStatsView({ player, last5Stats, last10Stats, availablePlayers, on
     last10Stats,
     leaderboardData,
     recordData,
-    ageBasedData: []
+    ageBasedData: [],
+    allPlayers: availablePlayers,
+    last5Rankings,
+    last10Rankings
   });
 
   // Handle clicking outside to close dropdown

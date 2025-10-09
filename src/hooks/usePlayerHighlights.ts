@@ -15,6 +15,11 @@ export interface PlayerHighlight {
   icon: string;
   badge?: string;
   context?: string;
+  top10Players?: Array<{
+    name: string;
+    value: string | number;
+    rank: number;
+  }>;
 }
 
 interface UsePlayerHighlightsProps {
@@ -24,6 +29,9 @@ interface UsePlayerHighlightsProps {
   leaderboardData: any[];
   recordData: any[];
   ageBasedData?: any[];
+  allPlayers?: PlayerWithStats[];
+  last5Rankings?: any[];
+  last10Rankings?: any[];
 }
 
 export function usePlayerHighlights({
@@ -32,9 +40,85 @@ export function usePlayerHighlights({
   last10Stats,
   leaderboardData,
   recordData,
-  ageBasedData = []
+  ageBasedData = [],
+  allPlayers = [],
+  last5Rankings = [],
+  last10Rankings = []
 }: UsePlayerHighlightsProps) {
   
+  // Helper function to get top 10 players for a stat category
+  const getTop10ForStat = (statCategory: string, playerRank: number) => {
+    const statEntries = leaderboardData.filter(entry => entry["Stat Category"] === statCategory);
+    return statEntries
+      .sort((a, b) => {
+        const rankA = typeof a.Ranking === 'number' ? a.Ranking : parseInt(a.Ranking.replace(/[^0-9]/g, ''));
+        const rankB = typeof b.Ranking === 'number' ? b.Ranking : parseInt(b.Ranking.replace(/[^0-9]/g, ''));
+        return rankA - rankB;
+      })
+      .slice(0, 10)
+      .map(entry => ({
+        name: entry.Player,
+        value: formatValue(statCategory, entry.Value),
+        rank: typeof entry.Ranking === 'number' ? entry.Ranking : parseInt(entry.Ranking.replace(/[^0-9]/g, ''))
+      }));
+  };
+
+  // Helper function to get top 10 players for last 5 games
+  const getTop10ForLast5Games = (statKey: string, playerRank: number) => {
+    // Map stat keys to database columns
+    const statColumnMap: Record<string, string> = {
+      'PTS': 'PTS',
+      'REB': 'REB', 
+      'AST': 'AST',
+      'STL': 'STL',
+      'BLK': 'BLK',
+      'PLUS_MINUS': 'PLUS_MINUS'
+    };
+    
+    const statColumn = statColumnMap[statKey];
+    if (!statColumn || last5Rankings.length === 0) return [];
+    
+    // Sort by the stat value and get top 10
+    const sortedPlayers = last5Rankings
+      .sort((a, b) => (b[statColumn] || 0) - (a[statColumn] || 0))
+      .slice(0, 10)
+      .map((player, index) => ({
+        name: player.PLAYER_NAME,
+        value: player[statColumn]?.toFixed(1) || '0.0',
+        rank: index + 1
+      }));
+    
+    return sortedPlayers;
+  };
+
+  // Helper function to get top 10 players for last 10 games  
+  const getTop10ForLast10Games = (statKey: string, playerRank: number) => {
+    // Map stat keys to database columns
+    const statColumnMap: Record<string, string> = {
+      'PTS': 'PTS',
+      'REB': 'REB', 
+      'AST': 'AST',
+      'STL': 'STL',
+      'BLK': 'BLK',
+      'PLUS_MINUS': 'PLUS_MINUS'
+    };
+    
+    const statColumn = statColumnMap[statKey];
+    if (!statColumn || last10Rankings.length === 0) return [];
+    
+    // Sort by the stat value and get top 10
+    const sortedPlayers = last10Rankings
+      .sort((a, b) => (b[statColumn] || 0) - (a[statColumn] || 0))
+      .slice(0, 10)
+      .map((player, index) => ({
+        name: player.PLAYER_NAME,
+        value: player[statColumn]?.toFixed(1) || '0.0',
+        rank: index + 1
+      }));
+    
+    return sortedPlayers;
+  };
+
   const highlights = useMemo(() => {
     if (!player) return [];
     
@@ -54,14 +138,16 @@ export function usePlayerHighlights({
         highlights.push({
           id: `league-${entry["Stat Category"]}`,
           type: 'league',
-          title: `#${ranking} in the League`,
-          description: entry["Stat Category"],
+          title: `${player.PLAYER_NAME} is #${ranking} in the League this season`,
+          description: `In ${entry["Stat Category"]}`,
           stat: entry["Stat Category"],
           value: formatValue(entry["Stat Category"], entry.Value),
           rank: ranking,
           gradient: getRankGradient(ranking),
           icon: getStatIcon(entry["Stat Category"]),
-          badge: getRankBadge(ranking)
+          badge: getRankBadge(ranking),
+          context: `Ranked #${ranking} out of all NBA players this season`,
+          top10Players: getTop10ForStat(entry["Stat Category"], ranking)
         });
       }
     });
@@ -79,15 +165,16 @@ export function usePlayerHighlights({
           highlights.push({
             id: `last5-${statKey}`,
             type: 'last5',
-            title: `#${rank} Last 5 Games`,
-            description: getStatDisplayName(statKey),
+            title: `${player.PLAYER_NAME} is #${rank} in the League over the last 5 games`,
+            description: `In ${getStatDisplayName(statKey)}`,
             stat: statKey,
             value: value.toFixed(1),
             rank: rank,
             gradient: 'from-purple-500 to-pink-500',
             icon: getStatIcon(statKey),
             badge: '🔥',
-            context: 'Hot Streak'
+            context: `Hot streak: #${rank} in the NBA over last 5 games`,
+            top10Players: getTop10ForLast5Games(statKey, rank)
           });
         }
       });
@@ -109,15 +196,16 @@ export function usePlayerHighlights({
             highlights.push({
               id: `last10-${statKey}`,
               type: 'last10',
-              title: `#${rank} Last 10 Games`,
-              description: getStatDisplayName(statKey),
+              title: `${player.PLAYER_NAME} is #${rank} in the League over the last 10 games`,
+              description: `In ${getStatDisplayName(statKey)}`,
               stat: statKey,
               value: value.toFixed(1),
               rank: rank,
               gradient: 'from-blue-500 to-cyan-500',
               icon: getStatIcon(statKey),
               badge: '📈',
-              context: 'Recent Form'
+              context: `Recent form: #${rank} in the NBA over last 10 games`,
+              top10Players: getTop10ForLast10Games(statKey, rank)
             });
           }
         }
@@ -135,14 +223,14 @@ export function usePlayerHighlights({
         highlights.push({
           id: `record-personal-${record.stat}`,
           type: 'record',
-          title: 'Breaking Personal Record',
-          description: `${getStatDisplayName(record.stat)} - On Pace`,
+          title: `${player.PLAYER_NAME} is on pace to break his personal record`,
+          description: `This season in ${getStatDisplayName(record.stat)}`,
           stat: record.stat,
-          value: `${record.projection.toFixed(0)} (proj)`,
+          value: `${record.projection.toFixed(0)} (projected)`,
           gradient: 'from-yellow-400 to-orange-500',
           icon: '🎯',
           badge: 'PR',
-          context: `Previous: ${record.personal_record.toFixed(0)}`
+          context: `Previous best: ${record.personal_record.toFixed(0)} | Current pace: ${record.projection.toFixed(0)}`
         });
       }
       
@@ -151,14 +239,14 @@ export function usePlayerHighlights({
         highlights.push({
           id: `record-franchise-${record.stat}`,
           type: 'record',
-          title: 'Chasing Franchise Record',
-          description: `${getStatDisplayName(record.stat)} - ${((record.projection / record.franchise_record) * 100).toFixed(0)}% of record`,
+          title: `${player.PLAYER_NAME} is chasing the franchise record`,
+          description: `This season in ${getStatDisplayName(record.stat)}`,
           stat: record.stat,
           value: `${record.projection.toFixed(0)} / ${record.franchise_record.toFixed(0)}`,
           gradient: 'from-green-400 to-emerald-600',
           icon: '🏆',
           badge: 'FR',
-          context: `Record holder: ${record.franchise_player}`
+          context: `Franchise record holder: ${record.franchise_player} | ${((record.projection / record.franchise_record) * 100).toFixed(0)}% of record`
         });
       }
     });
@@ -170,15 +258,15 @@ export function usePlayerHighlights({
           highlights.push({
             id: `age-${achievement.stat_category}`,
             type: 'age-based',
-            title: `Projected #${achievement.projected_rank} Under 25`,
-            description: achievement.stat_category.replace('Career ', ''),
+            title: `${player.PLAYER_NAME} is projected #${achievement.projected_rank} under 25`,
+            description: `Career ${achievement.stat_category.replace('Career ', '')}`,
             stat: achievement.stat_category,
             value: achievement.projected_value.toLocaleString(),
             rank: achievement.projected_rank,
             gradient: 'from-indigo-500 to-purple-600',
             icon: '⭐',
             badge: 'U25',
-            context: `Current: #${achievement.current_rank || 'N/A'}`
+            context: `Current rank: #${achievement.current_rank || 'N/A'} | Projected to be #${achievement.projected_rank} by age 25`
           });
         }
       });

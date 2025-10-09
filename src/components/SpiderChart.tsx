@@ -36,7 +36,7 @@ const SPIDER_STATS = [
 const NEGATIVE_STATS: string[] = []; // None of our spider stats are negative
 const RADIUS_FACTOR = 0.38; // keep draw/hover in sync
 const BASE_SIZE = 340; // baseline we scale fonts/points from
-const MAX_SIZE = 480; // allow larger chart while aligning with left components
+const MAX_SIZE = 600; // allow larger chart while maintaining quality
 
 export function SpiderChart({ player }: SpiderChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,6 +46,7 @@ export function SpiderChart({ player }: SpiderChartProps) {
   const [loading, setLoading] = useState(true);
   const [percentiles, setPercentiles] = useState<Record<string, number>>({});
   const [hoveredStat, setHoveredStat] = useState<{ key: string; label: string; value: number; canvasX: number; canvasY: number } | null>(null);
+  const [containerSize, setContainerSize] = useState(0);
 
   useEffect(() => {
     async function fetchBaseStats() {
@@ -128,9 +129,26 @@ export function SpiderChart({ player }: SpiderChartProps) {
     setPercentiles(newPercentiles);
   }, [baseData, player]);
 
+  // Track container size changes with ResizeObserver
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        const size = Math.min(width, height, MAX_SIZE);
+        setContainerSize(size);
+      }
+    });
+
+    resizeObserver.observe(container);
+    return () => resizeObserver.disconnect();
+  }, []);
+
   // Draw the spider chart
   useEffect(() => {
-    if (loading || Object.keys(percentiles).length === 0) return;
+    if (loading || Object.keys(percentiles).length === 0 || containerSize === 0) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -138,21 +156,19 @@ export function SpiderChart({ player }: SpiderChartProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Measure container, use explicit square CSS size to avoid stretching
-    const container = containerRef.current;
-    const containerWidth = container?.clientWidth || canvas.clientWidth || 0;
-    const containerHeight = container?.clientHeight || canvas.clientHeight || undefined;
-    const size = Math.min(containerWidth, containerHeight ?? Infinity, MAX_SIZE);
+    // Use the size from ResizeObserver
+    const size = containerSize;
+    
+    // Set CSS dimensions to maintain aspect ratio
     canvas.style.width = `${size}px`;
     canvas.style.height = `${size}px`;
 
-    // High-DPI backing store with reset transform
-    const dpr = window.devicePixelRatio || 1;
-    const scale = Math.max(dpr, 2);
-    canvas.width = Math.floor(size * scale);
-    canvas.height = Math.floor(size * scale);
+    // High-DPI backing store for crisp rendering
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x to avoid memory issues
+    canvas.width = Math.floor(size * dpr);
+    canvas.height = Math.floor(size * dpr);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(scale, scale);
+    ctx.scale(dpr, dpr);
 
     // Improve rendering quality
     ctx.imageSmoothingEnabled = true;
@@ -282,23 +298,20 @@ export function SpiderChart({ player }: SpiderChartProps) {
       ctx.fillText(percentileText, x, y);
     });
 
-  }, [loading, percentiles]);
+  }, [loading, percentiles, containerSize]);
 
   // Handle mouse movement for hover detection
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || loading || Object.keys(percentiles).length === 0) return;
+    if (!canvas || loading || Object.keys(percentiles).length === 0 || containerSize === 0) return;
 
     const handleMouseMove = (event: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
 
-      // Use the exact size used for drawing/labels
-      const container = containerRef.current;
-      const cWidth = container?.clientWidth || canvas.clientWidth || 0;
-      const cHeight = container?.clientHeight || canvas.clientHeight || 0;
-      const size = Math.min(cWidth, cHeight, MAX_SIZE);
+      // Use the size from state
+      const size = containerSize;
       const uiScale = Math.max(size / BASE_SIZE, 0.85);
       const centerX = size / 2;
       const centerY = size / 2;
@@ -366,22 +379,22 @@ export function SpiderChart({ player }: SpiderChartProps) {
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [loading, percentiles, player]);
+  }, [loading, percentiles, player, containerSize]);
 
   if (loading) {
     return (
       <div className="h-full flex flex-col">
-        <div className="p-6 pb-4 text-center">
-          <div className="flex items-center justify-center gap-3 mb-3">
-            <div className="p-2 bg-gradient-to-br from-[#78BE20]/20 to-[#4ade80]/20 rounded-full">
-              <BarChart3 className="w-5 h-5 text-[#78BE20] animate-pulse" />
+        <div className="p-4 md:p-6 pb-3 md:pb-4 text-center">
+          <div className="flex items-center justify-center gap-2 md:gap-3 mb-2 md:mb-3">
+            <div className="p-1.5 md:p-2 bg-gradient-to-br from-[#78BE20]/20 to-[#4ade80]/20 rounded-full">
+              <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-[#78BE20] animate-pulse" />
             </div>
-            <h3 className="text-xl font-bold text-white">Performance Percentiles</h3>
+            <h3 className="text-lg md:text-xl font-bold text-white">Performance Percentiles</h3>
           </div>
-          <p className="text-sm text-gray-300 mb-4">League percentile ranking (0-100%)</p>
+          <p className="text-xs md:text-sm text-gray-300 mb-3 md:mb-4">League percentile ranking (0-100%)</p>
         </div>
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-400">Loading spider chart...</div>
+          <div className="text-gray-400 text-sm md:text-base">Loading spider chart...</div>
         </div>
       </div>
     );
@@ -389,24 +402,27 @@ export function SpiderChart({ player }: SpiderChartProps) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-6 pb-4 text-center">
-        <div className="flex items-center justify-center gap-3 mb-3">
-          <div className="p-2 bg-gradient-to-br from-[#78BE20]/20 to-[#4ade80]/20 rounded-full">
-              <BarChart3 className="w-5 h-5 text-[#78BE20]" />
+      <div className="p-4 md:p-6 pb-3 md:pb-4 text-center">
+        <div className="flex items-center justify-center gap-2 md:gap-3 mb-2 md:mb-3">
+          <div className="p-1.5 md:p-2 bg-gradient-to-br from-[#78BE20]/20 to-[#4ade80]/20 rounded-full">
+              <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-[#78BE20]" />
           </div>
-          <h3 className="text-xl font-bold text-white">Performance Percentiles</h3>
+          <h3 className="text-lg md:text-xl font-bold text-white">Performance Percentiles</h3>
         </div>
-        <p className="text-sm text-gray-300 mb-4">League percentile ranking (0-100%)</p>
+        <p className="text-xs md:text-sm text-gray-300 mb-3 md:mb-4">League percentile ranking (0-100%)</p>
       </div>
       
-      <div className="flex-1 flex items-center justify-center px-4 relative">
-        <div ref={containerRef} className="relative inline-block w-full h-full max-w-[480px]">
+      <div className="flex-1 flex items-center justify-center p-4 md:p-6">
+        <div 
+          ref={containerRef} 
+          className="relative w-full max-w-[90vw] md:max-w-[600px] aspect-square flex items-center justify-center"
+        >
           <canvas
             ref={canvasRef}
-            className="w-full h-auto max-w-none cursor-pointer"
+            className="block cursor-pointer"
             style={{ 
-              maxWidth: '100%',
-              imageRendering: '-webkit-optimize-contrast'
+              imageRendering: '-webkit-optimize-contrast',
+              margin: '0 auto'
             }}
           />
           
@@ -433,9 +449,9 @@ export function SpiderChart({ player }: SpiderChartProps) {
         </div>
       </div>
       
-      <div className="px-6 py-4 border-t border-gray-700/30 bg-gradient-to-r from-[#0f1119] to-[#141923]">
-        <div className="flex items-center gap-3 text-sm text-gray-300">
-          <div className="p-1.5 bg-[#78BE20]/20 rounded-full">
+      <div className="px-4 md:px-6 py-3 md:py-4 border-t border-gray-700/30 bg-gradient-to-r from-[#0f1119] to-[#141923]">
+        <div className="flex items-center gap-2 md:gap-3 text-xs md:text-sm text-gray-300">
+          <div className="p-1 md:p-1.5 bg-[#78BE20]/20 rounded-full flex-shrink-0">
             <Info className="w-3 h-3 text-[#78BE20]" />
           </div>
           <span>Percentiles based on players with 600+ total minutes</span>

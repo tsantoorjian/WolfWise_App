@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Pause, Play } from 'lucide-react';
 import { PlayerHighlight } from '../hooks/usePlayerHighlights';
 
 interface PlayerStoriesProps {
@@ -13,18 +13,19 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [translateX, setTranslateX] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Auto-advance to next story
   useEffect(() => {
-    if (highlights.length === 0) return;
-    
+    if (highlights.length === 0 || isPaused) return;
+
     const timer = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % highlights.length);
     }, 5000); // 5 seconds per story
-    
+
     return () => clearInterval(timer);
-  }, [highlights.length]);
+  }, [highlights.length, isPaused]);
   
   if (highlights.length === 0) {
     return null;
@@ -38,6 +39,10 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
   
   const handleNext = () => {
     setCurrentIndex(prev => (prev + 1) % highlights.length);
+  };
+
+  const handlePauseToggle = () => {
+    setIsPaused(prev => !prev);
   };
   
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -109,100 +114,119 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Progress bars */}
-        <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-3">
-          {highlights.map((_, index) => (
-            <div 
-              key={index} 
-              className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden"
-            >
-              <div 
-                className={`h-full bg-white transition-all duration-300 ${
-                  index === currentIndex ? 'w-full' : index < currentIndex ? 'w-full' : 'w-0'
-                }`}
-                style={{
-                  transitionDuration: index === currentIndex ? '5000ms' : '300ms'
-                }}
-              />
+            {/* Progress bars */}
+            <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-3">
+              {highlights.map((_, index) => (
+                <div
+                  key={index}
+                  className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden"
+                >
+                  <div
+                    className={`h-full bg-white transition-all duration-300 ${
+                      index === currentIndex ? 'w-full' : index < currentIndex ? 'w-full' : 'w-0'
+                    }`}
+                    style={{
+                      transitionDuration: index === currentIndex ? (isPaused ? '0ms' : '5000ms') : '300ms'
+                    }}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+
+            {/* Pause/Play button */}
+            <button
+              onClick={handlePauseToggle}
+              className="absolute top-3 right-3 z-30 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-full p-2 transition-all ring-1 ring-white/20 shadow-lg"
+              aria-label={isPaused ? 'Play stories' : 'Pause stories'}
+            >
+              {isPaused ? (
+                <Play className="w-4 h-4 text-white" />
+              ) : (
+                <Pause className="w-4 h-4 text-white" />
+              )}
+            </button>
         
         {/* Story content */}
         <div 
           className={`relative transition-transform duration-300 ${isDragging ? 'transition-none' : ''}`}
           style={{ transform: `translateX(${translateX}px)` }}
         >
-          <div 
-            className={`relative h-[460px] md:h-[500px] bg-gradient-to-br from-[#141923] via-[#141923]/95 to-[#0f1119] p-6 md:p-8 pb-20 md:pb-8 flex flex-col justify-between rounded-2xl ring-1 ring-white/10`}
+        <div
+          className={`relative h-[800px] md:h-[900px] bg-gradient-to-br from-[#1e2129] via-[#1e2129]/95 to-[#1a1d24] p-6 md:p-8 pb-20 md:pb-8 rounded-2xl`}
           >
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:40px_40px]" />
-            </div>
             
             {/* Content */}
             <div className="relative z-10">
-              {/* Header with player info */}
-              <div className="flex items-center gap-3 mb-6">
-                {playerImage ? (
-                  <img
-                    src={playerImage}
-                    alt={playerName}
-                    className="w-12 h-12 rounded-full border-2 border-white object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                    <span className="text-white font-bold">{playerName[0]}</span>
+              {/* Player name and context header */}
+              <div className="mb-4">
+                <p className="text-white font-bold text-xl md:text-2xl">{playerName}</p>
+                <p className="text-gray-400 text-sm">{currentHighlight.context || 'Player Highlight'}</p>
+              </div>
+              
+              {/* Main highlight box with integrated player image */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 mb-3">
+                <div className="flex gap-6 items-center">
+                  {/* Player image inside the highlight box */}
+                  <div className="flex-shrink-0">
+                    {playerImage ? (
+                      <img
+                        src={playerImage}
+                        alt={playerName}
+                        className="w-24 h-24 md:w-32 md:h-32 rounded-full border-2 border-white/20 object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white/10 flex items-center justify-center">
+                        <span className="text-white font-bold text-2xl md:text-3xl">{playerName[0]}</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-bold text-lg leading-tight truncate">{playerName}</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-white/70 text-xs">{currentHighlight.context || 'Player Highlight'}</p>
-                    {typeof currentHighlight.rank === 'number' && currentHighlight.rank > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 border border-white/10 text-white/90">#{currentHighlight.rank}</span>
+
+                  {/* Content next to player image */}
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">
+                      <span className="text-[#78BE20]">{playerName}</span> {currentHighlight.title.replace(playerName, '').trim()}
+                    </h2>
+                    <p className="text-white/90 text-lg mb-4">
+                      {currentHighlight.description}
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <span className="text-4xl md:text-5xl font-black text-[#78BE20]">
+                        {currentHighlight.value}
+                      </span>
+                      {typeof currentHighlight.rank === 'number' && currentHighlight.rank > 0 && (
+                        <span className="px-3 py-1 rounded-full text-sm font-bold bg-[#78BE20]/20 text-[#78BE20] border border-[#78BE20]/30">#{currentHighlight.rank}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Top 10 Players Context */}
+              {currentHighlight.top10Players && currentHighlight.top10Players.length > 0 && (
+                <div className="relative z-10 bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                  <p className="text-white/60 text-sm mb-3 font-medium">Top 10 in this stat:</p>
+                  <div className="grid grid-cols-1 gap-1 text-sm max-h-80 overflow-y-auto">
+                    {currentHighlight.top10Players.slice(0, 10).map((player, index) => (
+                      <div key={index} className={`flex justify-between items-center px-3 py-1.5 rounded-lg ${
+                        player.name === playerName ? 'bg-[#78BE20]/20 text-[#78BE20] border border-[#78BE20]/30' : 'bg-white/5 text-white/80'
+                      }`}>
+                        <span className="truncate font-medium text-xs">{player.name}</span>
+                        <span className="ml-2 font-bold text-xs">{player.value}</span>
+                      </div>
+                    ))}
+                    {currentHighlight.top10Players.length > 10 && (
+                      <div className="text-center text-white/50 text-xs py-1">
+                        +{currentHighlight.top10Players.length - 10} more
+                      </div>
                     )}
                   </div>
                 </div>
-                {currentHighlight.badge && (
-                  <div className="ml-auto bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                    <span className="text-white text-sm font-bold">{currentHighlight.badge}</span>
-                  </div>
-                )}
-              </div>
-              
-              {/* Main content */}
-              <div className="text-center mb-10 md:mb-8 px-8 md:px-0">
-                {/* Title */}
-                <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-2 tracking-tight">
-                  {currentHighlight.title}
-                </h2>
-                
-                {/* Description */}
-                <p className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/90 text-sm md:text-base font-medium mb-5">
-                  {currentHighlight.description}
-                </p>
-                
-                {/* Value */}
-                <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-4 md:p-5 inline-block border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-                  <p className="text-4xl md:text-6xl font-extrabold text-white">
-                    {currentHighlight.value}
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
-            
-            {/* Context at bottom */}
-            {currentHighlight.context && (
-              <div className="relative z-10 bg-white/5 backdrop-blur-sm rounded-xl p-3 text-center border border-white/10">
-                <p className="text-white/80 text-xs md:text-sm font-medium">{currentHighlight.context}</p>
-              </div>
-            )}
             
             {/* Navigation buttons */}
             <button

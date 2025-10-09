@@ -10,7 +10,11 @@ import pytz
 from nba_api.stats.endpoints import leaguegamefinder
 import csv
 from dotenv import load_dotenv
-from src._python_scripts.utils import (
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from utils import (
     get_supabase_client,
     load_to_supabase as utils_load_to_supabase,
     fetch_nba_data,
@@ -34,8 +38,12 @@ def save_to_supabase(df, table_name="in_game_player_stats"):
         return
 
     try:
-        # First clear existing data
-        supabase.table(table_name).delete().neq("Player", "NO_SUCH_PLAYER").execute()
+        # Clear ALL existing data from the table
+        # in_game_player_stats uses 'Player' as primary key, not 'id'
+        logger.info(f"Attempting to clear existing data from {table_name}...")
+        delete_result = supabase.table(table_name).delete().neq("Player", "NO_SUCH_PLAYER").execute()
+        logger.info(f"Delete result: {delete_result}")
+        logger.info(f"Cleared all existing data from {table_name}")
         
         # Then load the new data
         utils_load_to_supabase(df, table_name)
@@ -52,7 +60,10 @@ def save_game_info_to_supabase(game_info, table_name="in_game_info"):
 
     try:
         logger.info(f"Saving game info to {table_name}")
-        supabase.table(table_name).delete().neq("game_id", "NO_SUCH_GAME").execute()
+        # Clear ALL existing data from the table
+        supabase.table(table_name).delete().gte("id", 0).execute()
+        logger.info(f"Cleared all existing data from {table_name}")
+        
         supabase.table(table_name).insert(game_info).execute()
         logger.info(f"Successfully saved game info to {table_name}")
     except Exception as e:
@@ -101,7 +112,9 @@ def fetch_and_save_play_by_play(game_id, table_name="in_game_play_by_play"):
 
         if plays:
             logger.info(f"Saving {len(plays)} play-by-play events to {table_name}")
-            supabase.table(table_name).delete().neq("game_id", "NO_SUCH_GAME").execute()
+            # Clear ALL existing data from the table
+            supabase.table(table_name).delete().gte("id", 0).execute()
+            logger.info(f"Cleared all existing data from {table_name}")
             
             # Convert to DataFrame and use utility function
             plays_df = pd.DataFrame(plays)
@@ -117,8 +130,7 @@ def fetch_and_save_play_by_play(game_id, table_name="in_game_play_by_play"):
         traceback.print_exc()
 
 def fetch_and_save_lineups(game_id, table_name="in_game_lineups"):
-    """Track and save current lineups throughout the game. Debug info is written to a CSV file."""
-    debug_csv_path = f"lineup_debug_output_{game_id}.csv"
+    """Track and save current lineups throughout the game."""
     try:
         # 1. Get boxscore for starters
         boxscore_url = f"https://cdn.nba.com/static/json/liveData/boxscore/boxscore_{game_id}.json"
@@ -126,15 +138,6 @@ def fetch_and_save_lineups(game_id, table_name="in_game_lineups"):
         home_team = boxscore['game']['homeTeam']
         away_team = boxscore['game']['awayTeam']
 
-        # Write debug info to CSV
-        with open(debug_csv_path, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(["Home team players:"])
-            for p in home_team['players']:
-                writer.writerow([json.dumps(p)])
-            writer.writerow(["Away team players:"])
-            for p in away_team['players']:
-                writer.writerow([json.dumps(p)])
 
         # Get starters robustly (ensure only 5, fallback to first 5 if needed)
         home_lineup = [p for p in home_team['players'] if p.get('starter') is True]
@@ -156,7 +159,7 @@ def fetch_and_save_lineups(game_id, table_name="in_game_lineups"):
         }
         player_id_to_name = {str(p['personId']): f"{p['firstName']} {p['familyName']}" for p in home_team['players'] + away_team['players']}
 
-        # Track the last 5 'in' events for each team
+        # Track the last 5 'in' events for each team (for recovery when lineup size is wrong)
         recent_in_players = {
             home_team['teamTricode']: [str(p['personId']) for p in home_lineup],
             away_team['teamTricode']: [str(p['personId']) for p in away_lineup]
@@ -167,88 +170,85 @@ def fetch_and_save_lineups(game_id, table_name="in_game_lineups"):
         pbp = fetch_nba_data(pbp_url, headers={"Accept": "application/json", "User-Agent": "Mozilla/5.0"})
         plays = pbp.get('game', {}).get('actions', [])
         lineup_snapshots = []
+        
+        current_period = 0
+        period_change_count = 0
 
-        with open(debug_csv_path, 'a', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
-            for play in plays:
-                period = play.get('period', 1)
-                clock = play.get('clock', '')
-                event_num = play.get('actionNumber', 0)
+        # Process plays - save snapshot for EVERY play, then process substitutions
+        logger.info(f"Processing {len(plays)} plays for lineup tracking...")
 
-                # Save current lineup snapshot for both teams at this play
-                for team in [home_team['teamTricode'], away_team['teamTricode']]:
-                    lineup_snapshots.append({
-                        'game_id': game_id,
-                        'team_tricode': team,
-                        'period': period,
-                        'clock': clock,
-                        'event_num': event_num,
-                        'player_ids': ','.join(sorted(current_lineup[team])),
-                        'player_names': ','.join([player_id_to_name[pid] for pid in current_lineup[team] if pid and pid in player_id_to_name])
-                    })
+        for play_idx, play in enumerate(plays):
+            period = play.get('period', 1)
+            clock = play.get('clock', '')
+            event_num = play.get('actionNumber', 0)
 
-                # Handle substitutions
-                if play.get('actionType') == 'substitution':
-                    team = play.get('teamTricode')
-                    person_id = str(play.get('personId'))
-                    sub_type = play.get('subType')
-                    if team in current_lineup and person_id and person_id != 'None':
-                        if sub_type == 'out':
-                            current_lineup[team].discard(person_id)
-                        elif sub_type == 'in':
-                            current_lineup[team].add(person_id)
-                            recent_in_players[team].append(person_id)
-                            # Keep only the last 5
-                            if len(recent_in_players[team]) > 5:
-                                recent_in_players[team] = recent_in_players[team][-5:]
-                        # After every substitution, if lineup != 5, fix it
-                        if len(current_lineup[team]) != 5:
-                            # Use the last 5 'in' players
-                            current_lineup[team] = set(recent_in_players[team][-5:])
-                    else:
-                        logger.warning(f"Invalid substitution event: {play}")
+            # Save current lineup snapshot for both teams at this play
+            for team in [home_team['teamTricode'], away_team['teamTricode']]:
+                lineup_snapshots.append({
+                    'game_id': game_id,
+                    'team_tricode': team,
+                    'period': period,
+                    'clock': clock,
+                    'event_num': event_num,
+                    'player_ids': ','.join(sorted(current_lineup[team])),
+                    'player_names': ','.join([player_id_to_name[pid] for pid in current_lineup[team] if pid and pid in player_id_to_name])
+                })
 
-                # At the start of a period, reset lineup to last 5 'in' players if needed
-                if play.get('actionType') == 'substitution' and 'startperiod' in play.get('qualifiers', []):
-                    team = play.get('teamTricode')
-                    if team in current_lineup:
+            # Handle substitutions
+            if play.get('actionType') == 'substitution':
+                team = play.get('teamTricode')
+                person_id = str(play.get('personId'))
+                sub_type = play.get('subType')
+                if team in current_lineup and person_id and person_id != 'None':
+                    if sub_type == 'out':
+                        current_lineup[team].discard(person_id)
+                    elif sub_type == 'in':
+                        current_lineup[team].add(person_id)
+                        recent_in_players[team].append(person_id)
+                        # Keep only the last 5
+                        if len(recent_in_players[team]) > 5:
+                            recent_in_players[team] = recent_in_players[team][-5:]
+                    # After every substitution, if lineup != 5, fix it
+                    if len(current_lineup[team]) != 5:
+                        # Use the last 5 'in' players
                         current_lineup[team] = set(recent_in_players[team][-5:])
+                else:
+                    logger.warning(f"Invalid substitution event: {play}")
+
+            # At the start of a period, reset lineup to last 5 'in' players if needed
+            if play.get('actionType') == 'substitution' and 'startperiod' in play.get('qualifiers', []):
+                team = play.get('teamTricode')
+                if team in current_lineup:
+                    current_lineup[team] = set(recent_in_players[team][-5:])
 
         # 3. Save to Supabase
         if lineup_snapshots:
-            logger.info(f"Saving {len(lineup_snapshots)} lineup snapshots to {table_name}")
-            supabase.table(table_name).delete().eq('game_id', game_id).execute()  # Clear previous
-            
+            # Get the latest snapshot for each team (the last one for each team)
+            latest_snapshots = {}
+            for snapshot in reversed(lineup_snapshots):
+                team = snapshot['team_tricode']
+                if team not in latest_snapshots:
+                    latest_snapshots[team] = snapshot
+
+            final_snapshots = list(latest_snapshots.values())
+            logger.info(f"Saving {len(final_snapshots)} latest lineup snapshots to {table_name}")
+
+            # Debug: Show what we're saving
+            for snapshot in final_snapshots:
+                team = snapshot['team_tricode']
+                names = snapshot['player_names']
+                logger.info(f"  Final {team} lineup: {names}")
+
+            # Clear ALL existing data from the table
+            supabase.table(table_name).delete().gte("id", 0).execute()
+            logger.info(f"Cleared all existing data from {table_name}")
+
             # Convert to DataFrame and use utility function
-            lineups_df = pd.DataFrame(lineup_snapshots)
+            lineups_df = pd.DataFrame(final_snapshots)
             utils_load_to_supabase(lineups_df, table_name)
-            
-            logger.info(f"Saved {len(lineup_snapshots)} lineup snapshots to {table_name}")
 
-        # 4. Write summary of final lineups to debug CSV
-        with open(debug_csv_path, 'a', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(["Final lineup snapshots (last for each team):"])
-            for team in [home_team['teamTricode'], away_team['teamTricode']]:
-                last_snapshot = next((snap for snap in reversed(lineup_snapshots) if snap['team_tricode'] == team), None)
-                if last_snapshot:
-                    writer.writerow([team, last_snapshot['player_names']])
+            logger.info(f"Saved {len(final_snapshots)} latest lineup snapshots to {table_name}")
 
-        # Log all substitution events
-        with open(f"substitution_events_{game_id}.csv", 'w', newline='', encoding='utf-8') as sub_csv:
-            sub_writer = csv.writer(sub_csv)
-            sub_writer.writerow(['event_num', 'period', 'clock', 'teamTricode', 'substitutionIn', 'substitutionOut', 'raw_event'])
-            for play in plays:
-                if play.get('actionType') == 'substitution':
-                    sub_writer.writerow([
-                        play.get('actionNumber'),
-                        play.get('period'),
-                        play.get('clock'),
-                        play.get('teamTricode'),
-                        play.get('substitutionIn'),
-                        play.get('substitutionOut'),
-                        json.dumps(play)
-                    ])
 
     except Exception as e:
         logger.error(f"Error fetching/saving lineups: {str(e)}")
