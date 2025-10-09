@@ -134,7 +134,7 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
           style={{ transform: `translateX(${translateX}px)` }}
         >
           <div 
-            className={`relative h-[460px] md:h-[500px] bg-gradient-to-br ${currentHighlight.gradient} p-6 md:p-8 pb-20 md:pb-8 flex flex-col justify-between`}
+            className={`relative h-[460px] md:h-[500px] bg-gradient-to-br from-[#141923] via-[#141923]/95 to-[#0f1119] p-6 md:p-8 pb-20 md:pb-8 flex flex-col justify-between rounded-2xl ring-1 ring-white/10`}
           >
             {/* Background pattern */}
             <div className="absolute inset-0 opacity-10">
@@ -144,7 +144,7 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
             {/* Content */}
             <div className="relative z-10">
               {/* Header with player info */}
-              <div className="flex items-center gap-3 mb-8">
+              <div className="flex items-center gap-3 mb-6">
                 {playerImage ? (
                   <img
                     src={playerImage}
@@ -160,9 +160,14 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
                     <span className="text-white font-bold">{playerName[0]}</span>
                   </div>
                 )}
-                <div>
-                  <p className="text-white font-bold text-lg">{playerName}</p>
-                  <p className="text-white/80 text-sm">{currentHighlight.context || 'Player Highlight'}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-lg leading-tight truncate">{playerName}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-white/70 text-xs">{currentHighlight.context || 'Player Highlight'}</p>
+                    {typeof currentHighlight.rank === 'number' && currentHighlight.rank > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 border border-white/10 text-white/90">#{currentHighlight.rank}</span>
+                    )}
+                  </div>
                 </div>
                 {currentHighlight.badge && (
                   <div className="ml-auto bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
@@ -173,24 +178,19 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
               
               {/* Main content */}
               <div className="text-center mb-10 md:mb-8 px-8 md:px-0">
-                {/* Icon */}
-                <div className="text-5xl md:text-6xl mb-4">
-                  {currentHighlight.icon}
-                </div>
-                
                 {/* Title */}
-                <h2 className="text-3xl md:text-5xl font-black text-white mb-3 drop-shadow-lg">
+                <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-2 tracking-tight">
                   {currentHighlight.title}
                 </h2>
                 
                 {/* Description */}
-                <p className="text-lg md:text-2xl text-white/90 font-semibold mb-4">
+                <p className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/90 text-sm md:text-base font-medium mb-5">
                   {currentHighlight.description}
                 </p>
                 
                 {/* Value */}
-                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 inline-block">
-                  <p className="text-4xl md:text-6xl font-black text-white drop-shadow-lg">
+                <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-4 md:p-5 inline-block border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+                  <p className="text-4xl md:text-6xl font-extrabold text-white">
                     {currentHighlight.value}
                   </p>
                 </div>
@@ -199,8 +199,8 @@ export function PlayerStories({ highlights, playerName, playerImage }: PlayerSto
             
             {/* Context at bottom */}
             {currentHighlight.context && (
-              <div className="relative z-10 bg-black/30 backdrop-blur-sm rounded-xl p-4 text-center">
-                <p className="text-white/90 text-sm font-medium">{currentHighlight.context}</p>
+              <div className="relative z-10 bg-white/5 backdrop-blur-sm rounded-xl p-3 text-center border border-white/10">
+                <p className="text-white/80 text-xs md:text-sm font-medium">{currentHighlight.context}</p>
               </div>
             )}
             
